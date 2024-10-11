@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
+  "packages": [
+    "deno@1.46.3"
+  ],
+  "shell": {
+    "init_hook": "deno task cache-deps",
+    "scripts": {
+      "docker": "docker compose up --build"
+    }
+  }
+}

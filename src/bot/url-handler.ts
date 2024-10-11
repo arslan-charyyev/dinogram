@@ -1,0 +1,191 @@
+import { bold, fmt } from "@grammyjs/parse-mode";
+import type {
+  InputMediaPhoto,
+  InputMediaVideo,
+  Message,
+  ReplyParameters,
+} from "@grammyjs/types";
+import { Context, InputFile } from "grammy";
+import { ClientFactory } from "../client/client-factory.ts";
+import type { PlatformClient } from "../client/platform-client.ts";
+import { config } from "../core/config.ts";
+import { log } from "../core/log.ts";
+import { AudioFile } from "../model/file.ts";
+import { FilePost, MultiFilePost, SingleFilePost } from "../model/post.ts";
+import { reportError } from "../utils/reports.ts";
+import { CaptionBuilder } from "./caption-builder.ts";
+
+export class UrlHandler {
+  constructor(
+    private ctx: Context,
+    private message: Message,
+    private url: URL,
+  ) {}
+
+  async handle() {
+    const client = ClientFactory.find(this.url);
+    if (!client) return;
+
+    let post: FilePost;
+    try {
+      post = await client.fetchPost();
+    } catch (e) {
+      await reportError(this.ctx, "Error fetching file post", e);
+      return;
+    }
+
+    switch (post.type) {
+      case "single":
+        return await this.replyWithSingleMedia(post, client);
+      case "multi":
+        return await this.replyWithMediaGroup(post, client);
+    }
+  }
+
+  private async replyWithSingleMedia(
+    post: SingleFilePost,
+    client: PlatformClient,
+  ) {
+    let stream: ReadableStream<Uint8Array>;
+    try {
+      stream = await client.getByteStream(post.file.downloadUrl);
+    } catch (e) {
+      await reportError(this.ctx, `Could not get ${post.file.type} stream`, e);
+      return;
+    }
+
+    const caption = CaptionBuilder.single(post);
+
+    const replyParameters = config.SEND_AS_REPLY
+      ? {
+        message_id: this.message.message_id,
+        allow_sending_without_reply: true,
+        quote: post.pageUrl.toString(),
+      } satisfies ReplyParameters
+      : undefined;
+
+    const chatId = this.message.chat.id;
+    const inputFile = new InputFile(stream);
+    const other: Parameters<typeof this.ctx.api.sendVideo>[2] = {
+      caption: caption.text,
+      caption_entities: caption.entities,
+      reply_parameters: replyParameters,
+    };
+
+    let sentMessage: Message;
+    switch (post.file.type) {
+      case "video":
+        sentMessage = await this.ctx.api.sendVideo(chatId, inputFile, other);
+        break;
+      case "photo":
+        sentMessage = await this.ctx.api.sendPhoto(chatId, inputFile, other);
+        break;
+    }
+
+    log.debug(`Sent ${post.file.type}. message_id: ${sentMessage.message_id}`);
+  }
+
+  private async replyWithMediaGroup(
+    post: MultiFilePost,
+    client: PlatformClient,
+  ) {
+    const pageUrl = post.pageUrl.toString();
+
+    let lastSentMessageId: number | undefined = undefined;
+
+    type InputMediaPhotoOrVideo =
+      | InputMediaPhoto<InputFile>
+      | InputMediaVideo<InputFile>;
+
+    let batchIndex = 0;
+    for await (const inputBatch of client.generateStreamBatches(post.files)) {
+      const mediaGroup = inputBatch.map<InputMediaPhotoOrVideo>(
+        ({ type, stream }, index) => {
+          const caption = index == 0
+            ? CaptionBuilder.multi(post, batchIndex)
+            : undefined;
+
+          return {
+            type,
+            media: new InputFile(stream),
+            caption: caption?.text,
+            caption_entities: caption?.entities,
+            show_caption_above_media: config.SHOW_CAPTION_ABOVE_MEDIA,
+          } satisfies InputMediaPhotoOrVideo;
+        },
+      );
+
+      const replyParameters = config.SEND_AS_REPLY
+        ? {
+          message_id: lastSentMessageId ?? this.message.message_id,
+          allow_sending_without_reply: true,
+          quote: batchIndex == 0 ? pageUrl : undefined,
+        } satisfies ReplyParameters
+        : undefined;
+
+      if (mediaGroup.length >= 2) {
+        const messages = await this.ctx.api.sendMediaGroup(
+          this.message.chat.id,
+          mediaGroup,
+          { reply_parameters: replyParameters },
+        );
+
+        const messageIds = messages.map((it) => it.message_id);
+        log.debug(`Sent ${client.name} media group. IDs: ${messageIds}`);
+
+        lastSentMessageId = messages.at(-1)?.message_id;
+      } else {
+        const { type, media, caption, caption_entities } = mediaGroup[0];
+        const message = await this.ctx.api.sendPhoto(
+          this.message.chat.id,
+          media,
+          { reply_parameters: replyParameters, caption, caption_entities },
+        );
+
+        log.debug(`Sent ${client.name} ${type}. ID: ${message.message_id}`);
+
+        lastSentMessageId = message.message_id;
+      }
+
+      batchIndex++;
+    }
+
+    if (post.audio) {
+      this.replyWithAudio(post.audio, lastSentMessageId);
+    }
+  }
+
+  private async replyWithAudio(
+    file: AudioFile,
+    lastSentMessageId: number | undefined,
+  ) {
+    const audioRes = await fetch(file.downloadUrl);
+
+    if (!audioRes.body) {
+      await reportError(
+        this.ctx,
+        "Failed to get audio stream",
+        audioRes,
+      );
+
+      return;
+    }
+
+    const audioCaption = fmt([
+      bold(file.author),
+      "\n" + file.title,
+    ]);
+
+    await this.ctx.api.sendAudio(
+      this.message.chat.id,
+      new InputFile(audioRes.body),
+      {
+        caption: audioCaption.text,
+        caption_entities: audioCaption.entities,
+        reply_parameters: {
+          message_id: lastSentMessageId ?? this.message.message_id,
+        },
+      },
+    );
+  }
+}

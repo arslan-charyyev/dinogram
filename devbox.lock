@@ -1,0 +1,43 @@
+{
+  "lockfile_version": "1",
+  "packages": {
+    "deno@1.46.3": {
+      "last_modified": "2024-09-25T20:32:29Z",
+      "resolved": "github:NixOS/nixpkgs/fe866c653c24adf1520628236d4e70bbb2fdd949#deno",
+      "source": "devbox-search",
+      "version": "1.46.3",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/dz7mcfd4m2pm3wq3rm1c4gcfddnvwyad-deno-1.46.3",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/dz7mcfd4m2pm3wq3rm1c4gcfddnvwyad-deno-1.46.3"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/nw1kqa4x5p14hchvadw24l88x4qwrbhy-deno-1.46.3",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/nw1kqa4x5p14hchvadw24l88x4qwrbhy-deno-1.46.3"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/68whsax387kmha38f5nz3qycv8zmp3zz-deno-1.46.3",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/68whsax387kmha38f5nz3qycv8zmp3zz-deno-1.46.3"
+        }
+      }
+    }
+  }
+}

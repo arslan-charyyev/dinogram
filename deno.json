@@ -1,0 +1,29 @@
+{
+  "imports": {
+    "@grammyjs/auto-retry": "https://deno.land/x/grammy_auto_retry@v2.0.2/mod.ts",
+    "@grammyjs/parse-mode": "https://deno.land/x/grammy_parse_mode@1.10.0/mod.ts",
+    "@grammyjs/runner": "https://deno.land/x/grammy_runner@v2.0.3/mod.ts",
+    "@grammyjs/types": "https://deno.land/x/grammy_types@v3.14.0/mod.ts",
+    "@std/assert": "jsr:@std/assert@1.0.6",
+    "@std/async": "jsr:@std/async@1.0.5",
+    "@std/dotenv": "jsr:@std/dotenv@0.225.2",
+    "@std/log": "jsr:@std/log@0.224.8",
+    "@std/path": "jsr:@std/path@1.0.6",
+    "another-cookiejar": "jsr:@jd1378/another-cookiejar@5.0.7",
+    "deno-dom": "jsr:@b-fuze/deno-dom@0.1.48",
+    "grammy": "https://deno.land/x/grammy@v1.30.0/mod.ts",
+    "grammy/core/api": "https://deno.land/x/grammy@v1.30.0/core/api.ts",
+    "jsdom": "https://esm.sh/jsdom@25.0.0",
+    "zod": "npm:zod@3.23.8"
+  },
+  "tasks": {
+    "check-fmt": "deno fmt --check",
+    "check-lint": "deno lint",
+    "check-ts": "deno check --quiet src test",
+    "check-issues": "deno task check-fmt ; deno task check-lint ; deno task check-ts",
+    "check-test": "deno task check-issues ; deno test -A",
+    "check-deps": "deno run -A jsr:@check/deps",
+    "cache-deps": "deno cache src test"
+  },
+  "exclude": ["assets/**"]
+}

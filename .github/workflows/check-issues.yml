@@ -1,0 +1,25 @@
+name: 🔍 Check code issues
+on:
+  push:
+
+jobs:
+  check-code-issues:
+    name: Check code issues
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 📥 Check out repository code
+        uses: actions/checkout@main
+
+      - name: 🛠️ Install devbox
+        uses: jetify-com/devbox-install-action@v0.11.0
+        with:
+          enable-cache: "true"
+          devbox-version: 0.13.1
+
+      - name: 🔍 Check issues
+        run: devbox run -- deno task check-issues
+
+      - name: 🧪 Run tests
+        env:
+          BOT_TOKEN: ${{ secrets.TEST_BOT_TOKEN }}
+        run: devbox run -- deno test -A

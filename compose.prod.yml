@@ -1,0 +1,19 @@
+services:
+  dinogram:
+    image: ghcr.io/arslan-charyyev/dinogram:latest
+    container_name: dinogram
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      BOT_TOKEN: 1234567890:1234567890abcdef1234567890abcdef
+      BOT_API_ROOT: http://telegram-bot-api:8081
+    depends_on:
+      - telegram-bot-api
+
+  telegram-bot-api:
+    image: aiogram/telegram-bot-api:latest
+    container_name: telegram-bot-api
+    restart: unless-stopped
+    env: # Obtained at https://my.telegram.org/apps
+      TELEGRAM_API_ID: 1234567890 
+      TELEGRAM_API_HASH: 1234567890abcdef1234567890abcdef

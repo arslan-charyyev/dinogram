@@ -1,0 +1,14 @@
+services:
+  dinogram:
+    build: .
+    container_name: dinogram
+    env_file: .env
+    environment:
+      BOT_API_ROOT: http://telegram-bot-api:8081
+    depends_on:
+      - telegram-bot-api
+
+  telegram-bot-api:
+    image: aiogram/telegram-bot-api:7.10
+    container_name: telegram-bot-api
+    env_file: .env

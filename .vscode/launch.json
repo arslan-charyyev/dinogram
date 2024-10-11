@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "request": "launch",
+      "name": "main",
+      "type": "node",
+      "program": "src/main.ts",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "${workspaceFolder}/.devbox/nix/profile/default/bin/deno",
+      "runtimeArgs": [
+        "run",
+        "--allow-read",
+        "--allow-write",
+        "--allow-net",
+        "--allow-env",
+        "--inspect-wait"
+      ],
+      "attachSimplePort": 9229
+    },
+    {
+      "request": "launch",
+      "name": "test current",
+      "type": "node",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "${workspaceFolder}/.devbox/nix/profile/default/bin/deno",
+      "runtimeArgs": [
+        "test",
+        "${file}",
+        "--allow-all",
+        "--inspect-wait"
+      ],
+      "attachSimplePort": 9229
+    }
+  ]
+}

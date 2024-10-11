@@ -1,0 +1,11 @@
+.devbox/
+.git/
+.github/
+.vscode/
+test/
+.dockerignore
+.env
+.gitignore
+compose.yml
+Dockerfile
+README.md
