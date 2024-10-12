@@ -10,11 +10,11 @@ media items.
 🎁 Checkout the demo Bot instance: https://t.me/dinogram_bot
 
 > [!NOTE]
-> This public instance is hosted at [Deno Deploy](https://deno.com/deploy) for
-> demonstration purposes only. Therefore, it might frequently run into rate
-> limits of social media platforms, or into free usage quotas set by Deno
-> Deploy's free tier. For optimal results, it is recommended to self-host the
-> bot. To learn more, refer to the `Deployment` section of this document.
+> This public instance is for demonstration purposes only. Therefore, it might
+> frequently run into rate limits of social media platforms, or into usage
+> quotas set by cloud VM provider. For optimal results, it is recommended to
+> self-host the bot. To learn more, refer to the `Deployment` section of this
+> document.
 
 Supported social media platforms:
 
