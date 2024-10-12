@@ -39,9 +39,9 @@ Extra bot features:
 - Truncates long captions to avoid hitting the
   [max character count limit](https://limits.tginfo.me/en).
 - Configurable reply behavior (⚙️:
-  `WITH_CAPTION`,`SEND_AS_REPLY`,`SHOW_CAPTION_ABOVE_MEDIA`)
+  `WITH_CAPTION`,`SEND_AS_REPLY`,`SHOW_CAPTION_ABOVE_MEDIA`).
 - Report errors to original chat (⚙️`SEND_ERRORS`) or pre-configured
-  recipients(⚙️ `REPORT_ERRORS_TO`)
+  recipients(⚙️ `REPORT_ERRORS_TO`).
 - Configurable
   [Bot API server](https://core.telegram.org/bots/api#using-a-local-bot-api-server)
   URL (⚙️ `BOT_API_ROOT`). It can be used to increase max file size limit.
@@ -119,16 +119,17 @@ devbox run docker
 
 ### Dependency considerations
 
-Unfortunately Deno 2 breaks jsr dependency, so the project has to stay on v1
-until a fix or a workaround is available for v2.
+Unfortunately, Deno 2 breaks the `JSDOM` dependency, for which I have not been
+able to find a suitable replacement. Hence, the project has to stay on v1 until
+a fix or a workaround is available for v2.
 
 Most libraries are fetched from `jsr` or `npm`. However, there are some
 exceptions:
 
 - `jsdom` is sourced from esm.sh because sourcing it from npm doesn't fetch its
-  peer dependency `canvas`
+  peer dependency `canvas`.
 - `grammy` libraries are sourced from deno-land because sourcing them from npm
-  breaks their typings
+  breaks their typings.
 
 ## 🙏🏻 Acknowledgements
 
@@ -136,6 +137,6 @@ exceptions:
   TikTok video downloader.
 - [SignTok](https://github.com/pablouser1/SignTok) - TikTok URL signing method.
 
-## License
+## ⚖️ License
 
 [MIT](./LICENSE) (c) 2024 Arslan Charyyev
