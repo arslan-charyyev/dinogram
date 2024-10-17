@@ -70,6 +70,7 @@ export class UrlHandler {
       caption: caption.text,
       caption_entities: caption.entities,
       reply_parameters: replyParameters,
+      message_thread_id: this.message.message_thread_id,
     };
 
     let sentMessage: Message;
@@ -123,11 +124,16 @@ export class UrlHandler {
         } satisfies ReplyParameters
         : undefined;
 
+      const other: Parameters<typeof this.ctx.api.sendMediaGroup>[2] = {
+        reply_parameters: replyParameters,
+        message_thread_id: this.message.message_thread_id,
+      };
+
       if (mediaGroup.length >= 2) {
         const messages = await this.ctx.api.sendMediaGroup(
           this.message.chat.id,
           mediaGroup,
-          { reply_parameters: replyParameters },
+          other,
         );
 
         const messageIds = messages.map((it) => it.message_id);
@@ -136,15 +142,28 @@ export class UrlHandler {
         lastSentMessageId = messages.at(-1)?.message_id;
       } else {
         const { type, media, caption, caption_entities } = mediaGroup[0];
-        const message = await this.ctx.api.sendPhoto(
-          this.message.chat.id,
-          media,
-          { reply_parameters: replyParameters, caption, caption_entities },
-        );
 
-        log.debug(`Sent ${client.name} ${type}. ID: ${message.message_id}`);
+        const chatId = this.message.chat.id;
+        const other: Parameters<typeof this.ctx.api.sendVideo>[2] = {
+          caption: caption,
+          caption_entities: caption_entities,
+          reply_parameters: replyParameters,
+          message_thread_id: this.message.message_thread_id,
+        };
 
-        lastSentMessageId = message.message_id;
+        let sentMessage: Message;
+        switch (type) {
+          case "video":
+            sentMessage = await this.ctx.api.sendVideo(chatId, media, other);
+            break;
+          case "photo":
+            sentMessage = await this.ctx.api.sendPhoto(chatId, media, other);
+            break;
+        }
+
+        log.debug(`Sent ${client.name} ${type}. ID: ${sentMessage.message_id}`);
+
+        lastSentMessageId = sentMessage.message_id;
       }
 
       batchIndex++;
@@ -182,6 +201,7 @@ export class UrlHandler {
       {
         caption: audioCaption.text,
         caption_entities: audioCaption.entities,
+        message_thread_id: this.message.message_thread_id,
         reply_parameters: {
           message_id: lastSentMessageId ?? this.message.message_id,
         },
