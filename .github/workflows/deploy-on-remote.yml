@@ -1,0 +1,51 @@
+name: 🦕 Deploy on the remote VM
+
+# Allow the workflow to be triggered manually from the GitHub UI
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+    secrets: # Allow passing secrets from the caller workflow
+      SSH_PRIVATE_KEY:
+        required: true
+      DOCKER_HOST:
+        required: true
+      BOT_TOKEN:
+        required: true
+      TELEGRAM_API_ID:
+        required: true
+      TELEGRAM_API_HASH:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 📥 Check out repository code
+        uses: actions/checkout@main
+
+      - name: 🔑 Add SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add remote host to SSH known_hosts
+        run: ssh-keyscan -H ${{ secrets.DOCKER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: ⚙️ Setup Docker context
+        run: |
+          docker context create remote --docker "host=ssh://actions@${{ secrets.DOCKER_HOST }}"
+          docker context use remote
+
+      - name: 🐳 Deploy with Docker Compose
+        run: docker compose --file compose.prod.yml up -d
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+
+      - name: 🧹 Prune Docker resources
+        run: docker system prune --force

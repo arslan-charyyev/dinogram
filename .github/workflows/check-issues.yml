@@ -20,6 +20,4 @@ jobs:
         run: devbox run -- deno task check-issues
 
       - name: 🧪 Run tests
-        env:
-          BOT_TOKEN: ${{ secrets.TEST_BOT_TOKEN }}
         run: devbox run -- deno test -A

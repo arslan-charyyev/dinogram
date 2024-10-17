@@ -31,30 +31,6 @@ jobs:
       - name: 📤 Push Docker image
         run: docker push $IMAGE --all-tags
 
-  deno-deploy:
-    name: 🦕 Deploy on remote VM
-    runs-on: ubuntu-24.04
-    needs: docker-push
-    steps:
-      - name: 📥 Check out repository code
-        uses: actions/checkout@main
-
-      - name: 🔑 Add SSH key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: ⚙️ Setup Docker context
-        run: |
-          docker context create remote --docker "host=${{ secrets.DOCKER_HOST }}"
-          docker context use remote
-
-      - name: 🐳 Deploy with Docker Compose
-        run: docker compose --file compose.prod.yml up -d
-        env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
-          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
-
-      - name: 🧹 Prune Docker resources
-        run: docker system prune --force
+  deploy-on-remote:
+    uses: .github/workflows/deploy-on-remote.yml
+    secrets: inherit
