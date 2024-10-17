@@ -1,13 +1,8 @@
 name: 🦕 Deploy on the remote VM
 
-# Allow the workflow to be triggered manually from the GitHub UI
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Allow the workflow to be triggered manually from the GitHub UI
   workflow_call:
-    inputs:
-      environment:
-        type: string
-        required: true
     secrets: # Allow passing secrets from the caller workflow
       SSH_PRIVATE_KEY:
         required: true
