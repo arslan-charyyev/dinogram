@@ -30,7 +30,7 @@ export class UrlHandler {
     try {
       post = await client.fetchPost();
     } catch (e) {
-      await reportError(this.ctx, "Error fetching file post", e);
+      await reportError(this.ctx, "Error fetching post details", e);
       return;
     }
 
