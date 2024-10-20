@@ -5,6 +5,9 @@
   "editor.defaultFormatter": "denoland.vscode-deno",
   "editor.tabSize": 2,
   "cSpell.files": ["./**/*"],
+  "[json]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
   "cSpell.words": [
     "abtest",
     "acrawler",

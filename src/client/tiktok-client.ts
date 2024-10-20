@@ -4,15 +4,16 @@ import { DOMParser } from "deno-dom";
 import { JSDOM, ResourceLoader } from "jsdom";
 import { z } from "zod";
 import { Assets } from "../core/assets.ts";
-import { getUrlSegments, randInt, randStr } from "../utils/utils.ts";
-import { PlatformClient } from "./platform-client.ts";
+import { messages } from "../core/messages.ts";
+import { AudioFile, FileBuilder, MediaFile } from "../model/file.ts";
 import {
   FilePost,
   MultiFilePost,
   PostBuilder,
   SingleFilePost,
 } from "../model/post.ts";
-import { AudioFile, FileBuilder, MediaFile } from "../model/file.ts";
+import { getUrlSegments, randInt, randStr } from "../utils/utils.ts";
+import { PlatformClient } from "./platform-client.ts";
 
 export class TikTokClient extends PlatformClient {
   name = "TikTok";
@@ -94,10 +95,7 @@ export class TikTokClient extends PlatformClient {
     const downloadUrl = video.playAddr ?? video.downloadAddr;
 
     if (!downloadUrl) {
-      throw new Error(
-        "No download URL found. " +
-          "Possible causes: private video or sign-in required.",
-      );
+      throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
     }
 
     return PostBuilder.single({
@@ -140,7 +138,7 @@ export class TikTokClient extends PlatformClient {
     const itemDetail = ItemDetailSchema.parse(itemDetailJson);
 
     if (!itemDetail.itemInfo) {
-      throw new Error("Photo detail has no item info");
+      throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
     }
 
     const { itemStruct } = itemDetail.itemInfo;

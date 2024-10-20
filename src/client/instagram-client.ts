@@ -10,6 +10,7 @@ import {
 } from "../model/post.ts";
 import { getUrlSegments } from "../utils/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
+import { messages } from "../core/messages.ts";
 
 export class InstagramClient extends PlatformClient {
   // TODO: How to extract Doc IDs dynamically?
@@ -43,7 +44,7 @@ export class InstagramClient extends PlatformClient {
       return await this.fetchMultiFilePost(shortcode);
     }
 
-    throw new Error("Invalid link");
+    throw new Error(messages.INVALID_LINK);
   }
 
   private async fetchSingleFilePost(
@@ -56,7 +57,7 @@ export class InstagramClient extends PlatformClient {
     );
 
     if (!reel.data.xdt_shortcode_media) {
-      throw new Error("Invalid link (no shortcode media)");
+      throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
     }
 
     const { edge_media_to_caption, video_url } = reel.data.xdt_shortcode_media;
@@ -78,7 +79,7 @@ export class InstagramClient extends PlatformClient {
     );
 
     if (!post.data.xdt_shortcode_media) {
-      throw new Error("Invalid link (no shortcode media)");
+      throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
     }
 
     const { edge_media_to_caption, edge_sidecar_to_children } =

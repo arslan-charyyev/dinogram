@@ -32,5 +32,6 @@ jobs:
         run: docker push $IMAGE --all-tags
 
   deploy-on-remote:
+    name: 🦕 Deploy on the remote VM
     uses: ./.github/workflows/deploy-on-remote.yml
     secrets: inherit
