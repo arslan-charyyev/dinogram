@@ -1,6 +1,7 @@
 services:
   dinogram:
     image: ghcr.io/arslan-charyyev/dinogram:latest
+    pull_policy: always
     container_name: dinogram
     restart: unless-stopped
     depends_on: [ telegram-bot-api ]
@@ -10,6 +11,7 @@ services:
 
   telegram-bot-api:
     image: aiogram/telegram-bot-api:latest
+    pull_policy: always
     container_name: telegram-bot-api
     restart: unless-stopped
     environment:
