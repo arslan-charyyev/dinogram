@@ -10,7 +10,7 @@ COPY deno.json deno.lock deps.ts ./
 RUN deno cache deps.ts
 
 # These steps will be re-run upon each file change in your working directory:
-COPY . .
+COPY --chown=deno:deno . .
 
 # Cache app dependencies
 RUN deno cache src
