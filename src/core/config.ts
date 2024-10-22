@@ -10,7 +10,11 @@ const bool = z.enum(["true", "false"])
 
 const csv = z.string()
   .transform((it) => it.split(",").filter((it) => it))
-  .pipe(z.string().array());
+  .pipe(z.array(z.string()));
+
+const intCsv = z.string()
+  .transform((it) => it.split(",").filter(Boolean).map(Number))
+  .pipe(z.array(z.number().int()));
 
 const Config = z.object({
   BOT_TOKEN: z.string().describe(
@@ -37,6 +41,12 @@ const Config = z.object({
   BOT_API_ROOT: z.string().default("").describe(
     "A URL to a self-hosted Telegram Bot API server instance. " +
       "Read more: https://grammy.dev/guide/api#running-a-local-bot-api-server",
+  ),
+  BOT_ADMINS: intCsv.default("").describe(
+    "A comma-separated list of user or chat IDs that can change bot settings",
+  ),
+  DATA_DIR: z.string().default("").describe(
+    "A path to directory for storing app data, such as database files",
   ),
 });
 

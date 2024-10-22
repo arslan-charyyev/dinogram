@@ -1,18 +1,18 @@
+import { bold, fmt, pre, Stringable } from "@grammyjs/parse-mode";
 import { Context } from "grammy";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { truncate } from "./utils.ts";
-import { bold, fmt, pre, Stringable } from "@grammyjs/parse-mode";
 
 export async function reportError(
   ctx: Context,
   error: string,
-  cause?: unknown,
+  cause?: Error,
 ) {
   const message = ctx.message?.text;
 
   const errorDetails = {
-    cause,
+    cause: cause?.message,
     message,
   };
 

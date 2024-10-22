@@ -16,7 +16,7 @@ import { getUrlSegments, randInt, randStr } from "../utils/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
 
 export class TikTokClient extends PlatformClient {
-  name = "TikTok";
+  override name = "TikTok";
   userAgent: string;
 
   constructor(pageUrl: URL) {

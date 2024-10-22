@@ -4,6 +4,8 @@ import "@grammyjs/auto-retry";
 import "@grammyjs/parse-mode";
 import "@grammyjs/runner";
 import "@grammyjs/types";
+import "@grammyjs/menu";
+import "@grammyjs/conversations";
 import "@std/async";
 import "@std/dotenv";
 import "@std/log";

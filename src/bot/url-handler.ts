@@ -184,7 +184,7 @@ export class UrlHandler {
       await reportError(
         this.ctx,
         "Failed to get audio stream",
-        audioRes,
+        new Error(audioRes.statusText),
       );
 
       return;

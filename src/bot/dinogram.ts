@@ -1,17 +1,27 @@
-import { Bot } from "grammy";
 import { autoRetry } from "@grammyjs/auto-retry";
+import {
+  ConversationFlavor,
+  conversations,
+  createConversation,
+} from "@grammyjs/conversations";
 import { run } from "@grammyjs/runner";
+import { retry } from "@std/async/retry";
+import { Bot, Context, session } from "grammy";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
-import { UrlHandler } from "./url-handler.ts";
 import { reportError } from "../utils/reports.ts";
-import { retry } from "@std/async/retry";
+import { commands } from "./commands.ts";
+import { dinoConversations } from "./conversations.ts";
+import { menus } from "./menus.ts";
+import { UrlHandler } from "./url-handler.ts";
+
+export type DinoContext = Context & ConversationFlavor;
 
 export class Dinogram {
-  bot: Bot;
+  bot: Bot<DinoContext>;
 
   constructor() {
-    this.bot = new Bot(config.BOT_TOKEN, {
+    this.bot = new Bot<DinoContext>(config.BOT_TOKEN, {
       client: {
         apiRoot: config.BOT_API_ROOT ? config.BOT_API_ROOT : undefined,
       },
@@ -22,8 +32,18 @@ export class Dinogram {
   async launch() {
     await this.logoutFromBotApi();
     this.setupErrorHandler();
-    this.listenToUrlEntities();
     this.listenToStopSignals();
+
+    this.bot.use(session({ initial: () => ({}) }));
+    this.bot.use(conversations());
+    this.bot.use(createConversation(dinoConversations.setInstagramCookie));
+
+    this.bot.use(menus.settings);
+    for (const command in commands) {
+      this.bot.command(command, commands[command]);
+    }
+
+    this.listenToUrlEntities();
 
     this.bot.init().then(() => {
       const { first_name, username } = this.bot.botInfo;
@@ -58,9 +78,13 @@ export class Dinogram {
 
   private setupErrorHandler() {
     this.bot.catch(async (e) => {
-      const { ctx, ...error } = e;
+      const { ctx, error } = e;
       try {
-        await reportError(ctx, "Unhandled bot error", error);
+        await reportError(
+          ctx,
+          "Unhandled bot error",
+          error instanceof Error ? error : undefined,
+        );
       } catch (cause) {
         log.error("Failed to report an error", cause);
       }
@@ -86,7 +110,6 @@ export class Dinogram {
         }
 
         if (!["http:", "https:"].includes(url.protocol)) {
-          log.debug(`Skipping non http(s) protocol: ${(url.protocol)}`);
           continue;
         }
 

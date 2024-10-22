@@ -5,6 +5,9 @@ services:
     container_name: dinogram
     restart: unless-stopped
     depends_on: [ telegram-bot-api ]
+    volumes:
+      - dinogram-data:/app/data
+
     environment:
       BOT_TOKEN: ${BOT_TOKEN}
       BOT_API_ROOT: http://telegram-bot-api:8081
@@ -17,3 +20,6 @@ services:
     environment:
       TELEGRAM_API_ID: ${TELEGRAM_API_ID} 
       TELEGRAM_API_HASH: ${TELEGRAM_API_HASH}
+
+volumes:
+  dinogram-data:

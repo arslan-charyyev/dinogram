@@ -10,6 +10,7 @@
       "runtimeExecutable": "${workspaceFolder}/.devbox/nix/profile/default/bin/deno",
       "runtimeArgs": [
         "run",
+        "--unstable-kv",
         "--allow-read",
         "--allow-write",
         "--allow-net",
@@ -27,6 +28,7 @@
       "runtimeArgs": [
         "test",
         "${file}",
+        "--unstable-kv",
         "--allow-all",
         "--inspect-wait"
       ],

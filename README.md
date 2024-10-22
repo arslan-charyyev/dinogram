@@ -24,7 +24,8 @@ Supported social media platforms:
   - Posts that are private or require sign-in are NOT supported.
 - Instagram
   - Reels and posts with mixed content (photos & videos) are supported.
-  - Posts that are private or require sign-in are NOT supported.
+  - Posts that are private or require sign-in are supported if authentication
+    cookie is provided.
   - Instagram has severe rate limits for non-authenticated users: 200 requests
     per hour. Therefore, frequent errors caused by rate limits are to be
     expected.
@@ -32,8 +33,12 @@ Supported social media platforms:
 Extra bot features:
 
 > [!NOTE]
-> ⚙️ denotes config keys
+> ⚙️ denotes config keys (environment variables)
+>
+> 🗨️ denotes bot settings (`/settings` command in chat)
 
+- Use authentication cookies provided in chat (🗨️) by pre-defined admin (⚙️:
+  `BOT_ADMINS`)
 - Automatically resend messages when hitting
   [flood control limits](https://grammy.dev/advanced/flood).
 - Truncates long captions to avoid hitting the
@@ -48,7 +53,8 @@ Extra bot features:
 
 ## 🔮 Future plans:
 
-- Authentication (to access posts that require sign-in)
+- TikTok Authentication (to access posts that require sign-in)
+- Automated authentication
 - Youtube videos
 - Rate limiter (to give everyone a fair chance)
 
@@ -69,6 +75,16 @@ docker run ghcr.io/arslan-charyyev/dinogram:latest -e BOT_TOKEN=your:token
 
 You may refer to [compose.prod.yml](./compose.prod.yml) for an example of
 production deployment using docker compose.
+
+> [!NOTE]
+> Dinogram stores its runtime settings in a sqlite database file. By default the
+> database file is created in deno's cache folder, which you can find by using
+> the following command: `deno info | grep storage`. This folder can be changed
+> using the `DATA_DIR` environment variable.
+>
+> The docker image uses the `DATA_DIR` variable to set this directory to
+> `/app/data/`. To persist the data across container ups & downs, the
+> `compose.prod.yml` file maps this directory to a docker volume.
 
 ## ⚙️ Config
 
@@ -100,6 +116,10 @@ Steps:
 
 ```sh
 deno cache deps.ts # Download all dependencies
+```
+
+```sh
+deno run main
 ```
 
 ```sh

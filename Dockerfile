@@ -15,4 +15,6 @@ COPY . .
 # Cache app dependencies
 RUN deno cache src
 
-CMD ["run", "--allow-net", "--allow-read", "--allow-env", "src/main.ts"]
+ENV DATA_DIR /app/data
+
+CMD ["task", "main"]
