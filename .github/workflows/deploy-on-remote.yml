@@ -10,6 +10,8 @@ on:
         required: true
       BOT_TOKEN:
         required: true
+      BOT_ADMINS:
+        required: true
       TELEGRAM_API_ID:
         required: true
       TELEGRAM_API_HASH:
