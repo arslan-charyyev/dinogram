@@ -1,9 +1,9 @@
 FROM denoland/deno:1.46.3
 
-WORKDIR /app
-
 # Prefer not to run as root.
 USER deno
+
+WORKDIR /app
 
 # Cache the dependencies as a layer
 COPY deno.json deno.lock deps.ts ./
@@ -15,6 +15,7 @@ COPY --chown=deno:deno . .
 # Cache app dependencies
 RUN deno cache src
 
-ENV DATA_DIR /app/data
+ENV DATA_DIR /app/data/
+RUN mkdir -p $DATA_DIR
 
 CMD ["task", "main"]
