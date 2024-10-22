@@ -22,4 +22,4 @@ jobs:
       - name: 🧪 Run tests
         env:
           BOT_TOKEN: 'unused'
-        run: devbox run -- deno test -A
+        run: devbox run -- deno tast test

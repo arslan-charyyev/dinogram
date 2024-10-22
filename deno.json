@@ -23,10 +23,11 @@
     "check-lint": "deno lint",
     "check-ts": "deno check --quiet src test",
     "check-issues": "deno task check-fmt ; deno task check-lint ; deno task check-ts",
-    "check-test": "deno task check-issues ; deno test -A",
+    "check-test": "deno task check-issues ; deno task test",
     "check-deps": "deno run -A jsr:@check/deps",
     "cache-deps": "deno cache src test",
-    "main": "deno --unstable-kv --allow-read --allow-write --allow-net --allow-env ./src/main.ts"
+    "main": "deno --unstable-kv --allow-read --allow-write --allow-net --allow-env ./src/main.ts",
+    "test": "deno test -A --unstable-kv"
   },
   "exclude": [
     "assets/**"
