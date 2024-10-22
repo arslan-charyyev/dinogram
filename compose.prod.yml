@@ -9,6 +9,7 @@ services:
       - dinogram-data:/app/data/
     environment:
       BOT_TOKEN: ${BOT_TOKEN}
+      BOT_ADMINS: ${BOT_ADMINS}
       BOT_API_ROOT: http://telegram-bot-api:8081
 
   telegram-bot-api:
