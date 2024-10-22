@@ -41,6 +41,7 @@ jobs:
         run: docker compose --file compose.prod.yml up -d
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          BOT_ADMINS: ${{ secrets.BOT_ADMINS }}
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
 
