@@ -54,7 +54,7 @@ export class InstagramClient extends PlatformClient {
     const mediaInfo = await this.fetchMediaInfo(cookie);
     const mediaItem = mediaInfo.items[0];
 
-    const description = mediaItem.caption.text ?? "";
+    const description = mediaItem.caption?.text ?? "";
     const pageUrl = this.pageUrl;
 
     switch (mediaItem.media_type) {
@@ -291,12 +291,12 @@ enum MediaType {
 }
 
 const MediaCaptionSchema = z.object({
-  text: z.string().nullish(),
+  text: z.string(),
 });
 
 const ImageMediaSchema = z.object({
   media_type: z.literal(MediaType.Image),
-  caption: MediaCaptionSchema,
+  caption: MediaCaptionSchema.nullish(),
   image_versions2: z.object({
     candidates: z.array(z.object({
       url: z.string().url(),
@@ -306,7 +306,7 @@ const ImageMediaSchema = z.object({
 
 const VideoMediaSchema = z.object({
   media_type: z.literal(MediaType.Video),
-  caption: MediaCaptionSchema,
+  caption: MediaCaptionSchema.nullish(),
   video_versions: z.array(z.object({
     url: z.string().url(),
   })),
@@ -314,7 +314,7 @@ const VideoMediaSchema = z.object({
 
 const CarouselMediaSchema = z.object({
   media_type: z.literal(MediaType.Carousel),
-  caption: MediaCaptionSchema,
+  caption: MediaCaptionSchema.nullish(),
   carousel_media: z.array(
     z.discriminatedUnion("media_type", [
       ImageMediaSchema,
@@ -324,6 +324,7 @@ const CarouselMediaSchema = z.object({
 });
 
 const MediaInfoSchema = z.object({
+  status: z.literal("ok"),
   items: z.array(
     z.discriminatedUnion("media_type", [
       ImageMediaSchema,
