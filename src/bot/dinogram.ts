@@ -14,8 +14,9 @@ import { commands } from "./commands.ts";
 import { dinoConversations } from "./conversations.ts";
 import { menus } from "./menus.ts";
 import { UrlHandler } from "./url-handler.ts";
+import { hydrateReply, ParseModeFlavor } from "@grammyjs/parse-mode";
 
-export type DinoContext = Context & ConversationFlavor;
+export type DinoContext = ParseModeFlavor<Context & ConversationFlavor>;
 
 export class Dinogram {
   bot: Bot<DinoContext>;
@@ -34,6 +35,7 @@ export class Dinogram {
     this.setupErrorHandler();
     this.listenToStopSignals();
 
+    this.bot.use(hydrateReply);
     this.bot.use(session({ initial: () => ({}) }));
     this.bot.use(conversations());
     this.bot.use(createConversation(dinoConversations.setInstagramCookie));

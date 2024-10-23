@@ -45,13 +45,12 @@ const createConfirmMenu = (
     .back("❌ Cancel");
 
 const instagramMenu = new Menu<DinoContext>("ig")
-  .text("🆕 Set Cookie", callbacks.instagram.setCookie)
-  .text("🔍 Get Cookie", callbacks.instagram.getCookie)
+  .text("📝 Set Cookie", callbacks.instagram.setCookie)
+  .text("👓 Get Cookie", callbacks.instagram.getCookie)
   .submenu("🧹 Delete Cookie", "ig-delete-confirm").row()
-  .back("🔙 Go Back");
+  .back("⬅️ Go Back");
 
 instagramMenu.register([
-  createConfirmMenu("ig-set-confirm", callbacks.instagram.setCookie),
   createConfirmMenu("ig-delete-confirm", callbacks.instagram.deleteCookie),
 ]);
 
