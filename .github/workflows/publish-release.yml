@@ -34,4 +34,5 @@ jobs:
   deploy-on-remote:
     name: 🦕 Deploy on the remote VM
     uses: ./.github/workflows/deploy-on-remote.yml
+    needs: [ docker-push ]
     secrets: inherit
