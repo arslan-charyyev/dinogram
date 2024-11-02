@@ -1,5 +1,4 @@
 import { retry } from "@std/async";
-import { wrapFetch } from "another-cookiejar";
 import { DOMParser } from "deno-dom";
 import z from "zod";
 import { db } from "../core/db.ts";
@@ -11,6 +10,7 @@ import {
   PostBuilder,
   SingleFilePost,
 } from "../model/post.ts";
+import { AppCookieJar } from "../utils/app-cookie-jar.ts";
 import { getUrlSegments } from "../utils/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
 
@@ -25,15 +25,38 @@ export class InstagramClient extends PlatformClient {
   constructor(pageUrl: URL) {
     super(pageUrl);
 
-    this.fetch = wrapFetch({
-      fetch: (input, init) =>
-        fetch(input, {
-          headers: {
-            "User-Agent": "Chrome",
-          },
-          ...init,
-        }),
-    });
+    this.fetch = async (input, init) => {
+      const headers: HeadersInit = {
+        "user-agent": "Chrome",
+      };
+
+      const cookieString = await db.instagram.cookie.get();
+      if (cookieString) {
+        headers["cookie"] = cookieString;
+        headers["x-ig-app-id"] = InstagramClient.IG_APP_ID;
+        const jar = new AppCookieJar(cookieString);
+        const csrftoken = jar.cookies["csrftoken"];
+        if (csrftoken) {
+          headers["x-csrftoken"] = csrftoken;
+        }
+      }
+
+      const res = await fetch(input, {
+        ...init,
+        headers: {
+          ...headers,
+          ...init?.headers,
+        },
+      });
+
+      if (cookieString) {
+        const jar = new AppCookieJar(cookieString);
+        jar.replaceCookies(res.headers.getSetCookie());
+        await db.instagram.cookie.set(jar.getCookieString());
+      }
+
+      return res;
+    };
   }
 
   /**
@@ -44,14 +67,14 @@ export class InstagramClient extends PlatformClient {
     const cookie = await db.instagram.cookie.get();
 
     if (cookie) {
-      return this.fetchPostAuthenticated(cookie);
+      return this.fetchPostAuthenticated();
     } else {
       return this.fetchPostAnonymously();
     }
   }
 
-  private async fetchPostAuthenticated(cookie: string): Promise<FilePost> {
-    const mediaInfo = await this.fetchMediaInfo(cookie);
+  private async fetchPostAuthenticated(): Promise<FilePost> {
+    const mediaInfo = await this.fetchMediaInfo();
     const mediaItem = mediaInfo.items[0];
 
     const description = mediaItem.caption?.text ?? "";
@@ -86,23 +109,10 @@ export class InstagramClient extends PlatformClient {
     }
   }
 
-  private async fetchMediaInfo(
-    cookie: string,
-  ): Promise<z.infer<typeof MediaInfoSchema>> {
-    const headers: HeadersInit = {
-      "Cookie": cookie,
-      "x-ig-app-id": InstagramClient.IG_APP_ID,
-    };
-
+  private async fetchMediaInfo(): Promise<z.infer<typeof MediaInfoSchema>> {
     // Step 1. Get post html
     const html = await retry(async () => {
-      const res = await fetch(
-        this.pageUrl,
-        {
-          method: "GET",
-          headers: headers,
-        },
-      );
+      const res = await this.fetch(this.pageUrl);
 
       return res.text();
     });
@@ -127,11 +137,17 @@ export class InstagramClient extends PlatformClient {
 
     // Step 3. Fetch media info
     const mediaInfoJson = await retry(async () => {
-      const res = await fetch(mediaInfoUrl, { headers });
+      const res = await this.fetch(mediaInfoUrl);
       return res.json();
     });
 
-    return MediaInfoSchema.parse(mediaInfoJson);
+    const mediaInfo = MediaInfoSchema.safeParse(mediaInfoJson);
+
+    if (!mediaInfo.success) {
+      throw new Error("Failed to fetch media info");
+    }
+
+    return mediaInfo.data;
   }
 
   private async fetchPostAnonymously(): Promise<FilePost> {

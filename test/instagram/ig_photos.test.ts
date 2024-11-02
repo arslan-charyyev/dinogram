@@ -28,13 +28,13 @@ Deno.test("Download Instagram photos", async () => {
 
   assertEquals(
     firstImageBytes.byteLength,
-    130_327,
+    158_203,
     "first image length matches",
   );
 
   assertEquals(
     await computeSHA1(firstImageBytes),
-    "d5b249ccc2e33285395f66ffc61c3e5e56b198b5",
+    "2f90091a1aebaff36eff315ef49a5c3492605093",
     "first image hash matches",
   );
 });

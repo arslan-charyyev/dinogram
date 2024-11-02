@@ -1,7 +1,7 @@
 /// <reference lib="deno.unstable" />
 
-import { config } from "./config.ts";
 import { resolve } from "@std/path";
+import { config } from "./config.ts";
 
 export const db = {
   instagram: {
