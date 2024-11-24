@@ -149,7 +149,8 @@ exceptions:
 - `jsdom` is sourced from esm.sh because sourcing it from npm doesn't fetch its
   peer dependency `canvas`.
 - `grammy` libraries are sourced from deno-land because sourcing them from npm
-  breaks their typings.
+  breaks their typings. Additionally, it is pinned to version `1.30.0` at the
+  moment, since its plugins have not been updated to make use of latest version.
 
 ## 🙏🏻 Acknowledgements
 
