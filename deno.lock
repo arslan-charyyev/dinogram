@@ -13,6 +13,7 @@
       "jsr:@std/io@^0.225.0": "jsr:@std/io@0.225.0",
       "jsr:@std/log@0.224.11": "jsr:@std/log@0.224.11",
       "jsr:@std/path@1.0.8": "jsr:@std/path@1.0.8",
+      "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:zod@3.23.8": "npm:zod@3.23.8"
     },
     "jsr": {
@@ -59,6 +60,10 @@
       }
     },
     "npm": {
+      "@types/node@18.16.19": {
+        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
+        "dependencies": {}
+      },
       "zod@3.23.8": {
         "integrity": "sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==",
         "dependencies": {}

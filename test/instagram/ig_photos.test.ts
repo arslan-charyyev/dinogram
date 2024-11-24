@@ -1,8 +1,20 @@
 import { assert, assertEquals } from "@std/assert";
 import { InstagramClient } from "../../src/client/instagram-client.ts";
 import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
+import { db } from "../../src/core/db.ts";
+import { config } from "../../src/core/config.ts";
 
-Deno.test("Download Instagram photos", async () => {
+Deno.test("Download Instagram photos [auth]", async () => {
+  await db.instagram.cookie.set(config.TEST_INSTAGRAM_COOKIE);
+  await test(158_203, "2f90091a1aebaff36eff315ef49a5c3492605093");
+});
+
+Deno.test("Download Instagram photos [no auth]", async () => {
+  await db.instagram.cookie.delete();
+  await test(130_327, "d5b249ccc2e33285395f66ffc61c3e5e56b198b5");
+});
+
+async function test(firstImageSize: number, firstImageHash: string) {
   const url = new URL(test_url.instagram.images_only);
   const client = new InstagramClient(url);
   const post = await client.fetchPost();
@@ -24,17 +36,17 @@ Deno.test("Download Instagram photos", async () => {
     .fetch(post.files[0].downloadUrl)
     .then((it) => it.bytes());
 
-  await writeToTestOutput(firstImageBytes, `ig_image.jpg`);
+  await writeToTestOutput(firstImageBytes, "ig_image.jpg");
 
   assertEquals(
     firstImageBytes.byteLength,
-    158_203,
-    "first image length matches",
+    firstImageSize,
+    "first image size matches",
   );
 
   assertEquals(
     await computeSHA1(firstImageBytes),
-    "2f90091a1aebaff36eff315ef49a5c3492605093",
+    firstImageHash,
     "first image hash matches",
   );
-});
+}

@@ -48,6 +48,9 @@ const Config = z.object({
   DATA_DIR: z.string().default("").describe(
     "A path to directory for storing app data, such as database files",
   ),
+  TEST_INSTAGRAM_COOKIE: z.string().default("").describe(
+    "Instagram cookies to be used for testing",
+  ),
 });
 
 const env = {
