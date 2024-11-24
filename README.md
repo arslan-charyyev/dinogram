@@ -115,11 +115,11 @@ Steps:
 ### Useful commands
 
 ```sh
-deno cache deps.ts # Download all dependencies
+deno task cache-deps # Download all dependencies
 ```
 
 ```sh
-deno run main
+deno task main
 ```
 
 ```sh
@@ -127,11 +127,11 @@ deno task check-issues # Check project issues
 ```
 
 ```sh
-deno test -A # Run all tests
+deno task test # Run all tests
 ```
 
-Build Dinogram docker image and start corresponding container, alongside Bot API
-server.
+The following builds the Dinogram docker image and starts corresponding
+container, alongside Bot API server.
 
 ```sh
 devbox run docker
@@ -139,15 +139,9 @@ devbox run docker
 
 ### Dependency considerations
 
-Unfortunately, Deno 2 breaks the `JSDOM` dependency, for which I have not been
-able to find a suitable replacement. Hence, the project has to stay on v1 until
-a fix or a workaround is available for v2.
-
 Most libraries are fetched from `jsr` or `npm`. However, there are some
 exceptions:
 
-- `jsdom` is sourced from esm.sh because sourcing it from npm doesn't fetch its
-  peer dependency `canvas`.
 - `grammy` libraries are sourced from deno-land because sourcing them from npm
   breaks their typings. Additionally, it is pinned to version `1.30.0` at the
   moment, since its plugins have not been updated to make use of latest version.

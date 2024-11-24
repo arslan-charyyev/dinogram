@@ -1,11 +1,5 @@
-import {
-  Menu,
-  MenuFlavor,
-} from "https://deno.land/x/grammy_menu@v1.2.2/menu.ts";
-import {
-  fmt,
-  spoiler,
-} from "https://deno.land/x/grammy_parse_mode@1.10.0/format.ts";
+import { Menu, MenuFlavor } from "@grammyjs/menu";
+import { fmt, spoiler } from "@grammyjs/parse-mode";
 import { db } from "../core/db.ts";
 import { dinoConversations } from "./conversations.ts";
 import { DinoContext } from "./dinogram.ts";

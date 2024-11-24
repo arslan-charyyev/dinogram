@@ -30,7 +30,11 @@ export class UrlHandler {
     try {
       post = await client.fetchPost();
     } catch (e) {
-      await reportError(this.ctx, "Error fetching post details", e);
+      await reportError(
+        this.ctx,
+        "Error fetching post details",
+        e instanceof Error ? e : undefined,
+      );
       return;
     }
 
@@ -50,7 +54,11 @@ export class UrlHandler {
     try {
       stream = await client.getByteStream(post.file.downloadUrl);
     } catch (e) {
-      await reportError(this.ctx, `Could not get ${post.file.type} stream`, e);
+      await reportError(
+        this.ctx,
+        `Could not get ${post.file.type} stream`,
+        e instanceof Error ? e : undefined,
+      );
       return;
     }
 

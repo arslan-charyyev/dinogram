@@ -119,7 +119,11 @@ export class Dinogram {
           const handler = new UrlHandler(ctx, ctx.message, url);
           await handler.handle();
         } catch (e) {
-          reportError(ctx, `Error handling url ${urlText}`, e);
+          reportError(
+            ctx,
+            `Error handling url ${urlText}`,
+            e instanceof Error ? e : undefined,
+          );
         }
       }
     });

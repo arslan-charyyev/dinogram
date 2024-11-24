@@ -21,15 +21,16 @@
   "tasks": {
     "check-fmt": "deno fmt --check",
     "check-lint": "deno lint",
-    "check-ts": "deno check --quiet src test",
+    "check-ts": "deno check --quiet src test --allow-import",
     "check-issues": "deno task check-fmt ; deno task check-lint ; deno task check-ts",
     "check-test": "deno task check-issues ; deno task test",
     "check-deps": "deno run -A jsr:@check/deps",
-    "cache-deps": "deno cache deps.ts",
-    "main": "deno --unstable-kv --allow-read --allow-write --allow-net --allow-env ./src/main.ts",
-    "test": "deno test -A --unstable-kv"
+    "cache-deps": "deno install --allow-import",
+    "main": "deno --allow-read --allow-write --allow-net --allow-env --allow-import ./src/main.ts",
+    "test": "deno test -A"
   },
   "exclude": [
     "assets/**"
-  ]
+  ],
+  "unstable": ["kv"]
 }

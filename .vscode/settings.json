@@ -18,6 +18,7 @@
     "csrftoken",
     "datetime",
     "deno",
+    "denoland",
     "devbox",
     "Dinogram",
     "grammyjs",
@@ -31,5 +32,8 @@
     "Vibing",
     "webid",
     "webmssdk"
-  ]
+  ],
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  }
 }

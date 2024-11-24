@@ -21,6 +21,6 @@ jobs:
 
       - name: 🧪 Run tests
         env:
-          BOT_TOKEN: 'unused'
+          BOT_TOKEN: "unused"
           TEST_INSTAGRAM_COOKIE: ${{ secrets.TEST_INSTAGRAM_COOKIE }}
         run: devbox run -- deno task test
