@@ -1,7 +1,6 @@
 import { retry } from "@std/async";
 import { CookieJar, wrapFetch } from "another-cookiejar";
 import { DOMParser } from "deno-dom";
-import { JSDOM, ResourceLoader } from "jsdom";
 import { z } from "zod";
 import { Assets } from "../core/assets.ts";
 import { messages } from "../core/messages.ts";
@@ -14,6 +13,7 @@ import {
 } from "../model/post.ts";
 import { getUrlSegments, randInt, randStr } from "../utils/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
+import { Window } from "happy-dom";
 
 export class TikTokClient extends PlatformClient {
   override name = "TikTok";
@@ -178,28 +178,39 @@ export class TikTokClient extends PlatformClient {
     const signatureJs = await Deno.readTextFile(Assets.js.signature);
     const webmssdkJs = await Deno.readTextFile(Assets.js.webmssdk);
 
-    const { window } = new JSDOM("", {
+    const window: Window = new Window({
       url: "https://www.tiktok.com",
-      referrer: "https://www.tiktok.com",
-      contentType: "text/html",
-      includeNodeLocations: false,
-      runScripts: "outside-only",
-      pretendToBeVisual: true,
-      resources: new ResourceLoader({ userAgent }),
+      height: 1920,
+      width: 1080,
+      settings: {
+        navigator: {
+          userAgent,
+        },
+      },
     });
 
     window.eval(signatureJs);
 
-    window.byted_acrawler.init({ aid: 24, dfp: true });
+    const windowExtended = window as unknown as {
+      _0x32d649: (searchParams: string) => string;
+      byted_acrawler: {
+        init: (o: { aid: number; dfp: boolean }) => string;
+        sign: (o: { url: string }) => string;
+      };
+    };
+
+    windowExtended.byted_acrawler.init({ aid: 24, dfp: true });
 
     window.eval(webmssdkJs);
 
     const url = new URL(unsignedUrl);
 
-    const signature = window.byted_acrawler.sign({ url: url.toString() });
+    const signature = windowExtended.byted_acrawler.sign({
+      url: url.toString(),
+    });
     url.searchParams.append("_signature", signature);
 
-    const bogus = window._0x32d649(url.searchParams.toString());
+    const bogus = windowExtended._0x32d649(url.searchParams.toString());
     url.searchParams.append("X-Bogus", bogus);
 
     window.close();

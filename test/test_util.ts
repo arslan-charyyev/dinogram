@@ -18,7 +18,7 @@ export const test_url = {
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
  */
 export async function computeSHA1(array: Uint8Array): Promise<string> {
-  const hashBuffer = await window.crypto.subtle.digest(
+  const hashBuffer = await crypto.subtle.digest(
     "SHA-1",
     array.buffer,
   );

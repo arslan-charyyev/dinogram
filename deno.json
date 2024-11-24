@@ -15,7 +15,7 @@
     "deno-dom": "jsr:@b-fuze/deno-dom@0.1.48",
     "grammy": "https://deno.land/x/grammy@v1.30.0/mod.ts",
     "grammy/core/api": "https://deno.land/x/grammy@v1.30.0/core/api.ts",
-    "jsdom": "https://esm.sh/jsdom@25.0.0",
+    "happy-dom": "npm:happy-dom@15.11.6",
     "zod": "npm:zod@3.23.8"
   },
   "tasks": {
@@ -25,7 +25,7 @@
     "check-issues": "deno task check-fmt ; deno task check-lint ; deno task check-ts",
     "check-test": "deno task check-issues ; deno task test",
     "check-deps": "deno run -A jsr:@check/deps",
-    "cache-deps": "deno cache src test",
+    "cache-deps": "deno cache deps.ts",
     "main": "deno --unstable-kv --allow-read --allow-write --allow-net --allow-env ./src/main.ts",
     "test": "deno test -A --unstable-kv"
   },

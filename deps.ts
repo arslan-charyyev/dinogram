@@ -13,7 +13,7 @@ import "@std/path";
 import "another-cookiejar";
 import "deno-dom";
 import "grammy";
-import "jsdom";
+import "happy-dom";
 import "zod";
 
 // Test deps
