@@ -209,19 +209,21 @@ export class TikTokClient extends PlatformClient {
 }
 
 const ScriptSchema = z.object({
-  "__DEFAULT_SCOPE__": z.object({
+  __DEFAULT_SCOPE__: z.object({
     "seo.abtest": z.object({
-      "canonical": z.string(),
+      canonical: z.string(),
     }),
     "webapp.video-detail": z.object({
-      "statusCode": z.number().int(),
-      "statusMsg": z.string().optional(),
-      "itemInfo": z.object({
-        "itemStruct": z.object({
-          "desc": z.string(),
-          "video": z.object({
-            "playAddr": z.string().describe("without watermark").optional(),
-            "downloadAddr": z.string().describe("with watermark").optional(),
+      statusCode: z.number().int(),
+      statusMsg: z.string().optional(),
+      itemInfo: z.object({
+        itemStruct: z.object({
+          desc: z.string(),
+          video: z.object({
+            height: z.number().int(),
+            width: z.number().int(),
+            playAddr: z.string().describe("without watermark").optional(),
+            downloadAddr: z.string().describe("with watermark").optional(),
           }),
         }),
       }).optional(),
@@ -234,21 +236,23 @@ type VideoDetail = NonNullable<
 >;
 
 const ItemDetailSchema = z.object({
-  "itemInfo": z.object({
-    "itemStruct": z.object({
-      "desc": z.string(),
-      "imagePost": z.object({
-        "title": z.string(),
-        "images": z.array(z.object({
-          "imageURL": z.object({
-            "urlList": z.array(z.string()),
+  itemInfo: z.object({
+    itemStruct: z.object({
+      desc: z.string(),
+      imagePost: z.object({
+        title: z.string(),
+        images: z.array(z.object({
+          imageHeight: z.number().int(),
+          imageWidth: z.number().int(),
+          imageURL: z.object({
+            urlList: z.array(z.string()),
           }),
         })),
       }),
-      "music": z.object({
-        "authorName": z.string(),
-        "playUrl": z.string(),
-        "title": z.string(),
+      music: z.object({
+        authorName: z.string(),
+        playUrl: z.string(),
+        title: z.string(),
       }),
     }),
   }).optional(),

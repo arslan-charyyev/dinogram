@@ -1,6 +1,6 @@
 import { assert, assertEquals } from "@std/assert";
-import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 import { InstagramClient } from "../../src/client/instagram-client.ts";
+import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 
 Deno.test("Download Instagram photos", async () => {
   const url = new URL(test_url.instagram.images_only);

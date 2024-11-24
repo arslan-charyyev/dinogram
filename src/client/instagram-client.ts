@@ -35,7 +35,7 @@ export class InstagramClient extends PlatformClient {
         headers["cookie"] = cookieString;
         headers["x-ig-app-id"] = InstagramClient.IG_APP_ID;
         const jar = new AppCookieJar(cookieString);
-        const csrftoken = jar.cookies["csrftoken"];
+        const csrftoken = jar.get("csrftoken");
         if (csrftoken) {
           headers["x-csrftoken"] = csrftoken;
         }
@@ -82,27 +82,26 @@ export class InstagramClient extends PlatformClient {
 
     switch (mediaItem.media_type) {
       case MediaType.Image: {
-        const file = FileBuilder.video({
-          downloadUrl: mediaItem.image_versions2.candidates[0].url,
-        });
+        const file = createMediaFile(mediaItem);
 
         return PostBuilder.single({ description, pageUrl, file });
       }
       case MediaType.Video: {
-        const file = FileBuilder.video({
-          downloadUrl: mediaItem.video_versions[0].url,
-        });
+        const file = createMediaFile(mediaItem);
 
         return PostBuilder.single({ description, pageUrl, file });
       }
       case MediaType.Carousel: {
-        const files = mediaItem.carousel_media.map((it) =>
-          it.media_type === MediaType.Video
-            ? FileBuilder.video({ downloadUrl: it.video_versions[0].url })
-            : FileBuilder.photo({
-              downloadUrl: it.image_versions2.candidates[0].url,
-            })
-        );
+        const files = mediaItem.carousel_media.map((media) => {
+          switch (media.media_type) {
+            case MediaType.Image: {
+              return createMediaFile(media);
+            }
+            case MediaType.Video: {
+              return createMediaFile(media);
+            }
+          }
+        });
 
         return PostBuilder.multi({ description, pageUrl, files });
       }
@@ -310,22 +309,29 @@ const MediaCaptionSchema = z.object({
   text: z.string(),
 });
 
-const ImageMediaSchema = z.object({
+const MediaItem = z.object({
+  url: z.string().url(),
+  width: z.number().int(),
+  height: z.number().int(),
+});
+
+const MediaSchema = z.object({
+  original_width: z.number().int(),
+  original_height: z.number().int(),
+});
+
+const ImageMediaSchema = MediaSchema.extend({
   media_type: z.literal(MediaType.Image),
   caption: MediaCaptionSchema.nullish(),
   image_versions2: z.object({
-    candidates: z.array(z.object({
-      url: z.string().url(),
-    })),
+    candidates: z.array(MediaItem),
   }),
 });
 
-const VideoMediaSchema = z.object({
+const VideoMediaSchema = MediaSchema.extend({
   media_type: z.literal(MediaType.Video),
   caption: MediaCaptionSchema.nullish(),
-  video_versions: z.array(z.object({
-    url: z.string().url(),
-  })),
+  video_versions: z.array(MediaItem),
 });
 
 const CarouselMediaSchema = z.object({
@@ -349,3 +355,38 @@ const MediaInfoSchema = z.object({
     ]),
   ),
 });
+
+function findBestCandidate(
+  media: z.infer<typeof MediaSchema>,
+  candidates: z.infer<typeof MediaItem>[],
+): z.infer<typeof MediaItem> {
+  const originalCandidate = candidates.find((candidate) =>
+    candidate.height === media.original_height &&
+    candidate.width === media.original_width
+  );
+
+  return originalCandidate ?? candidates[0];
+}
+
+function createMediaFile(
+  media: z.infer<typeof ImageMediaSchema> | z.infer<typeof VideoMediaSchema>,
+) {
+  switch (media.media_type) {
+    case MediaType.Image: {
+      const bestCandidate = findBestCandidate(
+        media,
+        media.image_versions2.candidates,
+      );
+
+      return FileBuilder.photo({ downloadUrl: bestCandidate.url });
+    }
+    case MediaType.Video: {
+      const bestCandidate = findBestCandidate(
+        media,
+        media.video_versions,
+      );
+
+      return FileBuilder.video({ downloadUrl: bestCandidate.url });
+    }
+  }
+}

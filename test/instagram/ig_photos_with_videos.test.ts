@@ -1,8 +1,8 @@
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
-import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 import { InstagramClient } from "../../src/client/instagram-client.ts";
+import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 
-Deno.test("Download Instagram photos", async () => {
+Deno.test("Download Instagram photos with videos", async () => {
   const url = new URL(test_url.instagram.images_with_videos);
   const client = new InstagramClient(url);
   const post = await client.fetchPost();

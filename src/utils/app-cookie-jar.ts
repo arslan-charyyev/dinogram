@@ -1,10 +1,14 @@
 import z from "zod";
 
 export class AppCookieJar {
-  cookies: Record<string, string>;
+  private cookies: Record<string, string>;
 
   constructor(cookieString: string) {
     this.cookies = AppCookieJar.cookieStrArrayToObject(cookieString.split(";"));
+  }
+
+  get(key: string): string | undefined {
+    return this.cookies[key];
   }
 
   parse() {
@@ -25,7 +29,6 @@ export class AppCookieJar {
   getCookieString(): string {
     return Object.entries(this.cookies)
       .filter(([_, value]) => value)
-      // .filter(([key, _]) => key !== "csrftoken")
       .map(([key, value]) => `${key}=${value}`)
       .join("; ");
   }
