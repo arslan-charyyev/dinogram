@@ -1,13 +1,15 @@
 # 🦕 Dinogram 📨
 
-<div style="text-align:center"><img src="./assets/img/logo.jpg" height=200/></div>
+<div><img src="./assets/img/logo.jpg" height=200/></div>
 
-**Dinogram** is a Telegram bot that can download public videos and photos from
-TikTok and Instagram and send them to Telegram. Add it to a group or send it a
-direct message with a link to a post and it will respond with the corresponding
-media items.
+**Dinogram** is a Telegram bot that can download public videos & photos from
+social media platforms (TikTok & Instagram) and send them to a Telegram chat. To
+use it, add the bot to a group or send it a direct message with a link to a post
+and it will respond with the corresponding media items.
 
 🎁 Checkout the demo Bot instance: https://t.me/dinogram_bot
+
+https://github.com/user-attachments/assets/7d3e5f91-f126-4fa7-b232-2cc41d3d1f21
 
 > [!NOTE]
 > This public instance is for demonstration purposes only. Therefore, it might
@@ -88,11 +90,23 @@ production deployment using docker compose.
 
 ## ⚙️ Config
 
+There are 2 ways to configure the bot: via environment variables (during deployment)
+and via bot settings (during operation)
+
+### Environment variables
+
 The only required config variable is the `BOT_TOKEN`. You can set either via a
 `.env` file or via environment variables.
 
 For the other config options and their descriptions, please refer to the
 [config.ts](src/core/config.ts) file.
+
+### Bot settings
+
+These settings can be configured by sending the `/settings` command to the bot,
+and changing them interactively.
+
+https://github.com/user-attachments/assets/998c57d7-6550-439b-a23b-ae312e280d1b
 
 ## 🛠️ Development setup
 
