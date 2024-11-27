@@ -90,8 +90,10 @@ production deployment using docker compose.
 
 ## ⚙️ Config
 
-There are 2 ways to configure the bot: via environment variables (during deployment)
-and via bot settings (during operation)
+There are 2 ways to configure the bot:
+
+- via environment variables (during deployment)
+- via bot settings (during operation)
 
 ### Environment variables
 
