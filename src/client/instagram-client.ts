@@ -45,7 +45,7 @@ export class InstagramClient extends PlatformClient {
         ...init,
         headers: {
           ...headers,
-          ...init?.headers,
+          ...(init && "headers" in init ? init.headers : {}),
         },
       });
 
@@ -222,19 +222,16 @@ export class InstagramClient extends PlatformClient {
     shortCode: string,
   ): Promise<Output> {
     return retry(async () => {
-      const response = await fetch(
-        "https://www.instagram.com/graphql/query",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: new URLSearchParams({
-            variables: JSON.stringify({ shortcode: shortCode }),
-            doc_id: docId,
-          }),
+      const response = await fetch("https://www.instagram.com/graphql/query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-      );
+        body: new URLSearchParams({
+          variables: JSON.stringify({ shortcode: shortCode }),
+          doc_id: docId,
+        }),
+      });
 
       if (!response.ok) throw Error(response.statusText);
 
@@ -247,55 +244,67 @@ export class InstagramClient extends PlatformClient {
   static override supportsLink(url: URL): boolean {
     const pathSegments = getUrlSegments(url);
 
-    return url.hostname.endsWith("instagram.com") &&
-      (pathSegments.includes("reel") || pathSegments.includes("p"));
+    return (
+      url.hostname.endsWith("instagram.com") &&
+      (pathSegments.includes("reel") || pathSegments.includes("p"))
+    );
   }
 }
 
 const ReelSchema = z.object({
   status: z.string(),
   data: z.object({
-    xdt_shortcode_media: z.object({
-      is_video: z.literal(true),
-      video_url: z.string(),
-      edge_media_to_caption: z.object({
-        edges: z.array(z.object({
-          node: z.object({
-            text: z.string(),
-          }),
-        })),
-      }),
-    }).nullable(),
+    xdt_shortcode_media: z
+      .object({
+        is_video: z.literal(true),
+        video_url: z.string(),
+        edge_media_to_caption: z.object({
+          edges: z.array(
+            z.object({
+              node: z.object({
+                text: z.string(),
+              }),
+            }),
+          ),
+        }),
+      })
+      .nullable(),
   }),
 });
 
 const PostSchema = z.object({
   status: z.string(),
   data: z.object({
-    xdt_shortcode_media: z.object({
-      is_video: z.literal(false),
-      edge_sidecar_to_children: z.object({
-        edges: z.array(z.object({
-          node: z.discriminatedUnion("is_video", [
+    xdt_shortcode_media: z
+      .object({
+        is_video: z.literal(false),
+        edge_sidecar_to_children: z.object({
+          edges: z.array(
             z.object({
-              is_video: z.literal(false),
-              display_url: z.string().url(),
+              node: z.discriminatedUnion("is_video", [
+                z.object({
+                  is_video: z.literal(false),
+                  display_url: z.string().url(),
+                }),
+                z.object({
+                  is_video: z.literal(true),
+                  video_url: z.string().url(),
+                }),
+              ]),
             }),
+          ),
+        }),
+        edge_media_to_caption: z.object({
+          edges: z.array(
             z.object({
-              is_video: z.literal(true),
-              video_url: z.string().url(),
+              node: z.object({
+                text: z.string(),
+              }),
             }),
-          ]),
-        })),
-      }),
-      edge_media_to_caption: z.object({
-        edges: z.array(z.object({
-          node: z.object({
-            text: z.string(),
-          }),
-        })),
-      }),
-    }).nullable(),
+          ),
+        }),
+      })
+      .nullable(),
   }),
 });
 
@@ -338,10 +347,7 @@ const CarouselMediaSchema = z.object({
   media_type: z.literal(MediaType.Carousel),
   caption: MediaCaptionSchema.nullish(),
   carousel_media: z.array(
-    z.discriminatedUnion("media_type", [
-      ImageMediaSchema,
-      VideoMediaSchema,
-    ]),
+    z.discriminatedUnion("media_type", [ImageMediaSchema, VideoMediaSchema]),
   ),
 });
 
@@ -360,9 +366,10 @@ function findBestCandidate(
   media: z.infer<typeof MediaSchema>,
   candidates: z.infer<typeof MediaItem>[],
 ): z.infer<typeof MediaItem> {
-  const originalCandidate = candidates.find((candidate) =>
-    candidate.height === media.original_height &&
-    candidate.width === media.original_width
+  const originalCandidate = candidates.find(
+    (candidate) =>
+      candidate.height === media.original_height &&
+      candidate.width === media.original_width,
   );
 
   return originalCandidate ?? candidates[0];
@@ -381,10 +388,7 @@ function createMediaFile(
       return FileBuilder.photo({ downloadUrl: bestCandidate.url });
     }
     case MediaType.Video: {
-      const bestCandidate = findBestCandidate(
-        media,
-        media.video_versions,
-      );
+      const bestCandidate = findBestCandidate(media, media.video_versions);
 
       return FileBuilder.video({ downloadUrl: bestCandidate.url });
     }

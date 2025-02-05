@@ -95,6 +95,13 @@ export class Dinogram {
 
   private listenToUrlEntities() {
     this.bot.on("message:entities:url", async (ctx) => {
+      if (!this.isRequestAuthorized(ctx.message.from.id, ctx.message.chat.id)) {
+        ctx.reply(
+          "Sorry. You are not authorized to make requests to this bot.",
+        );
+        return;
+      }
+
       for (const entity of ctx.entities("url")) {
         const urlText: string = entity.text.trim();
 
@@ -127,6 +134,11 @@ export class Dinogram {
         }
       }
     });
+  }
+
+  private isRequestAuthorized(userId: number, chatId: number): boolean {
+    return config.WHITELIST.includes(userId) ||
+      config.WHITELIST.includes(chatId);
   }
 
   private listenToStopSignals() {

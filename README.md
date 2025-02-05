@@ -47,11 +47,15 @@ Extra bot features:
   [max character count limit](https://limits.tginfo.me/en).
 - Configurable reply behavior (⚙️:
   `WITH_CAPTION`,`SEND_AS_REPLY`,`SHOW_CAPTION_ABOVE_MEDIA`).
+- Restrict bot access by user ID or chat ID (⚙️`WHITELIST`).
 - Report errors to original chat (⚙️`SEND_ERRORS`) or pre-configured
   recipients(⚙️ `REPORT_ERRORS_TO`).
 - Configurable
   [Bot API server](https://core.telegram.org/bots/api#using-a-local-bot-api-server)
   URL (⚙️ `BOT_API_ROOT`). It can be used to increase max file size limit.
+
+> [!TIP]
+> You can use `@raw_data_bot` to get the user or chat ID
 
 ## 🔮 Future plans:
 

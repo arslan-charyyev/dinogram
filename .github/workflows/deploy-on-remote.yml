@@ -45,5 +45,5 @@ jobs:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
 
-      - name: 🧹 Prune Docker resources
-        run: docker system prune --force
+      - name: 🧹 Prune Docker images
+        run: docker image prune -a
