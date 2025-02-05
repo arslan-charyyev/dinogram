@@ -6,12 +6,12 @@ import { config } from "../../src/core/config.ts";
 
 Deno.test("Download Instagram video [auth]", async () => {
   await db.instagram.cookie.set(config.TEST_INSTAGRAM_COOKIE);
-  await test(1_134_110, "1e7e1f508c2bf0540b95b30d9c1b674209ff3001");
+  await test(391_145, "2a882df1e66500b9ddfbe025800dcf66fbf98e0f");
 });
 
 Deno.test("Download Instagram video [no auth]", async () => {
   await db.instagram.cookie.delete();
-  await test(1_134_110, "1e7e1f508c2bf0540b95b30d9c1b674209ff3001");
+  await test(391_145, "2a882df1e66500b9ddfbe025800dcf66fbf98e0f");
 });
 
 async function test(videoSize: number, videoHash: string) {
