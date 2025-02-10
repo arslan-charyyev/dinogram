@@ -97,7 +97,7 @@ export class Dinogram {
     this.bot.on("message:entities:url", async (ctx) => {
       if (!this.isRequestAuthorized(ctx.message.from.id, ctx.message.chat.id)) {
         ctx.reply(
-          "Sorry. You are not authorized to make requests to this bot.",
+          "🚫 Sorry. You are not authorized to make requests to this bot.",
         );
         return;
       }
@@ -137,7 +137,8 @@ export class Dinogram {
   }
 
   private isRequestAuthorized(userId: number, chatId: number): boolean {
-    return config.WHITELIST.includes(userId) ||
+    return config.WHITELIST.length === 0 ||
+      config.WHITELIST.includes(userId) ||
       config.WHITELIST.includes(chatId);
   }
 

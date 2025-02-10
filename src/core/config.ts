@@ -42,7 +42,8 @@ const Config = z.object({
   WHITELIST: intCsv
     .default("")
     .describe(
-      "A comma-separated list of user or chat IDs that are allowed to make requests",
+      "A comma-separated list of user or chat IDs that are allowed to make requests. " +
+        "If empty, then no restrictions apply.",
     ),
   BOT_API_ROOT: z
     .string()
