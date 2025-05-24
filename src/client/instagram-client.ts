@@ -1,24 +1,17 @@
-import { retry } from "@std/async";
-import { DOMParser } from "deno-dom";
+import { DOMParser, HTMLDocument } from "deno-dom";
+import { JSONPath } from "jsonpath-plus";
 import z from "zod";
 import { db } from "../core/db.ts";
-import { messages } from "../core/messages.ts";
+import { log } from "../core/log.ts";
 import { FileBuilder } from "../model/file.ts";
-import {
-  FilePost,
-  MultiFilePost,
-  PostBuilder,
-  SingleFilePost,
-} from "../model/post.ts";
+import { FilePost, PostBuilder } from "../model/post.ts";
 import { AppCookieJar } from "../utils/app-cookie-jar.ts";
 import { getUrlSegments } from "../utils/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
-import { log } from "../core/log.ts";
+import { retry } from "@std/async";
 
 export class InstagramClient extends PlatformClient {
   // TODO: How to extract Doc IDs dynamically?
-  private static REEL_DOC_ID = "23866501239623009";
-  private static POST_DOC_ID = "8845758582119845";
   private static IG_APP_ID = "936619743392459";
 
   override name = "Instagram";
@@ -28,7 +21,30 @@ export class InstagramClient extends PlatformClient {
 
     this.fetch = async (input, init) => {
       const headers: HeadersInit = {
-        "user-agent": "Chrome",
+        // Without this full set of headers,
+        // response body sometimes lacks required data.
+        "accept":
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "accept-language": "en-US,en;q=0.6",
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "priority": "u=0, i",
+        "sec-ch-ua":
+          '"Chromium";v="136", "Brave";v="136", "Not.A/Brand";v="99"',
+        "sec-ch-ua-full-version-list":
+          '"Chromium";v="136.0.0.0", "Brave";v="136.0.0.0", "Not.A/Brand";v="99.0.0.0"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-model": '""',
+        "sec-ch-ua-platform": '"Linux"',
+        "sec-ch-ua-platform-version": '"6.6.88"',
+        "sec-fetch-dest": "document",
+        "sec-fetch-mode": "navigate",
+        "sec-fetch-site": "none",
+        "sec-fetch-user": "?1",
+        "sec-gpc": "1",
+        "upgrade-insecure-requests": "1",
+        "user-agent":
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
       };
 
       const cookieString = await db.instagram.cookie.get();
@@ -43,10 +59,11 @@ export class InstagramClient extends PlatformClient {
       }
 
       const res = await fetch(input, {
+        referrerPolicy: "strict-origin-when-cross-origin",
         ...init,
         headers: {
           ...headers,
-          ...(init && "headers" in init ? init.headers : {}),
+          ...init?.headers,
         },
       });
 
@@ -60,16 +77,12 @@ export class InstagramClient extends PlatformClient {
     };
   }
 
-  /**
-   * It would appear that there two ways to fetch data,
-   * depending on authentication status of the client.
-   */
   override async fetchPost(): Promise<FilePost> {
-    const cookie = await db.instagram.cookie.get();
+    const hasCookie = !!await db.instagram.cookie.get();
 
-    if (cookie) {
+    if (hasCookie) {
       try {
-        return this.fetchPostAuthenticated();
+        return this.fetchPostImpl(true);
       } catch (error) {
         log.error(
           "Failed fetch instagram post authenticated. Trying anonymously. Error: ",
@@ -78,11 +91,15 @@ export class InstagramClient extends PlatformClient {
       }
     }
 
-    return this.fetchPostAnonymously();
+    return this.fetchPostImpl(false);
   }
 
-  private async fetchPostAuthenticated(): Promise<FilePost> {
-    const mediaInfo = await this.fetchMediaInfo();
+  /**
+   * It would appear that there two ways to fetch data,
+   * depending on authentication status of the client.
+   */
+  private async fetchPostImpl(authenticated: boolean): Promise<FilePost> {
+    const mediaInfo = await retry(() => this.fetchMediaInfo(authenticated));
     const mediaItem = mediaInfo.items[0];
 
     const description = mediaItem.caption?.text ?? "";
@@ -116,16 +133,33 @@ export class InstagramClient extends PlatformClient {
     }
   }
 
-  private async fetchMediaInfo(): Promise<z.infer<typeof MediaInfoSchema>> {
-    // Step 1. Get post html
-    const html = await retry(async () => {
-      const res = await this.fetch(this.pageUrl);
-
-      return res.text();
-    });
-
-    // Step 2. Find media info URL
+  private async fetchMediaInfo(
+    authenticated: boolean,
+  ): Promise<z.infer<typeof MediaInfoSchema>> {
+    // Fetch post html document
+    const res = await this.fetch(this.pageUrl);
+    const html = await res.text();
     const doc = new DOMParser().parseFromString(html, "text/html");
+
+    const mediaInfoJson = authenticated
+      ? await this.extractMediaInfoAuthenticated(doc)
+      : this.extractMediaInfoAnonymously(doc);
+
+    // Parse media info
+
+    const mediaInfo = MediaInfoSchema.safeParse(mediaInfoJson);
+
+    if (!mediaInfo.success) {
+      throw new Error("Failed to fetch media info");
+    }
+
+    return mediaInfo.data;
+  }
+
+  private async extractMediaInfoAuthenticated(
+    doc: HTMLDocument,
+  ): Promise<unknown> {
+    // Find media info URL
 
     // Example:
     // <meta property="al:ios:url" content="instagram://media?id=3445445944417076601" />
@@ -142,111 +176,34 @@ export class InstagramClient extends PlatformClient {
     const mediaInfoUrl =
       `https://www.instagram.com/api/v1/media/${mediaId}/info/`;
 
-    // Step 3. Fetch media info
-    const mediaInfoJson = await retry(async () => {
+    // Fetch media info
+    try {
       const res = await this.fetch(mediaInfoUrl);
       return res.json();
-    });
-
-    const mediaInfo = MediaInfoSchema.safeParse(mediaInfoJson);
-
-    if (!mediaInfo.success) {
-      throw new Error("Failed to fetch media info");
+    } catch (cause) {
+      throw new Error("Failed to fetch media info", { cause });
     }
-
-    return mediaInfo.data;
   }
 
-  private async fetchPostAnonymously(): Promise<FilePost> {
-    const pathSegments = getUrlSegments(this.pageUrl);
-    const shortcode = pathSegments.at(1);
-    if (!shortcode) throw new Error("No shortcode found in URL");
-
-    if (pathSegments.at(0) === "reel") {
-      return await this.fetchSingleFilePost(shortcode);
-    } else if (pathSegments.at(0) === "p") {
-      return await this.fetchMultiFilePost(shortcode);
-    }
-
-    throw new Error(messages.INVALID_LINK);
-  }
-
-  private async fetchSingleFilePost(
-    shortcode: string,
-  ): Promise<SingleFilePost> {
-    const reel = await this.fetchParsedQuery(
-      ReelSchema,
-      InstagramClient.REEL_DOC_ID,
-      shortcode,
+  private extractMediaInfoAnonymously(
+    doc: HTMLDocument,
+  ): Promise<unknown> {
+    const scripts = doc.querySelectorAll(
+      'script[type="application/json"][data-sjs]',
     );
 
-    if (!reel.data.xdt_shortcode_media) {
-      throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
+    const key = "xdt_api__v1__media__shortcode__web_info";
+
+    for (const script of scripts) {
+      if (!script.textContent.includes(key)) continue;
+
+      const json = JSON.parse(script.textContent);
+      const mediaInfoJson = JSONPath({ path: `\$..['${key}']`, json })[0];
+
+      return mediaInfoJson;
     }
 
-    const { edge_media_to_caption, video_url } = reel.data.xdt_shortcode_media;
-
-    return PostBuilder.single({
-      description: edge_media_to_caption.edges.at(0)?.node.text ?? "",
-      pageUrl: this.pageUrl,
-      file: FileBuilder.video({
-        downloadUrl: video_url,
-      }),
-    });
-  }
-
-  private async fetchMultiFilePost(shortcode: string): Promise<MultiFilePost> {
-    const post = await this.fetchParsedQuery(
-      PostSchema,
-      InstagramClient.POST_DOC_ID,
-      shortcode,
-    );
-
-    if (!post.data.xdt_shortcode_media) {
-      throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
-    }
-
-    const { edge_media_to_caption, edge_sidecar_to_children } =
-      post.data.xdt_shortcode_media;
-
-    const files = edge_sidecar_to_children.edges.map(({ node }) =>
-      node.is_video
-        ? FileBuilder.video({ downloadUrl: node.video_url })
-        : FileBuilder.photo({ downloadUrl: node.display_url })
-    );
-
-    const description = edge_media_to_caption.edges.at(0)?.node.text ?? "";
-
-    return PostBuilder.multi({
-      description,
-      pageUrl: this.pageUrl,
-      files,
-    });
-  }
-
-  private fetchParsedQuery<Output>(
-    schema: z.Schema<Output>,
-    docId: string,
-    shortCode: string,
-  ): Promise<Output> {
-    return retry(async () => {
-      const response = await fetch("https://www.instagram.com/graphql/query", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          variables: JSON.stringify({ shortcode: shortCode }),
-          doc_id: docId,
-        }),
-      });
-
-      if (!response.ok) throw Error(response.statusText);
-
-      const json = await response.json();
-
-      return schema.parse(json);
-    });
+    throw new Error("No media info data found");
   }
 
   static override supportsLink(url: URL): boolean {
@@ -258,63 +215,6 @@ export class InstagramClient extends PlatformClient {
     );
   }
 }
-
-const ReelSchema = z.object({
-  status: z.string(),
-  data: z.object({
-    xdt_shortcode_media: z
-      .object({
-        is_video: z.literal(true),
-        video_url: z.string(),
-        edge_media_to_caption: z.object({
-          edges: z.array(
-            z.object({
-              node: z.object({
-                text: z.string(),
-              }),
-            }),
-          ),
-        }),
-      })
-      .nullable(),
-  }),
-});
-
-const PostSchema = z.object({
-  status: z.string(),
-  data: z.object({
-    xdt_shortcode_media: z
-      .object({
-        is_video: z.literal(false),
-        edge_sidecar_to_children: z.object({
-          edges: z.array(
-            z.object({
-              node: z.discriminatedUnion("is_video", [
-                z.object({
-                  is_video: z.literal(false),
-                  display_url: z.string().url(),
-                }),
-                z.object({
-                  is_video: z.literal(true),
-                  video_url: z.string().url(),
-                }),
-              ]),
-            }),
-          ),
-        }),
-        edge_media_to_caption: z.object({
-          edges: z.array(
-            z.object({
-              node: z.object({
-                text: z.string(),
-              }),
-            }),
-          ),
-        }),
-      })
-      .nullable(),
-  }),
-});
 
 enum MediaType {
   Image = 1,
@@ -360,7 +260,6 @@ const CarouselMediaSchema = z.object({
 });
 
 const MediaInfoSchema = z.object({
-  status: z.literal("ok"),
   items: z.array(
     z.discriminatedUnion("media_type", [
       ImageMediaSchema,

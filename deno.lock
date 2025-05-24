@@ -21,6 +21,7 @@
     "jsr:@std/path@~0.213.1": "0.213.1",
     "npm:@types/node@*": "22.5.4",
     "npm:happy-dom@15.11.6": "15.11.6",
+    "npm:jsonpath-plus@10.3.0": "10.3.0_jsep@1.4.0",
     "npm:zod@3.23.8": "3.23.8"
   },
   "jsr": {
@@ -101,6 +102,18 @@
     }
   },
   "npm": {
+    "@jsep-plugin/assignment@1.3.0_jsep@1.4.0": {
+      "integrity": "sha512-VVgV+CXrhbMI3aSusQyclHkenWSAm95WaiKrMxRFam3JSUiIaQjoMIw2sEs/OX4XifnqeQUN4DYbJjlA8EfktQ==",
+      "dependencies": [
+        "jsep"
+      ]
+    },
+    "@jsep-plugin/regex@1.0.4_jsep@1.4.0": {
+      "integrity": "sha512-q7qL4Mgjs1vByCaTnDFcBnV9HS7GVPJX5vyVoCgZHNSC9rjwIlmbXG5sUuorR5ndfHAIlJ8pVStxvjXHbNvtUg==",
+      "dependencies": [
+        "jsep"
+      ]
+    },
     "@types/node@22.5.4": {
       "integrity": "sha512-FDuKUJQm/ju9fT/SeX/6+gBzoPzlVCzfzmGkwKvRHQVxi4BntVbyIwf6a4Xn62mrvndLiml6z/UBXIdEVjQLXg==",
       "dependencies": [
@@ -116,6 +129,17 @@
         "entities",
         "webidl-conversions",
         "whatwg-mimetype"
+      ]
+    },
+    "jsep@1.4.0": {
+      "integrity": "sha512-B7qPcEVE3NVkmSJbaYxvv4cHkVW7DQsZz13pUMrfS8z8Q/BuShN+gcTXrUlPiGqM2/t/EEaI030bpxMqY8gMlw=="
+    },
+    "jsonpath-plus@10.3.0_jsep@1.4.0": {
+      "integrity": "sha512-8TNmfeTCk2Le33A3vRRwtuworG/L5RrgMvdjhKZxvyShO+mBu2fP50OWUjRLNtvw344DdDarFh9buFAZs5ujeA==",
+      "dependencies": [
+        "@jsep-plugin/assignment",
+        "@jsep-plugin/regex",
+        "jsep"
       ]
     },
     "undici-types@6.19.8": {
@@ -237,6 +261,7 @@
       "jsr:@std/log@0.224.11",
       "jsr:@std/path@1.0.8",
       "npm:happy-dom@15.11.6",
+      "npm:jsonpath-plus@10.3.0",
       "npm:zod@3.23.8"
     ]
   }

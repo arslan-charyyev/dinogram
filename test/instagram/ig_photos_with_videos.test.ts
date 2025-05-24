@@ -11,7 +11,7 @@ Deno.test("Download Instagram photos with videos [auth]", async () => {
 
 Deno.test("Download Instagram photos with videos [anon]", async () => {
   await db.instagram.cookie.delete();
-  await test(163_171, "2eb0a0d26ab9aeb9f4785c8ffb3c859ff86c738b");
+  await test(188_712, "648b8125c6f4eae262ae51084947471a693d1f7c");
 });
 
 async function test(firstImageSize: number, firstImageHash: string) {

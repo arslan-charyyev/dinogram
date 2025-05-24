@@ -4,6 +4,7 @@ import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 import { db } from "../../src/core/db.ts";
 import { config } from "../../src/core/config.ts";
 
+// TODO: Uncomment this
 Deno.test("Download Instagram photos [auth]", async () => {
   await db.instagram.cookie.set(config.TEST_INSTAGRAM_COOKIE);
   await test(158_203, "2f90091a1aebaff36eff315ef49a5c3492605093");
@@ -11,7 +12,7 @@ Deno.test("Download Instagram photos [auth]", async () => {
 
 Deno.test("Download Instagram photos [anon]", async () => {
   await db.instagram.cookie.delete();
-  await test(130_327, "d5b249ccc2e33285395f66ffc61c3e5e56b198b5");
+  await test(158_203, "2f90091a1aebaff36eff315ef49a5c3492605093");
 });
 
 async function test(firstImageSize: number, firstImageHash: string) {
