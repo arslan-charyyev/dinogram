@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+
 export const test_url = {
   tiktok: {
     video: "https://www.tiktok.com/@blackscreen.__/video/6904103492093283589",
@@ -17,10 +19,12 @@ export const test_url = {
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
  */
-export async function computeSHA1(array: Uint8Array): Promise<string> {
+export async function computeSHA1(
+  array: Uint8Array,
+): Promise<string> {
   const hashBuffer = await crypto.subtle.digest(
     "SHA-1",
-    array.buffer,
+    array,
   );
   const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
   const hashHex = hashArray

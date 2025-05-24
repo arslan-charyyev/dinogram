@@ -13,6 +13,7 @@ import {
 import { AppCookieJar } from "../utils/app-cookie-jar.ts";
 import { getUrlSegments } from "../utils/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
+import { log } from "../core/log.ts";
 
 export class InstagramClient extends PlatformClient {
   // TODO: How to extract Doc IDs dynamically?
@@ -67,10 +68,17 @@ export class InstagramClient extends PlatformClient {
     const cookie = await db.instagram.cookie.get();
 
     if (cookie) {
-      return this.fetchPostAuthenticated();
-    } else {
-      return this.fetchPostAnonymously();
+      try {
+        return this.fetchPostAuthenticated();
+      } catch (error) {
+        log.error(
+          "Failed fetch instagram post authenticated. Trying anonymously. Error: ",
+          error,
+        );
+      }
     }
+
+    return this.fetchPostAnonymously();
   }
 
   private async fetchPostAuthenticated(): Promise<FilePost> {

@@ -1,6 +1,6 @@
 # 🦕 Dinogram 📨
 
-<div><img src="./assets/img/logo.jpg" height=200/></div>
+<p align="center"><img src="./assets/img/logo.jpg" height=200/></p>
 
 **Dinogram** is a Telegram bot that can download public videos & photos from
 social media platforms (TikTok & Instagram) and send them to a Telegram chat. To
@@ -135,7 +135,7 @@ Steps:
 ### Useful commands
 
 ```sh
-deno task cache-deps # Download all dependencies
+deno task deps:cache # Download all dependencies
 ```
 
 ```sh
@@ -143,7 +143,7 @@ deno task main
 ```
 
 ```sh
-deno task check-issues # Check project issues
+deno task issues:check # Check project issues
 ```
 
 ```sh

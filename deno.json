@@ -19,18 +19,23 @@
     "zod": "npm:zod@3.23.8"
   },
   "tasks": {
-    "check-fmt": "deno fmt --check",
-    "check-lint": "deno lint",
-    "check-ts": "deno check --quiet src test --allow-import",
-    "check-issues": "deno task check-fmt ; deno task check-lint ; deno task check-ts",
-    "check-test": "deno task check-issues ; deno task test",
-    "check-deps": "deno run -A jsr:@check/deps",
-    "cache-deps": "deno install --allow-import",
-    "main": "deno --allow-read --allow-write --allow-net --allow-env --allow-import ./src/main.ts",
-    "test": "deno test -A"
+    "format:check": "deno fmt --check",
+    "format:fix": "deno fmt",
+    "lint:check": "deno lint",
+    "ts:check": "deno check --quiet src test --allow-import",
+    "issues:check": "deno task format:check ; deno task lint:check ; deno task ts:check",
+    "deps:check": "deno run -A jsr:@check/deps",
+    "deps:cache": "deno install --allow-import",
+    "test:all": "deno test -A",
+    "test:tt": "deno test test/tiktok -A --filter auth",
+    "test:ig:auth": "deno test test/instagram -A --filter auth",
+    "test:ig:anon": "deno test test/instagram -A --filter anon",
+    "main": "deno --allow-read --allow-write --allow-net --allow-env --allow-import ./src/main.ts"
   },
   "exclude": [
     "assets/**"
   ],
-  "unstable": ["kv"]
+  "unstable": [
+    "kv"
+  ]
 }

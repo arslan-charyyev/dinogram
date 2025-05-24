@@ -5,9 +5,6 @@
   "editor.defaultFormatter": "denoland.vscode-deno",
   "editor.tabSize": 2,
   "cSpell.files": ["./**/*"],
-  "[json,typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
   "cSpell.words": [
     "abtest",
     "acrawler",
@@ -35,6 +32,9 @@
   ],
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
   },
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
