@@ -11,7 +11,7 @@ import { PlatformClient } from "./platform-client.ts";
 import { retry } from "@std/async";
 
 export class InstagramClient extends PlatformClient {
-  // TODO: How to extract Doc IDs dynamically?
+  // Would be better to extract this Doc IDs dynamically
   private static IG_APP_ID = "936619743392459";
 
   override name = "Instagram";
@@ -24,7 +24,7 @@ export class InstagramClient extends PlatformClient {
         // Without this full set of headers,
         // response body sometimes lacks required data.
         "accept":
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+          "text/html,application/json,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "accept-language": "en-US,en;q=0.6",
         "cache-control": "no-cache",
         "pragma": "no-cache",
@@ -85,7 +85,8 @@ export class InstagramClient extends PlatformClient {
         return this.fetchPostImpl(true);
       } catch (error) {
         log.error(
-          "Failed fetch instagram post authenticated. Trying anonymously. Error: ",
+          "Failed to fetch instagram post with authentication. " +
+            "Now trying anonymously. Error: ",
           error,
         );
       }
@@ -136,8 +137,9 @@ export class InstagramClient extends PlatformClient {
   private async fetchMediaInfo(
     authenticated: boolean,
   ): Promise<z.infer<typeof MediaInfoSchema>> {
-    // Fetch post html document
-    const res = await this.fetch(this.pageUrl);
+    // Fetch post's html document
+
+    const res = await this.fetchWithBypass(this.pageUrl, authenticated);
     const html = await res.text();
     const doc = new DOMParser().parseFromString(html, "text/html");
 
@@ -173,12 +175,13 @@ export class InstagramClient extends PlatformClient {
     const mediaId = metaUrl.searchParams.get("id");
     if (!mediaId) throw new Error(`Media ID not found in Meta URL ${metaUrl}`);
 
-    const mediaInfoUrl =
-      `https://www.instagram.com/api/v1/media/${mediaId}/info/`;
+    const mediaInfoUrl = new URL(
+      `https://www.instagram.com/api/v1/media/${mediaId}/info/`,
+    );
 
     // Fetch media info
     try {
-      const res = await this.fetch(mediaInfoUrl);
+      const res = await this.fetchWithBypass(mediaInfoUrl, true);
       return res.json();
     } catch (cause) {
       throw new Error("Failed to fetch media info", { cause });
@@ -204,6 +207,73 @@ export class InstagramClient extends PlatformClient {
     }
 
     throw new Error("No media info data found");
+  }
+
+  private async fetchWithBypass(
+    url: URL,
+    authenticated: boolean,
+    attemptsLeft: number = 3,
+  ): Promise<Response> {
+    if (attemptsLeft <= 0) {
+      throw new Error("Failed to fetch with bypass");
+    }
+
+    const res = await this.fetch(url);
+
+    // Check if we ran into challenge request and attempt to bypass it
+    if (res.redirected && getUrlSegments(new URL(res.url))[0] === "challenge") {
+      if (!authenticated) {
+        throw new Error("Unexpected anonymous challenge request");
+      }
+
+      const success = await this.bypassScrapingChallenge();
+      if (!success) {
+        throw new Error("Failed to pass scraping challenge");
+      }
+
+      log.info("Passed Instagram challenge");
+
+      return this.fetchWithBypass(url, authenticated, attemptsLeft - 1);
+    } else {
+      return res;
+    }
+  }
+
+  /**
+   * Attempts to pass scraping challenge
+   *
+   * @returns boolean indicating if bypass was successful
+   */
+  private async bypassScrapingChallenge() {
+    const challengeRes = await this.fetch(
+      // Not sure if the __coig_challenged param is required
+      "https://www.instagram.com/api/v1/challenge/web/?__coig_challenged=1",
+    );
+
+    const challengeJson = await challengeRes.json();
+    const challengeContext = challengeJson.challenge_context;
+
+    const takeChallengeRes = await this.fetch(
+      "https://www.instagram.com/api/v1/bloks/apps/com.instagram.challenge.navigation.take_challenge/",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          challenge_context: challengeContext,
+          // Not sure if these are required
+          has_follow_up_screens: "false",
+          nest_data_manifest: "true",
+        }),
+        // Not sure if these are required
+        "referrer": this.pageUrl.toString(),
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "credentials": "include",
+      },
+    );
+
+    return takeChallengeRes.ok;
   }
 
   static override supportsLink(url: URL): boolean {
