@@ -20,7 +20,7 @@
     "jsr:@std/path@1.0.8": "1.0.8",
     "jsr:@std/path@~0.213.1": "0.213.1",
     "npm:@types/node@*": "22.5.4",
-    "npm:happy-dom@15.11.6": "15.11.6",
+    "npm:happy-dom@17.4.7": "17.4.7",
     "npm:jsonpath-plus@10.3.0": "10.3.0_jsep@1.4.0",
     "npm:zod@3.23.8": "3.23.8"
   },
@@ -120,13 +120,9 @@
         "undici-types"
       ]
     },
-    "entities@4.5.0": {
-      "integrity": "sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw=="
-    },
-    "happy-dom@15.11.6": {
-      "integrity": "sha512-elX7iUTu+5+3b2+NGQc0L3eWyq9jKhuJJ4GpOMxxT/c2pg9O3L5H3ty2VECX0XXZgRmmRqXyOK8brA2hDI6LsQ==",
+    "happy-dom@17.4.7": {
+      "integrity": "sha512-NZypxadhCiV5NT4A+Y86aQVVKQ05KDmueja3sz008uJfDRwz028wd0aTiJPwo4RQlvlz0fznkEEBBCHVNWc08g==",
       "dependencies": [
-        "entities",
         "webidl-conversions",
         "whatwg-mimetype"
       ]
@@ -260,7 +256,7 @@
       "jsr:@std/dotenv@0.225.2",
       "jsr:@std/log@0.224.11",
       "jsr:@std/path@1.0.8",
-      "npm:happy-dom@15.11.6",
+      "npm:happy-dom@17.4.7",
       "npm:jsonpath-plus@10.3.0",
       "npm:zod@3.23.8"
     ]

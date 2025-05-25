@@ -15,7 +15,7 @@
     "deno-dom": "jsr:@b-fuze/deno-dom@0.1.48",
     "grammy": "https://deno.land/x/grammy@v1.30.0/mod.ts",
     "grammy/core/api": "https://deno.land/x/grammy@v1.30.0/core/api.ts",
-    "happy-dom": "npm:happy-dom@15.11.6",
+    "happy-dom": "npm:happy-dom@17.4.7",
     "jsonpath-plus": "npm:jsonpath-plus@10.3.0",
     "zod": "npm:zod@3.23.8"
   },
