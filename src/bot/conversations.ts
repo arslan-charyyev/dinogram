@@ -29,6 +29,9 @@ async function setInstagramCookie(
   const jar = new AppCookieJar(message.text);
   const parsedCookie = jar.parse();
   if (parsedCookie.success) {
+    await conversation.external(() =>
+      db.instagram.cookie.set(jar.getCookieString())
+    );
     await db.instagram.cookie.set(message.text);
     await ctx.reply(`Instagram cookie updated.`);
   } else {

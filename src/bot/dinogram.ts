@@ -42,7 +42,9 @@ export class Dinogram {
     this.bot.use(hydrateReply);
     this.bot.use(session({ initial: () => ({}) }));
     this.bot.use(conversations());
-    this.bot.use(createConversation(dinoConversations.setInstagramCookie));
+    this.bot.use(createConversation(dinoConversations.setInstagramCookie, {
+      plugins: [hydrateReply],
+    }));
 
     this.bot.use(menus.settings);
     for (const command in commands) {
