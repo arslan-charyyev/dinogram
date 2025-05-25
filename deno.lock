@@ -22,7 +22,7 @@
     "npm:@types/node@*": "22.12.0",
     "npm:happy-dom@17.4.7": "17.4.7",
     "npm:jsonpath-plus@10.3.0": "10.3.0_jsep@1.4.0",
-    "npm:zod@3.23.8": "3.23.8"
+    "npm:zod@3.25.28": "3.25.28"
   },
   "jsr": {
     "@b-fuze/deno-dom@0.1.48": {
@@ -147,8 +147,8 @@
     "whatwg-mimetype@3.0.0": {
       "integrity": "sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q=="
     },
-    "zod@3.23.8": {
-      "integrity": "sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g=="
+    "zod@3.25.28": {
+      "integrity": "sha512-/nt/67WYKnr5by3YS7LroZJbtcCBurDKKPBPWWzaxvVCGuG/NOsiKkrjoOhI8mJ+SQUXEbUzeB3S+6XDUEEj7Q=="
     }
   },
   "redirects": {
@@ -288,7 +288,7 @@
       "jsr:@std/path@1.0.8",
       "npm:happy-dom@17.4.7",
       "npm:jsonpath-plus@10.3.0",
-      "npm:zod@3.23.8"
+      "npm:zod@3.25.28"
     ]
   }
 }

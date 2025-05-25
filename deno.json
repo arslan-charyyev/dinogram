@@ -17,7 +17,7 @@
     "grammy/core/api": "https://deno.land/x/grammy@v1.30.0/core/api.ts",
     "happy-dom": "npm:happy-dom@17.4.7",
     "jsonpath-plus": "npm:jsonpath-plus@10.3.0",
-    "zod": "npm:zod@3.23.8"
+    "zod": "npm:zod@3.25.28"
   },
   "tasks": {
     "format:check": "deno fmt --check",
