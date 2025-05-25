@@ -1,4 +1,4 @@
-name: 🦕 Deploy on the remote VM
+name: 🦕 Deploy to a remote Docker host
 
 on:
   workflow_dispatch: # Allow the workflow to be triggered manually from the GitHub UI
