@@ -1,6 +1,13 @@
 name: 🔍 Check code issues
 on:
   push:
+    paths:
+      - .github/workflows/check-issues.yml
+      - assets/**
+      - src/**
+      - test/**
+      - deno.*
+      - devbox.*
 
 jobs:
   check-code-issues:
