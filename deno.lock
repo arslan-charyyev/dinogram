@@ -1,7 +1,7 @@
 {
   "version": "4",
   "specifiers": {
-    "jsr:@b-fuze/deno-dom@0.1.48": "0.1.48",
+    "jsr:@b-fuze/deno-dom@0.1.49": "0.1.49",
     "jsr:@denosaurs/plug@1.0.3": "1.0.3",
     "jsr:@jd1378/another-cookiejar@5.0.7": "5.0.7",
     "jsr:@std/assert@1.0.13": "1.0.13",
@@ -25,8 +25,8 @@
     "npm:zod@3.25.28": "3.25.28"
   },
   "jsr": {
-    "@b-fuze/deno-dom@0.1.48": {
-      "integrity": "bf5b591aef2e9e9c59adfcbb93a9ecd45bab5b7c8263625beafa5c8f1662e7da",
+    "@b-fuze/deno-dom@0.1.49": {
+      "integrity": "45c40175fdd1e74ab2d4b54c4fdaabbad6e5b76ee28df12a48e076b3fa7901a9",
       "dependencies": [
         "jsr:@denosaurs/plug"
       ]
@@ -279,7 +279,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@b-fuze/deno-dom@0.1.48",
+      "jsr:@b-fuze/deno-dom@0.1.49",
       "jsr:@jd1378/another-cookiejar@5.0.7",
       "jsr:@std/assert@1.0.13",
       "jsr:@std/async@1.0.13",

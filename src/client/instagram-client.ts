@@ -1,4 +1,4 @@
-import { DOMParser, HTMLDocument } from "deno-dom";
+import { DOMParser, HTMLDocument } from "@b-fuze/deno-dom";
 import { JSONPath } from "jsonpath-plus";
 import z from "zod";
 import { db } from "../core/db.ts";

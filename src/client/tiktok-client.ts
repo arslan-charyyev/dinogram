@@ -1,6 +1,6 @@
 import { retry } from "@std/async";
 import { CookieJar, wrapFetch } from "another-cookiejar";
-import { DOMParser } from "deno-dom";
+import { DOMParser } from "@b-fuze/deno-dom";
 import { z } from "zod";
 import { Assets } from "../core/assets.ts";
 import { messages } from "../core/messages.ts";
