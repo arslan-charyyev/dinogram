@@ -1,18 +1,18 @@
+name: dinogram
+
 services:
-  dinogram:
+  bot:
     build: .
-    container_name: dinogram
     env_file: .env
     depends_on: [telegram-bot-api]
     volumes:
-      - dinogram-data:/app/data/
+      - bot-data:/app/data/
     environment:
       BOT_API_ROOT: http://telegram-bot-api:8081
 
   telegram-bot-api:
-    image: aiogram/telegram-bot-api:7.10
-    container_name: telegram-bot-api
+    image: aiogram/telegram-bot-api:9.0
     env_file: .env
 
 volumes:
-  dinogram-data:
+  bot-data:
