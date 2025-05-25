@@ -6,7 +6,7 @@ import {
 } from "@grammyjs/conversations";
 import { run } from "@grammyjs/runner";
 import { retry } from "@std/async/retry";
-import { Bot, Context, session } from "grammy";
+import { Bot, type Context, session, type SessionFlavor } from "grammy";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { reportError } from "../utils/reports.ts";
@@ -16,7 +16,11 @@ import { menus } from "./menus.ts";
 import { UrlHandler } from "./url-handler.ts";
 import { hydrateReply, ParseModeFlavor } from "@grammyjs/parse-mode";
 
-export type DinoContext = ParseModeFlavor<Context & ConversationFlavor>;
+export type DinoParseModeContext =
+  & ParseModeFlavor<Context>
+  & SessionFlavor<Record<string, unknown>>;
+
+export type DinoContext = ConversationFlavor<DinoParseModeContext>;
 
 export class Dinogram {
   bot: Bot<DinoContext>;

@@ -1,14 +1,16 @@
-import { Conversation } from "@grammyjs/conversations";
+import type { Conversation } from "@grammyjs/conversations";
 import { code, fmt, pre } from "@grammyjs/parse-mode";
 import { db } from "../core/db.ts";
 import { AppCookieJar } from "../utils/app-cookie-jar.ts";
-import { DinoContext } from "./dinogram.ts";
+import type { DinoContext, DinoParseModeContext } from "./dinogram.ts";
 
-type DinoConversation = Conversation<DinoContext>;
+type DinoConversationContext = DinoParseModeContext;
+
+type DinoConversation = Conversation<DinoContext, DinoConversationContext>;
 
 async function setInstagramCookie(
   conversation: DinoConversation,
-  ctx: DinoContext,
+  ctx: DinoConversationContext,
 ) {
   await ctx.replyFmt(fmt([
     "Instagram cookie should contain at least 2 keys: ",
