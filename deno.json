@@ -1,7 +1,7 @@
 {
   "imports": {
     "@grammyjs/auto-retry": "https://deno.land/x/grammy_auto_retry@v2.0.2/mod.ts",
-    "@grammyjs/parse-mode": "https://deno.land/x/grammy_parse_mode@1.10.0/mod.ts",
+    "@grammyjs/parse-mode": "https://deno.land/x/grammy_parse_mode@1.11.1/mod.ts",
     "@grammyjs/runner": "https://deno.land/x/grammy_runner@v2.0.3/mod.ts",
     "@grammyjs/types": "https://deno.land/x/grammy_types@v3.15.0/mod.ts",
     "@grammyjs/menu": "https://deno.land/x/grammy_menu@v1.3.0/mod.ts",
