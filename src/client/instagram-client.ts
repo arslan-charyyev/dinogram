@@ -3,7 +3,7 @@ import { JSONPath } from "jsonpath-plus";
 import z from "zod";
 import { db } from "../core/db.ts";
 import { log } from "../core/log.ts";
-import { FileBuilder } from "../model/file.ts";
+import { FileBuilder, type MediaFile } from "../model/file.ts";
 import { FilePost, PostBuilder } from "../model/post.ts";
 import { AppCookieJar } from "../utils/app-cookie-jar.ts";
 import { getUrlSegments } from "../utils/utils.ts";
@@ -356,7 +356,7 @@ function findBestCandidate(
 
 function createMediaFile(
   media: z.infer<typeof ImageMediaSchema> | z.infer<typeof VideoMediaSchema>,
-) {
+): MediaFile {
   switch (media.media_type) {
     case MediaType.Image: {
       const bestCandidate = findBestCandidate(

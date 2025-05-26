@@ -6,7 +6,7 @@ import { config } from "../../src/core/config.ts";
 
 Deno.test("Download Instagram video [auth]", async () => {
   await db.instagram.cookie.set(config.TEST_INSTAGRAM_COOKIE);
-  await test(1_162_274, "5d8891b785bd077e46c3cc0074064ec6b99fd2a0");
+  await test(391_145, "2a882df1e66500b9ddfbe025800dcf66fbf98e0f");
 });
 
 Deno.test("Download Instagram video [anon]", async () => {
