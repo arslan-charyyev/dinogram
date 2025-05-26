@@ -8,7 +8,6 @@ import { FilePost, PostBuilder } from "../model/post.ts";
 import { AppCookieJar } from "../utils/app-cookie-jar.ts";
 import { getUrlSegments } from "../utils/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
-import { retry } from "@std/async";
 
 export class InstagramClient extends PlatformClient {
   // Would be better to extract this Doc IDs dynamically
@@ -23,8 +22,7 @@ export class InstagramClient extends PlatformClient {
       const headers: HeadersInit = {
         // Without this full set of headers,
         // response body sometimes lacks required data.
-        "accept":
-          "text/html,application/json,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "accept": "text/html,application/json,application/xhtml+xml",
         "accept-language": "en-US,en;q=0.6",
         "cache-control": "no-cache",
         "pragma": "no-cache",
@@ -100,7 +98,7 @@ export class InstagramClient extends PlatformClient {
    * depending on authentication status of the client.
    */
   private async fetchPostImpl(authenticated: boolean): Promise<FilePost> {
-    const mediaInfo = await retry(() => this.fetchMediaInfo(authenticated));
+    const mediaInfo = await this.fetchMediaInfo(authenticated);
     const mediaItem = mediaInfo.items[0];
 
     const description = mediaItem.caption?.text ?? "";
@@ -166,7 +164,9 @@ export class InstagramClient extends PlatformClient {
     // Example:
     // <meta property="al:ios:url" content="instagram://media?id=3445445944417076601" />
     const metaElement = doc.querySelector('head > meta[property="al:ios:url"]');
-    if (!metaElement) throw new Error("Meta property al:ios:url not found");
+    if (!metaElement) {
+      throw new Error("Invalid link. Meta property al:ios:url not found.");
+    }
 
     const metaContent = metaElement.getAttribute("content");
     if (!metaContent) throw new Error("Meta content not found");
@@ -228,10 +228,10 @@ export class InstagramClient extends PlatformClient {
 
       const success = await this.bypassScrapingChallenge();
       if (!success) {
-        throw new Error("Failed to pass scraping challenge");
+        throw new Error("Failed to bypass scraping challenge");
       }
 
-      log.info("Passed Instagram challenge");
+      log.info("Attempted to bypass Instagram challenge");
 
       return this.fetchWithBypass(url, authenticated, attemptsLeft - 1);
     } else {
@@ -240,7 +240,9 @@ export class InstagramClient extends PlatformClient {
   }
 
   /**
-   * Attempts to pass scraping challenge
+   * Attempts to pass scraping challenge.
+   * In practice, this only works a few times,
+   * before Instagram starts requiring Captcha.
    *
    * @returns boolean indicating if bypass was successful
    */

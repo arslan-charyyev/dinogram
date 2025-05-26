@@ -3,16 +3,22 @@ import { Context } from "grammy";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { truncate } from "./utils.ts";
+import { RetryError } from "@std/async";
 
 export async function reportError(
   ctx: Context,
   error: string,
-  cause?: Error,
+  cause?: Error | string,
 ) {
   const message = ctx.message?.text;
 
+  // Unwrap cause from retry errors
+  if (cause instanceof RetryError && cause.cause instanceof Error) {
+    cause = cause.cause;
+  }
+
   const errorDetails = {
-    cause: cause?.message,
+    cause: cause instanceof Error ? cause.message : cause,
     message,
   };
 

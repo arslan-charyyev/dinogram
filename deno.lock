@@ -19,6 +19,7 @@
     "jsr:@std/path@0.213.1": "0.213.1",
     "jsr:@std/path@1.0.9": "1.0.9",
     "jsr:@std/path@~0.213.1": "0.213.1",
+    "npm:@types/node@*": "22.12.0",
     "npm:happy-dom@17.4.7": "17.4.7",
     "npm:jsonpath-plus@10.3.0": "10.3.0_jsep@1.4.0",
     "npm:zod@3.25.28": "3.25.28"
@@ -113,6 +114,12 @@
         "jsep"
       ]
     },
+    "@types/node@22.12.0": {
+      "integrity": "sha512-Fll2FZ1riMjNmlmJOdAyY5pUbkftXslB5DgEzlIuNaiWhXd00FhWxVC/r4yV/4wBb9JfImTu+jiSvXTkJ7F/gA==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
     "happy-dom@17.4.7": {
       "integrity": "sha512-NZypxadhCiV5NT4A+Y86aQVVKQ05KDmueja3sz008uJfDRwz028wd0aTiJPwo4RQlvlz0fznkEEBBCHVNWc08g==",
       "dependencies": [
@@ -130,6 +137,9 @@
         "@jsep-plugin/regex",
         "jsep"
       ]
+    },
+    "undici-types@6.20.0": {
+      "integrity": "sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg=="
     },
     "webidl-conversions@7.0.0": {
       "integrity": "sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g=="
