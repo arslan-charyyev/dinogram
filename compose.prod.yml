@@ -9,9 +9,10 @@ services:
     volumes:
       - bot-data:/app/data/
     environment:
-      BOT_TOKEN: ${BOT_TOKEN}
       BOT_ADMINS: ${BOT_ADMINS}
       BOT_API_ROOT: http://telegram-bot-api:8081
+      BOT_TOKEN: ${BOT_TOKEN}
+      INSTAGRAM_ENABLED: false
 
   telegram-bot-api:
     image: aiogram/telegram-bot-api:latest
