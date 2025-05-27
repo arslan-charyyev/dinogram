@@ -1,5 +1,7 @@
 # 🦕 Dinogram 📨
 
+[![Common Changelog](https://common-changelog.org/badge.svg)](https://common-changelog.org)
+
 <p align="center"><img src="./assets/img/logo.jpg" height=200/></p>
 
 **Dinogram** is a Telegram bot that can download public videos & photos from
