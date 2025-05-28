@@ -1,5 +1,7 @@
 # 🦕 Dinogram 📨
 
+[![🚀 Build & Release](https://github.com/arslan-charyyev/dinogram/actions/workflows/publish-release.yml/badge.svg)](https://github.com/arslan-charyyev/dinogram/actions/workflows/publish-release.yml)
+[![GHCR](https://img.shields.io/badge/GHCR-arslan--charyyev%2Fdinogram-%23ab7df8?logo=github)](https://github.com/arslan-charyyev/dinogram/pkgs/container/dinogram)
 [![Common Changelog](https://common-changelog.org/badge.svg)](https://common-changelog.org)
 
 <p align="center"><img src="./assets/img/logo.jpg" height=200/></p>
@@ -149,7 +151,7 @@ deno task issues:check # Check project issues
 ```
 
 ```sh
-deno task test # Run all tests
+deno task test:all # Run all tests
 ```
 
 The following builds the Dinogram docker image and starts corresponding
@@ -165,8 +167,11 @@ Most libraries are fetched from `jsr` or `npm`. However, there are some
 exceptions:
 
 - `grammy` libraries are sourced from deno-land because sourcing them from npm
-  breaks their typings. Additionally, it is pinned to version `1.30.0` at the
-  moment, since its plugins have not been updated to make use of latest version.
+  breaks their typings.
+
+## 📜 Changelog
+
+See [CHANGELOG.md](CHANGELOG.md)
 
 ## 🙏🏻 Acknowledgements
 
@@ -176,4 +181,4 @@ exceptions:
 
 ## ⚖️ License
 
-[MIT](./LICENSE) (c) 2024 Arslan Charyyev
+[MIT](./LICENSE) (c) 2025 Arslan Charyyev

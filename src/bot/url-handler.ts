@@ -12,7 +12,7 @@ import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { AudioFile } from "../model/file.ts";
 import { FilePost, MultiFilePost, SingleFilePost } from "../model/post.ts";
-import { reportError } from "../utils/reports.ts";
+import { replyWithError } from "../core/error-handling.ts";
 import { CaptionBuilder } from "./caption-builder.ts";
 
 export class UrlHandler {
@@ -30,7 +30,7 @@ export class UrlHandler {
     try {
       post = await client.fetchPost();
     } catch (e) {
-      await reportError(
+      await replyWithError(
         this.ctx,
         "Error fetching post details",
         e instanceof Error ? e : undefined,
@@ -54,7 +54,7 @@ export class UrlHandler {
     try {
       stream = await client.getByteStream(post.file.downloadUrl);
     } catch (e) {
-      await reportError(
+      await replyWithError(
         this.ctx,
         `Could not get ${post.file.type} stream`,
         e instanceof Error ? e : undefined,
@@ -189,7 +189,7 @@ export class UrlHandler {
     const audioRes = await fetch(file.downloadUrl);
 
     if (!audioRes.body) {
-      await reportError(
+      await replyWithError(
         this.ctx,
         "Failed to get audio stream",
         new Error(audioRes.statusText),

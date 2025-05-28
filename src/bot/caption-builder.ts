@@ -7,7 +7,7 @@ import {
 } from "@grammyjs/parse-mode";
 import { config } from "../core/config.ts";
 import { MultiFilePost, SingleFilePost } from "../model/post.ts";
-import { truncate } from "../utils/utils.ts";
+import { truncate } from "../core/utils.ts";
 import { BATCH_SIZE } from "./constants.ts";
 
 export class CaptionBuilder {

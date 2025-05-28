@@ -10,11 +10,7 @@
       "runtimeExecutable": "${workspaceFolder}/.devbox/nix/profile/default/bin/deno",
       "runtimeArgs": [
         "run",
-        "--allow-read",
-        "--allow-write",
-        "--allow-net",
-        "--allow-env",
-        "--allow-import",
+        "--allow-all",
         "--inspect-wait"
       ],
       "attachSimplePort": 9229

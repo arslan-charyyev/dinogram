@@ -9,6 +9,7 @@
     "abtest",
     "acrawler",
     "arslan",
+    "asyncutil",
     "byted",
     "charyyev",
     "cookiejar",
@@ -20,6 +21,7 @@
     "Dinogram",
     "grammyjs",
     "jetify",
+    "memoizee",
     "ratelimiter",
     "Shiba",
     "shortcode",
@@ -41,5 +43,8 @@
   },
   "[html]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "search.exclude": {
+    "assets/js/**": true
   }
 }

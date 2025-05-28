@@ -10,7 +10,7 @@ Deno.test("Download Instagram photos with videos [auth]", async () => {
 });
 
 Deno.test("Download Instagram photos with videos [anon]", async () => {
-  await db.instagram.cookie.delete();
+  await db.instagram.cookie.del();
   await test(188_712, "648b8125c6f4eae262ae51084947471a693d1f7c");
 });
 

@@ -1,13 +1,19 @@
 import { DOMParser, HTMLDocument } from "@b-fuze/deno-dom";
+import { retry } from "@std/async/retry";
 import { JSONPath } from "jsonpath-plus";
 import z from "zod";
-import { db } from "../core/db.ts";
 import { log } from "../core/log.ts";
+import { AuthMode } from "../model/auth-mode.ts";
 import { FileBuilder, type MediaFile } from "../model/file.ts";
 import { FilePost, PostBuilder } from "../model/post.ts";
-import { AppCookieJar } from "../utils/app-cookie-jar.ts";
-import { getUrlSegments } from "../utils/utils.ts";
+import { instagramDb } from "../platforms/instagram/instagram-db.ts";
+import { getPathSegments, runAfter } from "../core/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
+import { randomInt } from "node:crypto";
+import {
+  cookiesHaveInstagramLoginData,
+} from "../platforms/instagram/instagram-browser.ts";
+import { getBrowserInstance } from "../core/browser.ts";
 
 export class InstagramClient extends PlatformClient {
   // Would be better to extract this Doc IDs dynamically
@@ -45,16 +51,16 @@ export class InstagramClient extends PlatformClient {
           "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
       };
 
-      const cookieString = await db.instagram.cookie.get();
-      if (cookieString) {
-        headers["cookie"] = cookieString;
-        headers["x-ig-app-id"] = InstagramClient.IG_APP_ID;
-        const jar = new AppCookieJar(cookieString);
-        const csrftoken = jar.get("csrftoken");
-        if (csrftoken) {
-          headers["x-csrftoken"] = csrftoken;
-        }
-      }
+      // const cookieString = await db.instagram.cookie.get();
+      // if (cookieString) {
+      //   headers["cookie"] = cookieString;
+      //   headers["x-ig-app-id"] = InstagramClient.IG_APP_ID;
+      //   const jar = new AppCookieJar(cookieString);
+      //   const csrftoken = jar.get("csrftoken");
+      //   if (csrftoken) {
+      //     headers["x-csrftoken"] = csrftoken;
+      //   }
+      // }
 
       const res = await fetch(input, {
         referrerPolicy: "strict-origin-when-cross-origin",
@@ -65,40 +71,23 @@ export class InstagramClient extends PlatformClient {
         },
       });
 
-      if (cookieString) {
-        const jar = new AppCookieJar(cookieString);
-        jar.replaceCookies(res.headers.getSetCookie());
-        await db.instagram.cookie.set(jar.getCookieString());
-      }
+      // if (cookieString) {
+      //   const jar = new AppCookieJar(cookieString);
+      //   jar.replaceCookies(res.headers.getSetCookie());
+      //   await db.instagram.cookie.set(jar.getCookieString());
+      // }
 
       return res;
     };
-  }
-
-  override async fetchPost(): Promise<FilePost> {
-    const hasCookie = !!await db.instagram.cookie.get();
-
-    if (hasCookie) {
-      try {
-        return this.fetchPostImpl(true);
-      } catch (error) {
-        log.error(
-          "Failed to fetch instagram post with authentication. " +
-            "Now trying anonymously. Error: ",
-          error,
-        );
-      }
-    }
-
-    return this.fetchPostImpl(false);
   }
 
   /**
    * It would appear that there two ways to fetch data,
    * depending on authentication status of the client.
    */
-  private async fetchPostImpl(authenticated: boolean): Promise<FilePost> {
-    const mediaInfo = await this.fetchMediaInfo(authenticated);
+  override async fetchPost(): Promise<FilePost> {
+    const mediaInfo = await this.fetchMediaInfo();
+
     const mediaItem = mediaInfo.items[0];
 
     const description = mediaItem.caption?.text ?? "";
@@ -132,25 +121,86 @@ export class InstagramClient extends PlatformClient {
     }
   }
 
-  private async fetchMediaInfo(
-    authenticated: boolean,
-  ): Promise<z.infer<typeof MediaInfoSchema>> {
+  private async fetchMediaInfo(): Promise<
+    z.infer<typeof MediaInfoSchema>
+  > {
+    const authMode = await instagramDb.authMode.getOrDef();
+
+    switch (authMode) {
+      case AuthMode.Anonymous:
+        // Sometimes it takes a few tries to anonymously fetch media info
+        return retry(() => this.fetchMediaInfoAnonymously());
+      case AuthMode.Authenticated:
+        return this.fetchMediaInfoAuthenticated();
+    }
+  }
+
+  private async fetchMediaInfoAuthenticated(): Promise<
+    z.infer<typeof MediaInfoSchema>
+  > {
+    const browser = await getBrowserInstance();
+    const cookies = await browser.cookies();
+
+    if (cookiesHaveInstagramLoginData(cookies)) {
+      throw new Error(
+        "No Instagram login data found. " +
+          "Ask bot admin to login via bot settings.",
+      );
+    }
+
+    const page = await browser.newPage();
+    try {
+      const res = await page.goto(this.pageUrl.toString());
+      if (!res) throw new Error(`Failed to open page: ${this.pageUrl}`);
+
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+
+      // TODO: Check content. possible cases:
+      // 1. [x] Content available (proceed)
+      // 2. [ ] Anti-scraping challenge (bypass, proceed)
+      // 3. [ ] Captcha powered anti-scraping challenge (prompt user, proceed)
+
+      const mediaInfoJson = this.extractMediaInfoAuthenticated(doc);
+
+      const mediaInfo = MediaInfoSchema.safeParse(mediaInfoJson);
+
+      if (!mediaInfo.success) {
+        throw new Error(
+          "Failed to parse media info",
+          { cause: mediaInfo.error },
+        );
+      }
+
+      return mediaInfo.data;
+    } catch (e) {
+      throw e;
+    } finally {
+      // Close the page after 1-3s
+      runAfter({
+        seconds: randomInt(1, 3),
+        callback: page.close,
+      });
+    }
+  }
+
+  private async fetchMediaInfoAnonymously(): Promise<
+    z.infer<typeof MediaInfoSchema>
+  > {
     // Fetch post's html document
 
-    const res = await this.fetchWithBypass(this.pageUrl, authenticated);
+    const res = await this.fetch(this.pageUrl);
     const html = await res.text();
     const doc = new DOMParser().parseFromString(html, "text/html");
 
-    const mediaInfoJson = authenticated
-      ? await this.extractMediaInfoAuthenticated(doc)
-      : this.extractMediaInfoAnonymously(doc);
+    // TODO: Check if login is needed and inform user about that
 
-    // Parse media info
+    const mediaInfoJson = this.extractMediaInfoAnonymously(doc);
 
     const mediaInfo = MediaInfoSchema.safeParse(mediaInfoJson);
 
     if (!mediaInfo.success) {
-      throw new Error("Failed to fetch media info");
+      throw new Error("Failed to parse media info", { cause: mediaInfo.error });
     }
 
     return mediaInfo.data;
@@ -181,7 +231,8 @@ export class InstagramClient extends PlatformClient {
 
     // Fetch media info
     try {
-      const res = await this.fetchWithBypass(mediaInfoUrl, true);
+      // FIXME: Use browser instead of fetch
+      const res = await this.fetch(mediaInfoUrl);
       return res.json();
     } catch (cause) {
       throw new Error("Failed to fetch media info", { cause });
@@ -221,7 +272,9 @@ export class InstagramClient extends PlatformClient {
     const res = await this.fetch(url);
 
     // Check if we ran into challenge request and attempt to bypass it
-    if (res.redirected && getUrlSegments(new URL(res.url))[0] === "challenge") {
+    if (
+      res.redirected && getPathSegments(new URL(res.url))[0] === "challenge"
+    ) {
       if (!authenticated) {
         throw new Error("Unexpected anonymous challenge request");
       }
@@ -279,7 +332,7 @@ export class InstagramClient extends PlatformClient {
   }
 
   static override supportsLink(url: URL): boolean {
-    const pathSegments = getUrlSegments(url);
+    const pathSegments = getPathSegments(url);
 
     return (
       url.hostname.endsWith("instagram.com") &&

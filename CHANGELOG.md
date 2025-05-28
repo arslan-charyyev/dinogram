@@ -14,4 +14,5 @@
 [1.2.3]: https://github.com/arslan-charyyev/dinogram/compare/v1.2.2...v1.2.3
 
 ### Changed
+
 - Retry errors now show cause error

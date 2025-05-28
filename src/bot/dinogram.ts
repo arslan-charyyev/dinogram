@@ -4,17 +4,17 @@ import {
   conversations,
   createConversation,
 } from "@grammyjs/conversations";
+import { hydrateReply, ParseModeFlavor } from "@grammyjs/parse-mode";
 import { run } from "@grammyjs/runner";
 import { retry } from "@std/async/retry";
 import { Bot, type Context, session, type SessionFlavor } from "grammy";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
-import { reportError } from "../utils/reports.ts";
+import { replyWithError } from "../core/error-handling.ts";
 import { commands } from "./commands.ts";
-import { dinoConversations } from "./conversations.ts";
+import { getRegisteredConversation } from "./conversations.ts";
 import { menus } from "./menus.ts";
 import { UrlHandler } from "./url-handler.ts";
-import { hydrateReply, ParseModeFlavor } from "@grammyjs/parse-mode";
 
 export type DinoParseModeContext =
   & ParseModeFlavor<Context>
@@ -42,9 +42,12 @@ export class Dinogram {
     this.bot.use(hydrateReply);
     this.bot.use(session({ initial: () => ({}) }));
     this.bot.use(conversations());
-    this.bot.use(createConversation(dinoConversations.setInstagramCookie, {
-      plugins: [hydrateReply],
-    }));
+
+    for (const conversation of getRegisteredConversation()) {
+      this.bot.use(createConversation(conversation, {
+        plugins: [hydrateReply],
+      }));
+    }
 
     this.bot.use(menus.settings);
     for (const command in commands) {
@@ -88,7 +91,7 @@ export class Dinogram {
     this.bot.catch(async (e) => {
       const { ctx, error } = e;
       try {
-        await reportError(
+        await replyWithError(
           ctx,
           "Unhandled bot error",
           error instanceof Error ? error : undefined,
@@ -132,7 +135,7 @@ export class Dinogram {
           const handler = new UrlHandler(ctx, ctx.message, url);
           await handler.handle();
         } catch (e) {
-          reportError(
+          replyWithError(
             ctx,
             `Error handling url ${urlText}`,
             e instanceof Error ? e : undefined,

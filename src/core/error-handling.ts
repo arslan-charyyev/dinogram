@@ -1,14 +1,14 @@
 import { bold, fmt, pre, Stringable } from "@grammyjs/parse-mode";
 import { Context } from "grammy";
-import { config } from "../core/config.ts";
-import { log } from "../core/log.ts";
+import { config } from "./config.ts";
+import { log } from "./log.ts";
 import { truncate } from "./utils.ts";
 import { RetryError } from "@std/async";
 
-export async function reportError(
+export async function replyWithError(
   ctx: Context,
   error: string,
-  cause?: Error | string,
+  cause?: unknown,
 ) {
   const message = ctx.message?.text;
 

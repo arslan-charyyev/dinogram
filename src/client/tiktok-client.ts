@@ -11,7 +11,7 @@ import {
   PostBuilder,
   SingleFilePost,
 } from "../model/post.ts";
-import { getUrlSegments, randInt, randStr } from "../utils/utils.ts";
+import { getPathSegments, randInt, randStr } from "../core/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
 import { Window } from "happy-dom";
 
@@ -72,7 +72,7 @@ export class TikTokClient extends PlatformClient {
 
     // TODO: Get it from DOM instead?
     const abtest = script.__DEFAULT_SCOPE__["seo.abtest"];
-    const canonicalSegments = getUrlSegments(new URL(abtest.canonical));
+    const canonicalSegments = getPathSegments(new URL(abtest.canonical));
     if (canonicalSegments.at(-2) === "photo" && canonicalSegments.at(-1)) {
       return this.fetchPhotoPost(canonicalSegments.at(-1)!);
     }

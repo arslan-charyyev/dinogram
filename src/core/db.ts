@@ -5,7 +5,10 @@ import { config } from "./config.ts";
 
 export const db = {
   instagram: {
-    cookie: createModel<string>(["instagram", "cookie"]),
+    cookie: createModel<string>({
+      keys: ["instagram", "cookie"],
+      default: "",
+    }),
   },
 };
 
@@ -20,12 +23,17 @@ const kv = await Deno.openKv(dbPath);
  * 1. Decouples the DB implementation (Deno KV) from the business logic
  * 2. Provides a standardized interface for managing data
  */
-function createModel<T>(key: string[]) {
-  const dinogramKey = ["dinogram", ...key];
+export function createModel<T>(options: { keys: string[]; default: T }) {
+  const dinogramKey = ["dinogram", ...options.keys];
 
+  const set = (value: T) => kv.set(dinogramKey, value);
+  const get = () => kv.get<T>(dinogramKey).then(({ value }) => value);
+  const getOrDef = async () => await get() ?? options.default;
+  const del = () => kv.delete(dinogramKey);
   return {
-    set: (value: T) => kv.set(dinogramKey, value),
-    get: () => kv.get<T>(dinogramKey).then(({ value }) => value),
-    delete: () => kv.delete(dinogramKey),
+    set,
+    get,
+    getOrDef,
+    del,
   };
 }

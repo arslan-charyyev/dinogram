@@ -1,6 +1,7 @@
 {
   "imports": {
     "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.49",
+    "@core/asyncutil": "jsr:@core/asyncutil@1.2.0",
     "@grammyjs/auto-retry": "https://deno.land/x/grammy_auto_retry@v2.0.2/mod.ts",
     "@grammyjs/parse-mode": "https://deno.land/x/grammy_parse_mode@1.11.1/mod.ts",
     "@grammyjs/runner": "https://deno.land/x/grammy_runner@v2.0.3/mod.ts",
@@ -10,6 +11,7 @@
     "@std/assert": "jsr:@std/assert@1.0.13",
     "@std/async": "jsr:@std/async@1.0.13",
     "@std/dotenv": "jsr:@std/dotenv@0.225.4",
+    "@std/fs": "jsr:@std/fs@1.0.17",
     "@std/log": "jsr:@std/log@0.224.14",
     "@std/path": "jsr:@std/path@1.0.9",
     "another-cookiejar": "jsr:@jd1378/another-cookiejar@5.0.7",
@@ -17,9 +19,12 @@
     "grammy/core/api": "https://deno.land/x/grammy@v1.36.1/core/api.ts",
     "happy-dom": "npm:happy-dom@17.4.7",
     "jsonpath-plus": "npm:jsonpath-plus@10.3.0",
+    "memoizee": "npm:memoizee@0.4.17",
+    "puppeteer": "npm:puppeteer@24.9.0",
     "zod": "npm:zod@3.25.28"
   },
   "tasks": {
+    "setup:puppeteer": "deno run --allow-all npm:puppeteer browsers install chrome@136.0.7103.94",
     "format:check": "deno fmt --check",
     "format:fix": "deno fmt",
     "lint:check": "deno lint",
@@ -32,7 +37,7 @@
     "test:ig": "deno test test/instagram -A",
     "test:ig:auth": "deno test test/instagram -A --filter auth",
     "test:ig:anon": "deno test test/instagram -A --filter anon",
-    "main": "deno --allow-read --allow-write --allow-net --allow-env --allow-import ./src/main.ts"
+    "main": "deno --allow-all ./src/main.ts"
   },
   "exclude": [
     "assets/**"
