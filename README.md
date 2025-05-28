@@ -125,6 +125,9 @@ https://github.com/user-attachments/assets/998c57d7-6550-439b-a23b-ae312e280d1b
 - Linux / WSL<sup>(unverified)</sup>
 - [Devbox](https://www.jetify.com/devbox/docs/quickstart/)
 - [VS Code](https://code.visualstudio.com/)
+- [Deno](https://deno.com/)
+
+TODO: xvfb, x11vnc
 
 Steps:
 

@@ -9,7 +9,7 @@ export const getBrowserInstance = memoizee(
   { promise: true },
 );
 
-async function launchBrowser() {
+async function launchBrowser(args: string[] = []) {
   log.debug("Launching browser...");
 
   const userDataDir = config.DATA_DIR
@@ -28,9 +28,10 @@ async function launchBrowser() {
   }
 
   const browser = await puppeteer.launch({
-    args: ["--hide-crash-restore-bubble"],
+    args: ["--hide-crash-restore-bubble", ...args],
     headless: false, // We will want to stream the UI
     userDataDir: userDataDir,
+    defaultViewport: null,
     // defaultViewport: { width: 1280, height: 720 },
   });
 

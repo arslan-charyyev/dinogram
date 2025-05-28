@@ -1,5 +1,7 @@
 FROM denoland/deno:2.2.12
 
+# TODO: Install xvfb, x11vnc, puppeteer:chrome
+
 # Prefer not to run as root.
 
 USER deno

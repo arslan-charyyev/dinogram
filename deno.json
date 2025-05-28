@@ -21,6 +21,7 @@
     "jsonpath-plus": "npm:jsonpath-plus@10.3.0",
     "memoizee": "npm:memoizee@0.4.17",
     "puppeteer": "npm:puppeteer@24.9.0",
+    "xvfb-ts": "npm:xvfb-ts@1.1.0",
     "zod": "npm:zod@3.25.28"
   },
   "tasks": {
