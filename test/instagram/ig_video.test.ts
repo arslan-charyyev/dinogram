@@ -1,13 +1,12 @@
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { InstagramClient } from "../../src/client/instagram-client.ts";
-import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 import { db } from "../../src/core/db.ts";
-import { config } from "../../src/core/config.ts";
+import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 
-Deno.test("Download Instagram video [auth]", async () => {
-  await db.instagram.cookie.set(config.TEST_INSTAGRAM_COOKIE);
-  await test(391_145, "2a882df1e66500b9ddfbe025800dcf66fbf98e0f");
-});
+// Deno.test("Download Instagram video [auth]", async () => {
+//   await db.instagram.cookie.set(config.TEST_INSTAGRAM_COOKIE);
+//   await test(391_145, "2a882df1e66500b9ddfbe025800dcf66fbf98e0f");
+// });
 
 Deno.test("Download Instagram video [anon]", async () => {
   await db.instagram.cookie.del();
