@@ -1,24 +1,21 @@
 import { DOMParser, HTMLDocument } from "@b-fuze/deno-dom";
 import { retry } from "@std/async/retry";
 import { JSONPath } from "jsonpath-plus";
+import { randomInt } from "node:crypto";
 import z from "zod";
 import { log } from "../core/log.ts";
+import { getPathSegments, runAfter } from "../core/utils.ts";
+import { VNCBrowser } from "../core/vnc-browser.ts";
 import { AuthMode } from "../model/auth-mode.ts";
 import { FileBuilder, type MediaFile } from "../model/file.ts";
 import { FilePost, PostBuilder } from "../model/post.ts";
 import { instagramDb } from "../platforms/instagram/instagram-db.ts";
-import { getPathSegments, runAfter } from "../core/utils.ts";
-import { PlatformClient } from "./platform-client.ts";
-import { randomInt } from "node:crypto";
 import {
   cookiesHaveInstagramLoginData,
-} from "../platforms/instagram/instagram-browser.ts";
-import { getBrowserInstance } from "../core/browser.ts";
+} from "../platforms/instagram/instagram-login.ts";
+import { PlatformClient } from "./platform-client.ts";
 
 export class InstagramClient extends PlatformClient {
-  // Would be better to extract this Doc IDs dynamically
-  private static IG_APP_ID = "936619743392459";
-
   override name = "Instagram";
 
   constructor(pageUrl: URL) {
@@ -51,17 +48,6 @@ export class InstagramClient extends PlatformClient {
           "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
       };
 
-      // const cookieString = await db.instagram.cookie.get();
-      // if (cookieString) {
-      //   headers["cookie"] = cookieString;
-      //   headers["x-ig-app-id"] = InstagramClient.IG_APP_ID;
-      //   const jar = new AppCookieJar(cookieString);
-      //   const csrftoken = jar.get("csrftoken");
-      //   if (csrftoken) {
-      //     headers["x-csrftoken"] = csrftoken;
-      //   }
-      // }
-
       const res = await fetch(input, {
         referrerPolicy: "strict-origin-when-cross-origin",
         ...init,
@@ -70,12 +56,6 @@ export class InstagramClient extends PlatformClient {
           ...init?.headers,
         },
       });
-
-      // if (cookieString) {
-      //   const jar = new AppCookieJar(cookieString);
-      //   jar.replaceCookies(res.headers.getSetCookie());
-      //   await db.instagram.cookie.set(jar.getCookieString());
-      // }
 
       return res;
     };
@@ -138,31 +118,30 @@ export class InstagramClient extends PlatformClient {
   private async fetchMediaInfoAuthenticated(): Promise<
     z.infer<typeof MediaInfoSchema>
   > {
-    const browser = await getBrowserInstance();
+    const browser = await VNCBrowser.instance();
     const cookies = await browser.cookies();
 
-    if (cookiesHaveInstagramLoginData(cookies)) {
+    if (!cookiesHaveInstagramLoginData(cookies)) {
       throw new Error(
         "No Instagram login data found. " +
-          "Ask bot admin to login via bot settings.",
+          "Ask bot admin to login via bot settings " +
+          "or to switch to anonymous authentication mode.",
       );
     }
 
     const page = await browser.newPage();
     try {
-      const res = await page.goto(this.pageUrl.toString());
+      log.debug(`Opening page URL: ${this.pageUrl}`);
+
+      const res = await page.goto(this.pageUrl.toString(), { timeout: 0 });
       if (!res) throw new Error(`Failed to open page: ${this.pageUrl}`);
 
       const html = await res.text();
       const doc = new DOMParser().parseFromString(html, "text/html");
 
-      // TODO: Check content. possible cases:
-      // 1. [x] Content available (proceed)
-      // 2. [ ] Anti-scraping challenge (bypass, proceed)
-      // 3. [ ] Captcha powered anti-scraping challenge (prompt user, proceed)
+      // TODO: Check if user is still logged in
 
-      const mediaInfoJson = this.extractMediaInfoAuthenticated(doc);
-
+      const mediaInfoJson = this.extractMediaInfo(doc);
       const mediaInfo = MediaInfoSchema.safeParse(mediaInfoJson);
 
       if (!mediaInfo.success) {
@@ -179,7 +158,11 @@ export class InstagramClient extends PlatformClient {
       // Close the page after 1-3s
       runAfter({
         seconds: randomInt(1, 3),
-        callback: page.close,
+        callback: async () => {
+          if (!page.isClosed()) {
+            await page.close();
+          }
+        },
       });
     }
   }
@@ -195,7 +178,7 @@ export class InstagramClient extends PlatformClient {
 
     // TODO: Check if login is needed and inform user about that
 
-    const mediaInfoJson = this.extractMediaInfoAnonymously(doc);
+    const mediaInfoJson = this.extractMediaInfo(doc);
 
     const mediaInfo = MediaInfoSchema.safeParse(mediaInfoJson);
 
@@ -206,42 +189,7 @@ export class InstagramClient extends PlatformClient {
     return mediaInfo.data;
   }
 
-  private async extractMediaInfoAuthenticated(
-    doc: HTMLDocument,
-  ): Promise<unknown> {
-    // Find media info URL
-
-    // Example:
-    // <meta property="al:ios:url" content="instagram://media?id=3445445944417076601" />
-    const metaElement = doc.querySelector('head > meta[property="al:ios:url"]');
-    if (!metaElement) {
-      throw new Error("Invalid link. Meta property al:ios:url not found.");
-    }
-
-    const metaContent = metaElement.getAttribute("content");
-    if (!metaContent) throw new Error("Meta content not found");
-
-    const metaUrl = new URL(metaContent);
-    const mediaId = metaUrl.searchParams.get("id");
-    if (!mediaId) throw new Error(`Media ID not found in Meta URL ${metaUrl}`);
-
-    const mediaInfoUrl = new URL(
-      `https://www.instagram.com/api/v1/media/${mediaId}/info/`,
-    );
-
-    // Fetch media info
-    try {
-      // FIXME: Use browser instead of fetch
-      const res = await this.fetch(mediaInfoUrl);
-      return res.json();
-    } catch (cause) {
-      throw new Error("Failed to fetch media info", { cause });
-    }
-  }
-
-  private extractMediaInfoAnonymously(
-    doc: HTMLDocument,
-  ): Promise<unknown> {
+  private extractMediaInfo(doc: HTMLDocument): unknown {
     const scripts = doc.querySelectorAll(
       'script[type="application/json"][data-sjs]',
     );
@@ -258,77 +206,6 @@ export class InstagramClient extends PlatformClient {
     }
 
     throw new Error("No media info data found");
-  }
-
-  private async fetchWithBypass(
-    url: URL,
-    authenticated: boolean,
-    attemptsLeft: number = 3,
-  ): Promise<Response> {
-    if (attemptsLeft <= 0) {
-      throw new Error("Failed to fetch with bypass");
-    }
-
-    const res = await this.fetch(url);
-
-    // Check if we ran into challenge request and attempt to bypass it
-    if (
-      res.redirected && getPathSegments(new URL(res.url))[0] === "challenge"
-    ) {
-      if (!authenticated) {
-        throw new Error("Unexpected anonymous challenge request");
-      }
-
-      const success = await this.bypassScrapingChallenge();
-      if (!success) {
-        throw new Error("Failed to bypass scraping challenge");
-      }
-
-      log.info("Attempted to bypass Instagram challenge");
-
-      return this.fetchWithBypass(url, authenticated, attemptsLeft - 1);
-    } else {
-      return res;
-    }
-  }
-
-  /**
-   * Attempts to pass scraping challenge.
-   * In practice, this only works a few times,
-   * before Instagram starts requiring Captcha.
-   *
-   * @returns boolean indicating if bypass was successful
-   */
-  private async bypassScrapingChallenge() {
-    const challengeRes = await this.fetch(
-      // Not sure if the __coig_challenged param is required
-      "https://www.instagram.com/api/v1/challenge/web/?__coig_challenged=1",
-    );
-
-    const challengeJson = await challengeRes.json();
-    const challengeContext = challengeJson.challenge_context;
-
-    const takeChallengeRes = await this.fetch(
-      "https://www.instagram.com/api/v1/bloks/apps/com.instagram.challenge.navigation.take_challenge/",
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          challenge_context: challengeContext,
-          // Not sure if these are required
-          has_follow_up_screens: "false",
-          nest_data_manifest: "true",
-        }),
-        // Not sure if these are required
-        "referrer": this.pageUrl.toString(),
-        "referrerPolicy": "strict-origin-when-cross-origin",
-        "credentials": "include",
-      },
-    );
-
-    return takeChallengeRes.ok;
   }
 
   static override supportsLink(url: URL): boolean {

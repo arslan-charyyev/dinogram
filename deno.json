@@ -15,6 +15,7 @@
     "@std/log": "jsr:@std/log@0.224.14",
     "@std/path": "jsr:@std/path@1.0.9",
     "another-cookiejar": "jsr:@jd1378/another-cookiejar@5.0.7",
+    "get-port": "npm:get-port@7.1.0",
     "grammy": "https://deno.land/x/grammy@v1.36.1/mod.ts",
     "grammy/core/api": "https://deno.land/x/grammy@v1.36.1/core/api.ts",
     "happy-dom": "npm:happy-dom@17.4.7",

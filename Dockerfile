@@ -6,7 +6,7 @@ FROM denoland/deno:2.2.12
 
 USER deno
 
-WORKDIR /app
+WORKDIR /app 
 
 # Cache the dependencies as a layer
 
@@ -19,5 +19,8 @@ COPY --chown=deno:deno . .
 
 ENV DATA_DIR=/app/data/
 RUN mkdir -p $DATA_DIR
+
+# x11vnc RDB ports
+EXPOSE 5900-6000
 
 CMD ["task", "main"]

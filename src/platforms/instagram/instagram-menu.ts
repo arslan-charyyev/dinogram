@@ -1,5 +1,12 @@
 import { Menu } from "@grammyjs/menu";
-import { code, expandableBlockquote, fmt } from "@grammyjs/parse-mode";
+import {
+  bold,
+  code,
+  expandableBlockquote,
+  fmt,
+  italic,
+  link,
+} from "@grammyjs/parse-mode";
 import type { DinoContext } from "../../bot/dinogram.ts";
 import { createConfirmMenu, DinoMenuContext } from "../../bot/menus.ts";
 import { AuthMode } from "../../model/auth-mode.ts";
@@ -11,7 +18,7 @@ import {
   clearInstagramLoginData,
   getInstagramLoginCookies,
   startInstagramBrowserLoginFlow,
-} from "./instagram-browser.ts";
+} from "./instagram-login.ts";
 import { safeRun } from "../../core/utils.ts";
 
 const callbacks = {
@@ -54,8 +61,6 @@ const callbacks = {
   },
   viewLoginData: async (ctx: DinoMenuContext) => {
     await safeRun(ctx, "Instagram view login data", async () => {
-      ctx.menu.close();
-
       const cookies = await getInstagramLoginCookies();
 
       const { text, entities } = fmt([
@@ -74,13 +79,24 @@ const callbacks = {
         onSuccess: () => {
           ctx.reply("✅ Instagram login success. Login data saved.");
         },
+        onExpire: () => {
+          ctx.reply("⌛ Browser session expired.");
+        },
       });
 
-      await ctx.reply(
-        "Open the following page, login to your Instagram account, " +
-          "and go to the account settings page (accounts/edit).\n" +
-          url,
-      );
+      const loginLink = link(bold("🌐 Click to open"), url.toString());
+      await ctx.replyFmt(fmt([
+        bold("Login steps:\n\n"),
+        fmt`- Open login page: ${loginLink}\n`,
+        "- Login to your Instagram account\n",
+        "- Go to your account settings page ",
+        italic(
+          "(you will be redirected there automatically after logging in)\n",
+        ),
+        "- Close the page when instructed\n",
+        "\n\n",
+        fmt`⏳ Link will be valid for ${bold("1 hour.")}`,
+      ]));
     });
   },
   logout: async (ctx: DinoMenuContext) => {

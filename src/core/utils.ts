@@ -39,11 +39,11 @@ export function getPathSegments(url: URL): string[] {
  */
 export function runAfter(args: {
   seconds: number;
-  callback: () => void;
+  callback: () => void | Promise<void>;
 }) {
-  return setTimeout(() => {
+  return setTimeout(async () => {
     try {
-      args.callback();
+      await args.callback();
     } catch (e) {
       log.error("runAfter: unhandled exception. Error: ", e);
     }
