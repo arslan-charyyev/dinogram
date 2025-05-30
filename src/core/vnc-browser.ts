@@ -23,10 +23,16 @@ export class VNCBrowser {
    * @return A new browser instance, meant to be streamed over http(s)/ws(s)
    */
   public static async new(): Promise<VNCBrowser> {
-    const xvfb = new Xvfb();
+    const xvfb = new Xvfb({
+      // We are not running as root on Docker,
+      // so cannot properly create a linux socket
+      xvfb_args: ["-nolisten", "unix"],
+    });
 
     log.debug("Starting X virtual frame buffer...");
     await xvfb.start();
+
+    log.debug(`X virtual frame buffer started on display ${xvfb.display()}`);
 
     // Specify user data directory to persist it if necessary
     const userDataDir = config.DATA_DIR
@@ -82,6 +88,7 @@ export class VNCBrowser {
 
     log.debug("Starting x11vnc server...");
     const x11vnc = await X11VNC.start(this.xvfb.display());
+    log.debug(`x11vnc server started on port ${x11vnc.rfbPort}`);
 
     this.x11vnc = x11vnc;
 

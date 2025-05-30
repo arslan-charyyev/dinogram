@@ -66,6 +66,8 @@ export class InstagramClient extends PlatformClient {
   override async fetchPost(): Promise<FilePost> {
     const mediaInfo = await this.fetchMediaInfo();
 
+    log.debug(`Media info extracted from ${this.pageUrl}`);
+
     const mediaItem = mediaInfo.items[0];
 
     const description = mediaItem.caption?.text ?? "";
@@ -138,6 +140,8 @@ export class InstagramClient extends PlatformClient {
       const doc = new DOMParser().parseFromString(html, "text/html");
 
       // TODO: Check if user is still logged in
+
+      log.debug(`Extracting media info from ${this.pageUrl}`);
 
       const mediaInfoJson = this.extractMediaInfo(doc);
       const mediaInfo = MediaInfoSchema.safeParse(mediaInfoJson);

@@ -68,11 +68,12 @@ export async function startInstagramBrowserLoginFlow(args: {
       log.info("Instagram login successful");
 
       clearTimeout(closePageId);
-      browser.close();
 
       // Copy new cookies to existing global browser instance
       const globalBrowser = await VNCBrowser.instance();
-      globalBrowser.setCookie(...cookies);
+      await globalBrowser.setCookie(...cookies);
+
+      await browser.close();
 
       args.onSuccess();
     });

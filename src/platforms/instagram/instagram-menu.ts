@@ -20,6 +20,8 @@ import {
   startInstagramBrowserLoginFlow,
 } from "./instagram-login.ts";
 import { safeRun } from "../../core/utils.ts";
+import { AsyncValue } from "@core/asyncutil/async-value";
+import { Message } from "@grammyjs/types";
 
 const callbacks = {
   viewAuthMode: async (ctx: DinoMenuContext) => {
@@ -75,9 +77,18 @@ const callbacks = {
     await safeRun(ctx, "Instagram login", async () => {
       ctx.menu.close();
 
+      const instructionsMessage = new AsyncValue<Message | null>(null);
+
       const url = await startInstagramBrowserLoginFlow({
-        onSuccess: () => {
-          ctx.reply("✅ Instagram login success. Login data saved.");
+        onSuccess: async () => {
+          try {
+            const message = await instructionsMessage.get();
+            if (message) {
+              ctx.api.deleteMessage(message.chat.id, message.message_id);
+            }
+
+            ctx.reply("✅ Instagram login success. Login data saved.");
+          } catch (_) { /* no-op */ }
         },
         onExpire: () => {
           ctx.reply("⌛ Browser session expired.");
@@ -85,7 +96,7 @@ const callbacks = {
       });
 
       const loginLink = link(bold("🌐 Click to open"), url.toString());
-      await ctx.replyFmt(fmt([
+      const message = await ctx.replyFmt(fmt([
         bold("Login steps:\n\n"),
         fmt`- Open login page: ${loginLink}\n`,
         "- Login to your Instagram account\n",
@@ -97,11 +108,11 @@ const callbacks = {
         "\n\n",
         fmt`⏳ Link will be valid for ${bold("1 hour.")}`,
       ]));
+      instructionsMessage.set(message);
     });
   },
   logout: async (ctx: DinoMenuContext) => {
     await safeRun(ctx, "Instagram logout", async () => {
-      ctx.menu.close();
       ctx.menu.close();
 
       await clearInstagramLoginData();

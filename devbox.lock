@@ -52,6 +52,34 @@
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
       "last_modified": "2025-05-15T12:36:28Z",
       "resolved": "github:NixOS/nixpkgs/b1bebd0fe266bbd1820019612ead889e96a8fa2d?lastModified=1747312588&narHash=sha256-MmJvj6mlWzeRwKGLcwmZpKaOPZ5nJb%2F6al5CXqJsgjo%3D"
+    },
+    "x11vnc@0.9.17": {
+      "last_modified": "2025-05-16T20:19:48Z",
+      "resolved": "github:NixOS/nixpkgs/12a55407652e04dcf2309436eb06fef0d3713ef3#x11vnc",
+      "source": "devbox-search",
+      "version": "0.9.17",
+      "systems": {
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/b9bjpfdznfc73jzhw8a3m3m4qcj7qif4-x11vnc-0.9.17",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/b9bjpfdznfc73jzhw8a3m3m4qcj7qif4-x11vnc-0.9.17"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/qxr7vxx81jy2w4zmbinycfc9zqcjngk9-x11vnc-0.9.17",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/qxr7vxx81jy2w4zmbinycfc9zqcjngk9-x11vnc-0.9.17"
+        }
+      }
     }
   }
 }

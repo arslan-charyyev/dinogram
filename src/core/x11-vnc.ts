@@ -6,7 +6,7 @@ import getPort, { portNumbers } from "get-port";
  */
 export class X11Vnc {
   private constructor(
-    private readonly rfbPort: number,
+    public readonly rfbPort: number,
     private readonly process: Deno.ChildProcess,
   ) {
     process.output().then((status) => this.onProcessFinished(status));
@@ -25,7 +25,7 @@ export class X11Vnc {
         ...["-ncache", ncache.toString()],
         "-nopw", // TODO: Generate password
         "-forever",
-        "-localhost",
+        // "-localhost",
       ],
       stdout: "piped",
       stderr: "piped",

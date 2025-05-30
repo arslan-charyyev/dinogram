@@ -1,6 +1,7 @@
 import * as log from "@std/log";
 import { config } from "./config.ts";
 
+// TODO: Replace with https://github.com/dahlia/logtape
 log.setup({
   handlers: {
     default: new log.ConsoleHandler(config.LOG_LEVEL, {

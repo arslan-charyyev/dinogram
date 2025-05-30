@@ -12,6 +12,8 @@ export const test_url = {
     images_only: "https://www.instagram.com/p/B8pUDhTFZVj",
     images_with_videos: "https://www.instagram.com/p/CyWn_tQyKAH",
     video: "https://www.instagram.com/reel/C_TNM2ivzHF/",
+    requires_18_plus:
+      "https://www.instagram.com/reel/DHsxLZACsnt/?igsh=MXQ2dnMxaDV0eGRydQ==",
   },
 };
 
