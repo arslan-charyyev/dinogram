@@ -27,6 +27,7 @@
   },
   "tasks": {
     "setup:puppeteer": "deno run --allow-all npm:puppeteer browsers install chrome@136.0.7103.94",
+    "docker": "docker compose up --build",
     "format:check": "deno fmt --check",
     "format:fix": "deno fmt",
     "lint:check": "deno lint",

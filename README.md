@@ -3,7 +3,6 @@
 [![🚀 Build & Release](https://github.com/arslan-charyyev/dinogram/actions/workflows/publish-release.yml/badge.svg)](https://github.com/arslan-charyyev/dinogram/actions/workflows/publish-release.yml)
 [![GHCR](https://img.shields.io/badge/GHCR-arslan--charyyev%2Fdinogram-%23ab7df8?logo=github)](https://github.com/arslan-charyyev/dinogram/pkgs/container/dinogram)
 [![Common Changelog](https://common-changelog.org/badge.svg)](https://common-changelog.org)
-[![Built with Devbox](https://www.jetify.com/img/devbox/shield_galaxy.svg)](https://www.jetify.com/devbox/docs/contributor-quickstart/)
 
 <p align="center"><img src="./assets/img/logo.jpg" height=200/></p>
 
@@ -126,47 +125,35 @@ https://github.com/user-attachments/assets/998c57d7-6550-439b-a23b-ae312e280d1b
 - Linux / WSL<sup>(unverified)</sup>
 - [VS Code](https://code.visualstudio.com/)
 - [xvfb](https://en.wikipedia.org/wiki/Xvfb)
+- [x11vnc](https://en.wikipedia.org/wiki/X11vnc)
 - [Docker](https://www.docker.com/) (Optional)
-- [Devbox](https://www.jetify.com/devbox/docs/quickstart/) (Optional)
-- [x11vnc](https://en.wikipedia.org/wiki/X11vnc) (If not using Devbox)
 
 ### First-time setup
 
 - Clone this repository
 - Initialize environment variables: `cp .template.env .env`
 - Update `BOT_TOKEN` variable in the [.env](.env) file with your bot token.
-- (If using Devbox) Run `devbox shell`
 
 ### Running the project
 
 From terminal:
-- (If using Devbox) Run `devbox shell`
 - Run `deno task main`
 
 From VS code (with full debugging support):
 - Open the project directory in VS code
-- Open command palette in VSCode (cmd+shift+p) and type: `Devbox: Reopen in Devbox shell environment`
-- Press Enter and wait for VSCode to reload.
 - Open the `▶️🐞 Run and Debug` panel
 - Select the `main` configuration
 - Hit the `Start debugging (F5)` button (▶️)
 
-Testing the docker image:
-- `docker compose up --build`
+### Testing the docker image:
 
-or, if using Devbox:
-
-- `devbox run docker`
+The following builds the Dinogram docker image and starts corresponding
+container, alongside Bot API server.
+```sh
+deno task docker
+```
 
 ### Useful commands
-
-```sh
-deno task deps:cache # Download all dependencies
-```
-
-```sh
-deno task main
-```
 
 ```sh
 deno task issues:check # Check project issues
@@ -174,13 +161,6 @@ deno task issues:check # Check project issues
 
 ```sh
 deno task test:all # Run all tests
-```
-
-The following builds the Dinogram docker image and starts corresponding
-container, alongside Bot API server.
-
-```sh
-devbox run docker
 ```
 
 ### Dependency considerations

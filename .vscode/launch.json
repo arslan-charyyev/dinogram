@@ -7,7 +7,7 @@
       "type": "node",
       "program": "src/main.ts",
       "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "${workspaceFolder}/.devbox/nix/profile/default/bin/deno",
+      "runtimeExecutable": "deno",
       "runtimeArgs": [
         "run",
         "--allow-all",
@@ -20,7 +20,7 @@
       "name": "test current",
       "type": "node",
       "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "${workspaceFolder}/.devbox/nix/profile/default/bin/deno",
+      "runtimeExecutable": "deno",
       "runtimeArgs": [
         "test",
         "${file}",

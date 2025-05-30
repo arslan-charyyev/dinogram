@@ -7,7 +7,6 @@ on:
       - src/**
       - test/**
       - deno.*
-      - devbox.*
 
 jobs:
   check-code-issues:
@@ -17,17 +16,19 @@ jobs:
       - name: 📥 Check out repository code
         uses: actions/checkout@main
 
-      - name: 🛠️ Install devbox
-        uses: jetify-com/devbox-install-action@v0.12.0
+      # TODO: Replace with deno
+
+      - name: 🦕 Install Deno
+        uses: denoland/setup-deno@v2
         with:
-          enable-cache: true
-          devbox-version: 0.14.2
+          deno-version: v2.3.5
+          cache: true
 
       - name: 🔍 Check issues
-        run: devbox run -- deno task issues:check
+        run: deno task issues:check
 
       - name: 🧪 Run tests
         env:
           BOT_TOKEN: "unused"
           TEST_INSTAGRAM_COOKIE: ${{ secrets.TEST_INSTAGRAM_COOKIE }}
-        run: devbox run -- deno task test:all
+        run: deno task test:all
