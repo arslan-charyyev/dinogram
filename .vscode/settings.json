@@ -3,7 +3,9 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "denoland.vscode-deno",
   "editor.tabSize": 2,
-  "cSpell.files": ["./**/*"],
+  "cSpell.files": [
+    "./**/*"
+  ],
   "cSpell.words": [
     "abtest",
     "acrawler",
@@ -49,6 +51,15 @@
     "assets/js/**": true
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
   }
 }

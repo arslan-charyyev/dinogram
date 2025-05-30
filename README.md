@@ -137,9 +137,11 @@ https://github.com/user-attachments/assets/998c57d7-6550-439b-a23b-ae312e280d1b
 ### Running the project
 
 From terminal:
+
 - Run `deno task main`
 
 From VS code (with full debugging support):
+
 - Open the project directory in VS code
 - Open the `▶️🐞 Run and Debug` panel
 - Select the `main` configuration
@@ -149,6 +151,7 @@ From VS code (with full debugging support):
 
 The following builds the Dinogram docker image and starts corresponding
 container, alongside Bot API server.
+
 ```sh
 deno task docker
 ```
