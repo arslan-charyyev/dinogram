@@ -28,6 +28,7 @@ jobs:
         run: deno task issues:check
 
       - name: 🧪 Run tests
+        if: always()
         env:
           BOT_TOKEN: "unused"
           TEST_INSTAGRAM_COOKIE: ${{ secrets.TEST_INSTAGRAM_COOKIE }}
