@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "@std/assert";
-import { TikTokClient } from "../../src/client/tiktok-client.ts";
+import { TikTokClient } from "../../src/platforms/tiktok/tiktok-client.ts";
 import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 
 Deno.test("Download TikTok video", async () => {

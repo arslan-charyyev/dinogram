@@ -3,17 +3,15 @@ import { retry } from "@std/async/retry";
 import { JSONPath } from "jsonpath-plus";
 import { randomInt } from "node:crypto";
 import z from "zod";
-import { log } from "../core/log.ts";
-import { getPathSegments, runAfter } from "../core/utils.ts";
-import { VNCBrowser } from "../core/vnc-browser.ts";
-import { AuthMode } from "../model/auth-mode.ts";
-import { FileBuilder, type MediaFile } from "../model/file.ts";
-import { FilePost, PostBuilder } from "../model/post.ts";
-import { instagramDb } from "../platforms/instagram/instagram-db.ts";
-import {
-  cookiesHaveInstagramLoginData,
-} from "../platforms/instagram/instagram-login.ts";
-import { PlatformClient } from "./platform-client.ts";
+import { log } from "../../core/log.ts";
+import { getPathSegments, runAfter } from "../../core/utils.ts";
+import { VNCBrowser } from "../../core/vnc-browser.ts";
+import { AuthMode } from "../../model/auth-mode.ts";
+import { FileBuilder, type MediaFile } from "../../model/file.ts";
+import { FilePost, PostBuilder } from "../../model/post.ts";
+import { instagramDb } from "./instagram-db.ts";
+import { cookiesHaveInstagramLoginData } from "./instagram-login.ts";
+import { PlatformClient } from "../platform-client.ts";
 
 export class InstagramClient extends PlatformClient {
   override name = "Instagram";

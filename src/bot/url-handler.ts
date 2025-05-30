@@ -6,8 +6,7 @@ import type {
   ReplyParameters,
 } from "@grammyjs/types";
 import { Context, InputFile } from "grammy";
-import { ClientFactory } from "../client/client-factory.ts";
-import type { PlatformClient } from "../client/platform-client.ts";
+import { PlatformClient } from "../platforms/platform-client.ts";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { AudioFile } from "../model/file.ts";
@@ -23,7 +22,7 @@ export class UrlHandler {
   ) {}
 
   async handle() {
-    const client = ClientFactory.find(this.url);
+    const client = PlatformClient.find(this.url);
     if (!client) return;
 
     let post: FilePost;

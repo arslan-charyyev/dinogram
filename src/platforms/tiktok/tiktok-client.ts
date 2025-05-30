@@ -2,17 +2,17 @@ import { retry } from "@std/async";
 import { CookieJar, wrapFetch } from "another-cookiejar";
 import { DOMParser } from "@b-fuze/deno-dom";
 import { z } from "zod";
-import { Assets } from "../core/assets.ts";
-import { messages } from "../core/messages.ts";
-import { AudioFile, FileBuilder, MediaFile } from "../model/file.ts";
+import { Assets } from "../../core/assets.ts";
+import { messages } from "../../core/messages.ts";
+import { AudioFile, FileBuilder, MediaFile } from "../../model/file.ts";
 import {
   FilePost,
   MultiFilePost,
   PostBuilder,
   SingleFilePost,
-} from "../model/post.ts";
-import { getPathSegments, randInt, randStr } from "../core/utils.ts";
-import { PlatformClient } from "./platform-client.ts";
+} from "../../model/post.ts";
+import { getPathSegments, randInt, randStr } from "../../core/utils.ts";
+import { PlatformClient } from "../platform-client.ts";
 import { Window } from "happy-dom";
 
 export class TikTokClient extends PlatformClient {

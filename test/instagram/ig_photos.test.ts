@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "@std/assert";
-import { InstagramClient } from "../../src/client/instagram-client.ts";
+import { InstagramClient } from "../../src/platforms/instagram/instagram-client.ts";
 import { db } from "../../src/core/db.ts";
 import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 
