@@ -1,13 +1,10 @@
 import { retry } from "@std/async/retry";
 import { BATCH_SIZE } from "../bot/constants.ts";
-import { log } from "../core/log.ts";
 import { Assets } from "../core/assets.ts";
-import { FilePost } from "../model/post.ts";
+import { log } from "../core/log.ts";
 import { MediaFile } from "../model/file.ts";
 import { MediaStream } from "../model/input-file.ts";
-import { config } from "../core/config.ts";
-import { TikTokClient } from "./tiktok/tiktok-client.ts";
-import { InstagramClient } from "./instagram/instagram-client.ts";
+import { FilePost } from "../model/post.ts";
 
 export abstract class PlatformClient {
   constructor(protected readonly pageUrl: URL) {}
@@ -75,17 +72,5 @@ export abstract class PlatformClient {
 
   static supportsLink(_url: URL): boolean {
     throw Error("Method must be overridden in the child class");
-  }
-
-  static find(url: URL): PlatformClient | null {
-    if (config.TIKTOK_ENABLED && TikTokClient.supportsLink(url)) {
-      return new TikTokClient(url);
-    }
-
-    if (config.INSTAGRAM_ENABLED && InstagramClient.supportsLink(url)) {
-      return new InstagramClient(url);
-    }
-
-    return null;
   }
 }

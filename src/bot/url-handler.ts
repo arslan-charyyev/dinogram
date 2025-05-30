@@ -13,6 +13,7 @@ import { AudioFile } from "../model/file.ts";
 import { FilePost, MultiFilePost, SingleFilePost } from "../model/post.ts";
 import { replyWithError } from "../core/error-handling.ts";
 import { CaptionBuilder } from "./caption-builder.ts";
+import { ClientFactory } from "../platforms/client-factory.ts";
 
 export class UrlHandler {
   constructor(
@@ -22,7 +23,7 @@ export class UrlHandler {
   ) {}
 
   async handle() {
-    const client = PlatformClient.find(this.url);
+    const client = ClientFactory.find(this.url);
     if (!client) return;
 
     let post: FilePost;
