@@ -47,5 +47,8 @@
   },
   "search.exclude": {
     "assets/js/**": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
   }
 }

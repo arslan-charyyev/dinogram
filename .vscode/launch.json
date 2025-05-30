@@ -8,6 +8,7 @@
       "program": "src/main.ts",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "deno",
+      "outputCapture": "std",
       "runtimeArgs": [
         "run",
         "--allow-all",
