@@ -24,8 +24,16 @@ jobs:
           deno-version: v2.3.5
           cache: true
 
-      - name: 🔍 Check issues
-        run: deno task issues:check
+      - name: 🔍 Check TypeScript
+        run: deno task ts:check
+
+      - name: 🔍 Check linting
+        if: always()
+        run: deno task lint:check
+
+      - name: 🔍 Check formatting
+        if: always()
+        run: deno task format:check
 
       - name: 🧪 Run tests
         if: always()
