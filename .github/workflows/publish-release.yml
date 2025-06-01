@@ -10,7 +10,7 @@ jobs:
     name: 🐳 Build and push Docker image
     runs-on: ubuntu-24.04
     env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/${{ github.repository }}
+      IMAGE: ghcr.io/${{ github.repository }}
     steps:
       - name: 🔑 Login to GitHub Container Registry
         uses: docker/login-action@v3

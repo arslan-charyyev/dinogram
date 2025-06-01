@@ -1,4 +1,6 @@
-FROM ghcr.io/puppeteer/puppeteer:24.9.0
+# We choose puppeteer as a base image because
+# it's the hardest one to install manually
+FROM ghcr.io/puppeteer/puppeteer:24.9.0@sha256:e18b8931277418aee41e58e5750890b9da0990b19d434de54ed89818001c487b
 
 ENV LANG=C.UTF-8
 
