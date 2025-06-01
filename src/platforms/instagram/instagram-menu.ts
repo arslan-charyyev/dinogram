@@ -1,14 +1,17 @@
+import { AsyncValue } from "@core/asyncutil/async-value";
 import { Menu } from "@grammyjs/menu";
 import {
   bold,
-  code,
   expandableBlockquote,
   fmt,
   italic,
   link,
+  pre,
 } from "@grammyjs/parse-mode";
+import { Message } from "@grammyjs/types";
 import type { DinoContext } from "../../bot/dinogram.ts";
 import { createConfirmMenu, DinoMenuContext } from "../../bot/menus.ts";
+import { safeRun } from "../../core/utils.ts";
 import { AuthMode } from "../../model/auth-mode.ts";
 import {
   getInstagramAuthMode,
@@ -19,9 +22,6 @@ import {
   getInstagramLoginCookies,
   startInstagramBrowserLoginFlow,
 } from "./instagram-login.ts";
-import { safeRun } from "../../core/utils.ts";
-import { AsyncValue } from "@core/asyncutil/async-value";
-import { Message } from "@grammyjs/types";
 
 const callbacks = {
   viewAuthMode: async (ctx: DinoMenuContext) => {
@@ -67,7 +67,9 @@ const callbacks = {
 
       const { text, entities } = fmt([
         "🍪 Instagram login cookies:\n",
-        expandableBlockquote(code(JSON.stringify(cookies, null, 2))),
+        expandableBlockquote(
+          pre(JSON.stringify(cookies, null, 2), "json"),
+        ),
       ]);
 
       await ctx.reply(text, { entities });

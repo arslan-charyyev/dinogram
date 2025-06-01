@@ -89,7 +89,13 @@ export class TikTokClient extends PlatformClient {
       });
     }
 
-    const { video, desc } = videoDetail.itemInfo.itemStruct;
+    const { itemStruct } = videoDetail.itemInfo;
+    if ("isContentClassified" in itemStruct) {
+      // TODO: Authorization support for TikTok
+      throw new Error(messages.SIGN_IN_REQUIRED_TIKTOK);
+    }
+
+    const { video, desc } = itemStruct;
 
     const description = desc.trim();
     const downloadUrl = video.playAddr ?? video.downloadAddr;
@@ -219,6 +225,20 @@ export class TikTokClient extends PlatformClient {
   }
 }
 
+const NormalItemStruct = z.object({
+  desc: z.string(),
+  video: z.object({
+    height: z.number().int(),
+    width: z.number().int(),
+    playAddr: z.string().describe("without watermark").optional(),
+    downloadAddr: z.string().describe("with watermark").optional(),
+  }),
+});
+
+const ClassifiedItemStruct = z.object({
+  isContentClassified: z.literal(true),
+});
+
 const ScriptSchema = z.object({
   __DEFAULT_SCOPE__: z.object({
     "seo.abtest": z.object({
@@ -228,15 +248,10 @@ const ScriptSchema = z.object({
       statusCode: z.number().int(),
       statusMsg: z.string().optional(),
       itemInfo: z.object({
-        itemStruct: z.object({
-          desc: z.string(),
-          video: z.object({
-            height: z.number().int(),
-            width: z.number().int(),
-            playAddr: z.string().describe("without watermark").optional(),
-            downloadAddr: z.string().describe("with watermark").optional(),
-          }),
-        }),
+        itemStruct: z.union([
+          NormalItemStruct,
+          ClassifiedItemStruct,
+        ]),
       }).optional(),
     }).optional(),
   }),

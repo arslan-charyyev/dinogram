@@ -4,13 +4,14 @@ import { config } from "./config.ts";
 import { log } from "./log.ts";
 import { truncate } from "./utils.ts";
 import { RetryError } from "@std/async";
+import { ZodError } from "zod";
 
 export async function replyWithError(
   ctx: Context,
   error: string,
   cause?: unknown,
 ) {
-  const message = ctx.message?.text;
+  const url = ctx.message?.text;
 
   // Unwrap cause from retry errors
   if (cause instanceof RetryError && cause.cause instanceof Error) {
@@ -18,22 +19,25 @@ export async function replyWithError(
   }
 
   const errorDetails = {
-    cause: cause instanceof Error ? cause.message : cause,
-    message,
+    url,
+    cause: cause instanceof ZodError
+      ? cause.errors
+      : cause instanceof Error
+      ? cause.message
+      : cause,
   };
 
-  log.error(error, errorDetails);
+  log.error(error);
+  if (cause) {
+    console.error(cause);
+  }
 
   const parts: Stringable[] = [];
   parts.push(bold(truncate(error, 90)));
 
   if (config.SEND_ERRORS) {
     if (cause) {
-      const jsonString = JSON.stringify(
-        errorDetails,
-        Object.getOwnPropertyNames(errorDetails),
-        2,
-      );
+      const jsonString = JSON.stringify(errorDetails, null, 2);
       const json = truncate(jsonString, 4000);
       parts.push("\n", pre(json, "json"));
     }
