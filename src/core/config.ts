@@ -1,9 +1,6 @@
 import * as dotenv from "@std/dotenv";
-import { LogLevelNames } from "@std/log";
+import { isLogLevel, LogLevel } from "@logtape/logtape";
 import { z } from "zod";
-
-// Source: https://github.com/colinhacks/zod/discussions/2125#discussioncomment-8264873
-const zodEnum = <T>(arr: T[]): [T, ...T[]] => arr as [T, ...T[]];
 
 const bool = z.enum(["true", "false"]).transform((value) => value === "true");
 
@@ -45,8 +42,10 @@ const Config = z.object({
     .describe("Enables support for downloading Instagram media"),
 
   LOG_LEVEL: z
-    .enum(zodEnum(LogLevelNames))
-    .default("DEBUG")
+    .custom<LogLevel>(isLogLevel, {
+      message: "Invalid log level. See: https://logtape.org/manual/levels",
+    })
+    .default("debug")
     .describe("Log level. Source: https://jsr.io/@std/log/0.224.7/levels.ts"),
 
   REPORT_ERRORS_TO: intCsv

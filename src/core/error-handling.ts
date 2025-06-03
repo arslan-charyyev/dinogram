@@ -14,7 +14,7 @@ export async function replyWithError(
   const url = ctx.message?.text;
 
   // Unwrap cause from retry errors
-  if (cause instanceof RetryError && cause.cause instanceof Error) {
+  if (cause instanceof RetryError) {
     cause = cause.cause;
   }
 
@@ -27,17 +27,15 @@ export async function replyWithError(
       : cause,
   };
 
-  logger.error`${error}: ${cause}`;
+  logger.error`Replying with ${error}: ${cause}`;
 
   const parts: Stringable[] = [];
   parts.push(bold(truncate(error, 90)));
 
   if (config.SEND_ERRORS) {
-    if (cause) {
-      const jsonString = JSON.stringify(errorDetails, null, 2);
-      const json = truncate(jsonString, 4000);
-      parts.push("\n", pre(json, "json"));
-    }
+    const jsonString = JSON.stringify(errorDetails, null, 2);
+    const json = truncate(jsonString, 4000);
+    parts.push("\n", pre(json, "json"));
 
     const errorMessage = fmt(parts);
 

@@ -12,7 +12,7 @@ import { AudioFile } from "../model/file.ts";
 import { FilePost, MultiFilePost, SingleFilePost } from "../model/post.ts";
 import { replyWithError } from "../core/error-handling.ts";
 import { CaptionBuilder } from "./caption-builder.ts";
-import { ClientFactory } from "../platforms/client-factory.ts";
+import { findPlatformClient } from "../platforms/platform-utils.ts";
 import { logger } from "../core/logging.ts";
 
 export class UrlHandler {
@@ -23,18 +23,14 @@ export class UrlHandler {
   ) {}
 
   async handle() {
-    const client = ClientFactory.find(this.url);
+    const client = findPlatformClient(this.url);
     if (!client) return;
 
     let post: FilePost;
     try {
       post = await client.fetchPost();
-    } catch (e) {
-      await replyWithError(
-        this.ctx,
-        "Error fetching post details",
-        e instanceof Error ? e : undefined,
-      );
+    } catch (error) {
+      await replyWithError(this.ctx, "Error fetching post details", error);
       return;
     }
 
