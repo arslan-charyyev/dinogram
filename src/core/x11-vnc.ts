@@ -1,5 +1,5 @@
-import { log } from "./log.ts";
 import getPort, { portNumbers } from "get-port";
+import { logger } from "./logging.ts";
 
 /**
  * A wrapper class for launching the x11vnc process
@@ -36,17 +36,16 @@ export class X11Vnc {
     return new X11Vnc(rfbPort, process);
   }
 
-  public stop() {
+  public async stop() {
     this.process.kill("SIGINT");
+    await this.process.output();
   }
 
   private async onProcessFinished(status: Deno.CommandStatus) {
     // We can access these props only once
     const { code, success, signal } = status;
 
-    log.debug(
-      `x11vnc finished with code: ${code}, signal: ${signal}`,
-    );
+    logger.debug`x11vnc finished with code: ${code}, signal: ${signal}`;
 
     // `signal` is actually null here (probably a bug),
     // but it doesn't matter since `success` will be `true`
@@ -58,7 +57,8 @@ export class X11Vnc {
 
     // Otherwise, we crash with dump of x11vnc error logs
     const out = await this.process.output();
-    console.error(new TextDecoder().decode(out.stderr));
+    const stderrText = new TextDecoder().decode(out.stderr);
+    logger.error`x11vnc stderr:\n${stderrText}`;
 
     // Crash the program to force restart
     throw new Error(`x11vnc error. Status code: ${code}`);

@@ -1,10 +1,10 @@
 import { retry } from "@std/async/retry";
 import { BATCH_SIZE } from "../bot/constants.ts";
 import { Assets } from "../core/assets.ts";
-import { log } from "../core/log.ts";
 import { MediaFile } from "../model/file.ts";
 import { MediaStream } from "../model/input-file.ts";
 import { FilePost } from "../model/post.ts";
+import { logger } from "../core/logging.ts";
 
 export abstract class PlatformClient {
   constructor(protected readonly pageUrl: URL) {}
@@ -57,7 +57,7 @@ export abstract class PlatformClient {
               stream: stream,
             };
           } catch (e) {
-            log.error(`Error fetching ${file.type} ${file.downloadUrl}`, e);
+            logger.error`Error fetching ${file.type} ${file.downloadUrl}\n${e}`;
 
             using errorImage = await Deno.open(Assets.img.error);
             return {

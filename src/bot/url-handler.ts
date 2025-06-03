@@ -8,12 +8,12 @@ import type {
 import { Context, InputFile } from "grammy";
 import { PlatformClient } from "../platforms/platform-client.ts";
 import { config } from "../core/config.ts";
-import { log } from "../core/log.ts";
 import { AudioFile } from "../model/file.ts";
 import { FilePost, MultiFilePost, SingleFilePost } from "../model/post.ts";
 import { replyWithError } from "../core/error-handling.ts";
 import { CaptionBuilder } from "./caption-builder.ts";
 import { ClientFactory } from "../platforms/client-factory.ts";
+import { logger } from "../core/logging.ts";
 
 export class UrlHandler {
   constructor(
@@ -91,7 +91,7 @@ export class UrlHandler {
         break;
     }
 
-    log.debug(`Sent ${post.file.type}. message_id: ${sentMessage.message_id}`);
+    logger.info`Sent ${post.file.type}. message_id: ${sentMessage.message_id}`;
   }
 
   private async replyWithMediaGroup(
@@ -145,7 +145,7 @@ export class UrlHandler {
         );
 
         const messageIds = messages.map((it) => it.message_id);
-        log.debug(`Sent ${client.name} media group. IDs: ${messageIds}`);
+        logger.info`Sent ${client.name} media group. IDs: ${messageIds}`;
 
         lastSentMessageId = messages.at(-1)?.message_id;
       } else {
@@ -169,7 +169,7 @@ export class UrlHandler {
             break;
         }
 
-        log.debug(`Sent ${client.name} ${type}. ID: ${sentMessage.message_id}`);
+        logger.info`Sent ${client.name} ${type}. ID: ${sentMessage.message_id}`;
 
         lastSentMessageId = sentMessage.message_id;
       }

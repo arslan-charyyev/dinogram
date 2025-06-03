@@ -1,10 +1,10 @@
 import { bold, fmt, pre, Stringable } from "@grammyjs/parse-mode";
-import { Context } from "grammy";
-import { config } from "./config.ts";
-import { log } from "./log.ts";
-import { truncate } from "./utils.ts";
 import { RetryError } from "@std/async";
+import { Context } from "grammy";
 import { ZodError } from "zod";
+import { config } from "./config.ts";
+import { logger } from "./logging.ts";
+import { truncate } from "./utils.ts";
 
 export async function replyWithError(
   ctx: Context,
@@ -27,10 +27,7 @@ export async function replyWithError(
       : cause,
   };
 
-  log.error(error);
-  if (cause) {
-    console.error(cause);
-  }
+  logger.error`${error}: ${cause}`;
 
   const parts: Stringable[] = [];
   parts.push(bold(truncate(error, 90)));

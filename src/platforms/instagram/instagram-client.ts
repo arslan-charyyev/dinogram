@@ -3,7 +3,6 @@ import { retry } from "@std/async/retry";
 import { JSONPath } from "jsonpath-plus";
 import { randomInt } from "node:crypto";
 import z from "zod";
-import { log } from "../../core/log.ts";
 import { getPathSegments, runAfter } from "../../core/utils.ts";
 import { VNCBrowser } from "../../core/vnc-browser.ts";
 import { AuthMode } from "../../model/auth-mode.ts";
@@ -12,6 +11,7 @@ import { FilePost, PostBuilder } from "../../model/post.ts";
 import { instagramDb } from "./instagram-db.ts";
 import { cookiesHaveInstagramLoginData } from "./instagram-login.ts";
 import { PlatformClient } from "../platform-client.ts";
+import { logger } from "../../core/logging.ts";
 
 export class InstagramClient extends PlatformClient {
   override name = "Instagram";
@@ -66,7 +66,7 @@ export class InstagramClient extends PlatformClient {
   override async fetchPost(): Promise<FilePost> {
     const mediaInfo = await this.fetchMediaInfo();
 
-    log.debug(`Media info extracted from ${this.pageUrl}`);
+    logger.debug`Media info extracted from ${this.pageUrl}`;
 
     const mediaItem = mediaInfo.items[0];
 
@@ -131,7 +131,7 @@ export class InstagramClient extends PlatformClient {
 
     const page = await browser.newPage();
     try {
-      log.debug(`Opening page URL: ${this.pageUrl}`);
+      logger.debug`Opening page URL: ${this.pageUrl}`;
 
       const res = await page.goto(this.pageUrl.toString(), { timeout: 0 });
       if (!res) throw new Error(`Failed to open page: ${this.pageUrl}`);
@@ -141,7 +141,7 @@ export class InstagramClient extends PlatformClient {
 
       // TODO: Check if user is still logged in
 
-      log.debug(`Extracting media info from ${this.pageUrl}`);
+      logger.debug`Extracting media info from ${this.pageUrl}`;
 
       const mediaInfoJson = this.extractMediaInfo(doc);
       const mediaInfo = MediaInfoSchema.safeParse(mediaInfoJson);

@@ -1,6 +1,6 @@
 import { DinoContext } from "../bot/dinogram.ts";
 import { replyWithError } from "./error-handling.ts";
-import { log } from "./log.ts";
+import { logger } from "./logging.ts";
 
 export function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -44,8 +44,8 @@ export function runAfter(args: {
   return setTimeout(async () => {
     try {
       await args.callback();
-    } catch (e) {
-      log.error("runAfter: unhandled exception. Error: ", e);
+    } catch (error) {
+      logger.error`runAfter error: ${error}`;
     }
   }, args.seconds * 1000);
 }
@@ -61,8 +61,7 @@ export async function safeRun(
     try {
       replyWithError(ctx, description, error);
     } catch (nested) {
-      log.error("Error replying with error: ", nested);
-      console.error(nested);
+      logger.error`Failed to reply with error: ${nested}`;
     }
   }
 }

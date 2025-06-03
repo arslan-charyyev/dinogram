@@ -6,15 +6,15 @@ import {
 } from "@grammyjs/conversations";
 import { hydrateReply, ParseModeFlavor } from "@grammyjs/parse-mode";
 import { run } from "@grammyjs/runner";
-import { retry } from "@std/async/retry";
+import { retry, RetryError } from "@std/async/retry";
 import { Bot, type Context, session, type SessionFlavor } from "grammy";
 import { config } from "../core/config.ts";
-import { log } from "../core/log.ts";
 import { replyWithError } from "../core/error-handling.ts";
 import { commands } from "./commands.ts";
 import { getRegisteredConversation } from "./conversations.ts";
 import { menus } from "./menus.ts";
 import { UrlHandler } from "./url-handler.ts";
+import { logger } from "../core/logging.ts";
 
 export type DinoParseModeContext =
   & ParseModeFlavor<Context>
@@ -58,7 +58,7 @@ export class Dinogram {
 
     this.bot.init().then(() => {
       const { first_name, username } = this.bot.botInfo;
-      log.info(`🚀 Launching bot "${first_name}" with username: @${username}`);
+      logger.info`🚀 Launching bot ${first_name} with username: ${username}`;
     });
 
     run(this.bot);
@@ -81,9 +81,10 @@ export class Dinogram {
         fetch(`https://${telegramApiHost}/bot${config.BOT_TOKEN}/logOut`)
       );
 
-      log.info(`Logged out from the ${telegramApiHost} server`);
-    } catch (e) {
-      log.error("Failed to logout from Bot API", e);
+      logger.info`Logged out from the ${telegramApiHost} server`;
+    } catch (error) {
+      const cause = error instanceof RetryError ? error.cause : error;
+      logger.error`Failed to logout from Bot API: ${cause}`;
     }
   }
 
@@ -97,7 +98,7 @@ export class Dinogram {
           error instanceof Error ? error : undefined,
         );
       } catch (cause) {
-        log.error("Failed to report an error", cause);
+        logger.error`Failed to report an error: ${cause}`;
       }
     });
   }
@@ -116,7 +117,7 @@ export class Dinogram {
 
         let url: URL;
         try {
-          log.debug(`Processing ${urlText}`);
+          logger.debug`New request: ${urlText}`;
 
           url = new URL(urlText);
         } catch (_e) {

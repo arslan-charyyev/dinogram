@@ -2,8 +2,8 @@ import { AsyncValue } from "@core/asyncutil/async-value";
 import { Lock } from "@core/asyncutil/lock";
 import { Cookie } from "puppeteer";
 import { VNCBrowser } from "../../core/vnc-browser.ts";
-import { log } from "../../core/log.ts";
 import { arraysAreEqual, getPathSegments, runAfter } from "../../core/utils.ts";
+import { logger } from "../../core/logging.ts";
 
 const LOGIN_COOKIES = ["ds_user_id", "sessionid"];
 
@@ -21,12 +21,12 @@ export async function startInstagramBrowserLoginFlow(args: {
   // TODO: This needs to be tested at least once
   const closePageId = runAfter({
     seconds: 3600,
-    callback: () => {
+    callback: async () => {
       try {
-        browser.close();
+        await browser.close();
         args.onExpire();
       } catch (error) {
-        console.error(error);
+        logger.error`Failed to close page after expiry: ${error}`;
       }
     },
   });
@@ -65,7 +65,7 @@ export async function startInstagramBrowserLoginFlow(args: {
 
       await completedAsync.set(true);
 
-      log.info("Instagram login successful");
+      logger.info`Instagram login successful`;
 
       clearTimeout(closePageId);
 
@@ -87,7 +87,7 @@ export async function startInstagramBrowserLoginFlow(args: {
 export async function clearInstagramLoginData() {
   const browser = await VNCBrowser.instance();
 
-  log.info("Clearing Instagram login data");
+  logger.info`Clearing Instagram login data`;
 
   const cookies = await getInstagramLoginCookies();
   await browser.deleteCookie(...cookies);

@@ -2,9 +2,9 @@ import { resolve } from "@std/path";
 import memoizee from "memoizee";
 import puppeteer from "puppeteer";
 import { config } from "./config.ts";
-import { log } from "./log.ts";
 import { Xvfb } from "xvfb-ts";
 import { X11Vnc as X11VNC } from "./x11-vnc.ts";
+import { logger } from "./logging.ts";
 
 export class VNCBrowser {
   private x11vnc?: X11VNC;
@@ -29,10 +29,10 @@ export class VNCBrowser {
       xvfb_args: ["-nolisten", "unix"],
     });
 
-    log.debug("Starting X virtual frame buffer...");
+    logger.debug`Starting X virtual frame buffer...`;
     await xvfb.start();
 
-    log.debug(`X virtual frame buffer started on display ${xvfb.display()}`);
+    logger.debug`X virtual frame buffer started on display ${xvfb.display()}`;
 
     // Specify user data directory to persist it if necessary
     const userDataDir = config.DATA_DIR
@@ -53,7 +53,7 @@ export class VNCBrowser {
       }
     }
 
-    log.debug("Launching puppeteer browser...");
+    logger.debug`Launching puppeteer browser...`;
     const browser = await puppeteer.launch({
       args: [
         `--display=${xvfb.display()}`, // Render in the virtual frame buffer
@@ -64,18 +64,18 @@ export class VNCBrowser {
       defaultViewport: null, // Default is 800x600
     });
 
-    log.debug(`Browser launched: ${await browser.version()}`);
+    logger.debug`Browser launched: ${await browser.version()}`;
 
     return new VNCBrowser(xvfb, browser);
   }
 
   public async close() {
-    this.stopVncServer();
+    await this.stopVncServer();
 
-    log.debug("Closing puppeteer browser");
+    logger.debug`Closing puppeteer browser`;
     await this.browser.close();
 
-    log.debug("Stopping X virtual frame buffer");
+    logger.debug`Stopping X virtual frame buffer`;
     await this.xvfb.stop();
   }
 
@@ -86,23 +86,24 @@ export class VNCBrowser {
       );
     }
 
-    log.debug("Starting x11vnc server...");
+    logger.debug`Starting x11vnc server...`;
     const x11vnc = await X11VNC.start(this.xvfb.display());
-    log.debug(`x11vnc server started on port ${x11vnc.rfbPort}`);
+    logger.debug`x11vnc server started on port ${x11vnc.rfbPort}`;
 
     this.x11vnc = x11vnc;
 
     return x11vnc.frontendURL();
   }
 
-  private stopVncServer() {
+  private async stopVncServer() {
+    // Not thread-safe, but shouldn't really matter
     const { x11vnc } = this;
     if (!x11vnc) return;
 
     this.x11vnc = undefined;
 
-    log.debug("Stopping x11vnc server...");
-    x11vnc.stop();
+    logger.debug`Stopping x11vnc server...`;
+    await x11vnc.stop();
   }
 
   public newPage() {
