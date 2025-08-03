@@ -29,4 +29,4 @@ jobs:
         env:
           BOT_TOKEN: "unused"
           TEST_INSTAGRAM_COOKIE: ${{ secrets.TEST_INSTAGRAM_COOKIE }}
-        run: devbox run -- deno task test:all
+        run: deno task test:all
