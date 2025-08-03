@@ -25,14 +25,13 @@
     "lint:check": "deno lint",
     "ts:check": "deno check --quiet src test --allow-import",
     "issues:check": "deno task format:check ; deno task lint:check ; deno task ts:check",
-    "deps:check": "deno run -A jsr:@check/deps",
     "deps:cache": "deno install --allow-import",
     "test:all": "deno test -A",
     "test:tt": "deno test test/tiktok -A",
     "test:ig": "deno test test/instagram -A",
     "test:ig:auth": "deno test test/instagram -A --filter auth",
     "test:ig:anon": "deno test test/instagram -A --filter anon",
-    "main": "deno --allow-read --allow-write --allow-net --allow-env --allow-import ./src/main.ts"
+    "main": "deno --allow-read --allow-write --allow-net --allow-env --allow-import --unstable-detect-cjs ./src/main.ts"
   },
   "exclude": [
     "assets/**"

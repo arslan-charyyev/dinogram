@@ -4,39 +4,35 @@ import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { truncate } from "./utils.ts";
 import { RetryError } from "@std/async";
+import { ZodError } from "zod";
 
 export async function reportError(
   ctx: Context,
-  error: string,
-  cause?: Error | string,
+  reason: string,
+  error?: unknown,
 ) {
-  const message = ctx.message?.text;
-
   // Unwrap cause from retry errors
-  if (cause instanceof RetryError && cause.cause instanceof Error) {
-    cause = cause.cause;
+  if (error instanceof RetryError) {
+    error = error.cause;
   }
 
   const errorDetails = {
-    cause: cause instanceof Error ? cause.message : cause,
-    message,
+    cause: error instanceof ZodError
+      ? error.issues
+      : error instanceof Error
+      ? { message: error.message, cause: error.cause }
+      : error,
   };
 
-  log.error(error, errorDetails);
+  log.error(`Replying with ${reason}: ${error}`);
 
   const parts: Stringable[] = [];
-  parts.push(bold(truncate(error, 90)));
+  parts.push(bold(truncate(reason, 90)));
 
   if (config.SEND_ERRORS) {
-    if (cause) {
-      const jsonString = JSON.stringify(
-        errorDetails,
-        Object.getOwnPropertyNames(errorDetails),
-        2,
-      );
-      const json = truncate(jsonString, 4000);
-      parts.push("\n", pre(json, "json"));
-    }
+    const jsonString = JSON.stringify(errorDetails, null, 2);
+    const json = truncate(jsonString, 4000);
+    parts.push("\n", pre(json, "json"));
 
     const errorMessage = fmt(parts);
 

@@ -1,10 +1,11 @@
 {
   "deno.enable": true,
   "editor.formatOnSave": true,
-  "deno.path": ".devbox/nix/profile/default/bin/deno",
   "editor.defaultFormatter": "denoland.vscode-deno",
   "editor.tabSize": 2,
-  "cSpell.files": ["./**/*"],
+  "cSpell.files": [
+    "./**/*"
+  ],
   "cSpell.words": [
     "abtest",
     "acrawler",

@@ -18,6 +18,7 @@ import { Window } from "happy-dom";
 export class TikTokClient extends PlatformClient {
   override name = "TikTok";
   userAgent: string;
+  readonly cookieJar = new CookieJar();
 
   constructor(pageUrl: URL) {
     super(pageUrl);
@@ -28,23 +29,27 @@ export class TikTokClient extends PlatformClient {
     const timestamp = Math.round(Date.now() / 1000);
 
     this.userAgent = `${str1}-${str2}/${version} (${timestamp}.0)`;
-    const headers = {
-      "Referer": "https://www.tiktok.com/",
-      "User-Agent": this.userAgent,
-    };
-
-    const cookieJar = new CookieJar([{
-      name: "tt_webid_v2",
-      value: `${randInt(10 ** 18, 10 ** 19)}`,
-    }]);
 
     this.fetch = wrapFetch({
-      cookieJar,
-      fetch: (input, init) =>
-        fetch(input, {
-          headers,
+      cookieJar: this.cookieJar,
+      fetch: (input, init) => {
+        const headers = new Headers({
+          "referer": "https://www.tiktok.com/",
+          "user-agent": this.userAgent,
+        });
+
+        // The headers we get will contain cookie headers
+        if (init?.headers instanceof Headers) {
+          init?.headers.forEach((val, key) => {
+            headers.append(key, val);
+          });
+        }
+
+        return globalThis.fetch(input, {
           ...init,
-        }),
+          headers,
+        });
+      },
     });
   }
 
@@ -58,6 +63,10 @@ export class TikTokClient extends PlatformClient {
 
       if (!element) {
         throw Error("Rehydration data not found");
+      }
+
+      for (const cookie of response.headers.getSetCookie()) {
+        this.cookieJar.setCookie(cookie);
       }
 
       return element;
@@ -128,11 +137,7 @@ export class TikTokClient extends PlatformClient {
 
     const signedUrl = await TikTokClient.signUrl(unsignedUrl, this.userAgent);
 
-    const res = await retry(() =>
-      this.fetch(signedUrl, {
-        headers: { "User-Agent": this.userAgent },
-      })
-    );
+    const res = await retry(() => this.fetch(signedUrl));
 
     const itemDetailJson = await res.json();
     const itemDetail = ItemDetailSchema.parse(itemDetailJson);

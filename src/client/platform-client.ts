@@ -21,8 +21,20 @@ export abstract class PlatformClient {
   getByteStream(url: string): Promise<ReadableStream<Uint8Array>> {
     return retry(async () => {
       const response = await this.fetch(url);
+
+      if (!response.ok) {
+        throw Error("Download URL not OK", {
+          cause: {
+            status: response.status,
+            statusText: response.statusText,
+            url: url,
+            body: await response.text(),
+          },
+        });
+      }
+
       if (!response.body) {
-        throw Error("Failed to get video stream", { cause: response });
+        throw Error("Download URL has no body", { cause: response });
       }
       return response.body;
     });
