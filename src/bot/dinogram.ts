@@ -4,9 +4,12 @@ import {
   conversations,
   createConversation,
 } from "@grammyjs/conversations";
+import { hydrateReply, ParseModeFlavor } from "@grammyjs/parse-mode";
 import { run } from "@grammyjs/runner";
+import type { ReplyParameters } from "@grammyjs/types";
 import { retry } from "@std/async/retry";
 import { Bot, type Context, session, type SessionFlavor } from "grammy";
+import { ClientFactory } from "../client/client-factory.ts";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { reportError } from "../utils/reports.ts";
@@ -14,7 +17,6 @@ import { commands } from "./commands.ts";
 import { dinoConversations } from "./conversations.ts";
 import { menus } from "./menus.ts";
 import { UrlHandler } from "./url-handler.ts";
-import { hydrateReply, ParseModeFlavor } from "@grammyjs/parse-mode";
 
 export type DinoParseModeContext =
   & ParseModeFlavor<Context>
@@ -128,15 +130,41 @@ export class Dinogram {
           continue;
         }
 
+        const client = ClientFactory.find(url);
+        if (!client) continue;
+
+        const processingMessage = await ctx.api.sendMessage(
+          ctx.chatId,
+          `Processing ${client.name} link...`,
+          {
+            reply_parameters: config.SEND_AS_REPLY
+              ? {
+                message_id: ctx.message.message_id,
+                allow_sending_without_reply: true,
+                quote: urlText,
+              } satisfies ReplyParameters
+              : undefined,
+          },
+        );
+
         try {
-          const handler = new UrlHandler(ctx, ctx.message, url);
-          await handler.handle();
+          const handler = new UrlHandler(ctx, ctx.message);
+          await handler.handle(client);
         } catch (e) {
           reportError(
             ctx,
             `Error handling url ${urlText}`,
             e instanceof Error ? e : undefined,
           );
+        } finally {
+          try {
+            await ctx.api.deleteMessage(
+              ctx.chatId,
+              processingMessage.message_id,
+            );
+          } catch (e) {
+            log.error("Failed to delete processing message", e);
+          }
         }
       }
     });

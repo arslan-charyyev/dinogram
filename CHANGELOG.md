@@ -4,6 +4,10 @@
 
 [1.2.5]: https://github.com/arslan-charyyev/dinogram/compare/v1.2.4...v1.2.5
 
+### Added
+
+- Processing message, when bot starts processing a supported link
+
 ### Fixed
 
 - TikTok downloads

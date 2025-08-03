@@ -6,7 +6,6 @@ import type {
   ReplyParameters,
 } from "@grammyjs/types";
 import { Context, InputFile } from "grammy";
-import { ClientFactory } from "../client/client-factory.ts";
 import type { PlatformClient } from "../client/platform-client.ts";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
@@ -19,13 +18,9 @@ export class UrlHandler {
   constructor(
     private ctx: Context,
     private message: Message,
-    private url: URL,
   ) {}
 
-  async handle() {
-    const client = ClientFactory.find(this.url);
-    if (!client) return;
-
+  async handle(client: PlatformClient) {
     let post: FilePost;
     try {
       post = await client.fetchPost();
