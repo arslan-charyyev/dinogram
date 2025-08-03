@@ -14,7 +14,7 @@ const intCsv = z
 
 const Config = z.object({
   BOT_ADMINS: intCsv
-    .default("")
+    .default([])
     .describe(
       "A comma-separated list of user or chat IDs that can change bot settings",
     ),
@@ -41,7 +41,7 @@ const Config = z.object({
     ),
 
   INSTAGRAM_ENABLED: bool
-    .default("true")
+    .default(true)
     .describe("Enables support for downloading Instagram media"),
 
   LOG_LEVEL: z
@@ -50,21 +50,21 @@ const Config = z.object({
     .describe("Log level. Source: https://jsr.io/@std/log/0.224.7/levels.ts"),
 
   REPORT_ERRORS_TO: intCsv
-    .default("")
+    .default([])
     .describe(
       "A comma-separated list of user or chat IDs that will receive notifications about any errors",
     ),
 
   SEND_AS_REPLY: bool
-    .default("true")
+    .default(true)
     .describe("Send media as a reply or as a regular message"),
 
   SEND_ERRORS: bool
-    .default("true")
+    .default(true)
     .describe("Send errors to the corresponding chat"),
 
   SHOW_CAPTION_ABOVE_MEDIA: bool
-    .default("false")
+    .default(false)
     .describe("Send caption above media (true), or below (false)"),
 
   TEST_INSTAGRAM_COOKIE: z
@@ -73,18 +73,18 @@ const Config = z.object({
     .describe("Instagram cookies to be used for testing"),
 
   TIKTOK_ENABLED: bool
-    .default("true")
+    .default(true)
     .describe("Enables support for downloading TikTok media"),
 
   WHITELIST: intCsv
-    .default("")
+    .default([])
     .describe(
       "A comma-separated list of user or chat IDs that are allowed to make requests. " +
         "If empty, then no restrictions apply.",
     ),
 
   WITH_CAPTION: bool
-    .default("true")
+    .default(true)
     .describe("Send media with title/description as caption"),
 });
 

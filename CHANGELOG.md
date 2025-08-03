@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.5] - 2025-08-04
+
+[1.2.5]: https://github.com/arslan-charyyev/dinogram/compare/v1.2.4...v1.2.5
+
+### Fixed
+
+- TikTok downloads
+
+### Changed
+
+- Slightly improved error messages
+
 ## [1.2.4] - 2025-05-27
 
 [1.2.4]: https://github.com/arslan-charyyev/dinogram/compare/v1.2.3...v1.2.4
@@ -14,4 +26,5 @@
 [1.2.3]: https://github.com/arslan-charyyev/dinogram/compare/v1.2.2...v1.2.3
 
 ### Changed
+
 - Retry errors now show cause error

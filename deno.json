@@ -1,6 +1,6 @@
 {
   "imports": {
-    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.49",
+    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.56",
     "@grammyjs/auto-retry": "https://deno.land/x/grammy_auto_retry@v2.0.2/mod.ts",
     "@grammyjs/parse-mode": "https://deno.land/x/grammy_parse_mode@1.11.1/mod.ts",
     "@grammyjs/runner": "https://deno.land/x/grammy_runner@v2.0.3/mod.ts",
@@ -9,15 +9,15 @@
     "@grammyjs/conversations": "https://deno.land/x/grammy_conversations@v2.1.0/mod.ts",
     "@std/assert": "jsr:@std/assert@1.0.13",
     "@std/async": "jsr:@std/async@1.0.13",
-    "@std/dotenv": "jsr:@std/dotenv@0.225.4",
+    "@std/dotenv": "jsr:@std/dotenv@0.225.5",
     "@std/log": "jsr:@std/log@0.224.14",
-    "@std/path": "jsr:@std/path@1.0.9",
+    "@std/path": "jsr:@std/path@1.1.1",
     "another-cookiejar": "jsr:@jd1378/another-cookiejar@5.0.7",
     "grammy": "https://deno.land/x/grammy@v1.36.1/mod.ts",
     "grammy/core/api": "https://deno.land/x/grammy@v1.36.1/core/api.ts",
-    "happy-dom": "npm:happy-dom@17.4.7",
+    "happy-dom": "npm:happy-dom@18.0.1",
     "jsonpath-plus": "npm:jsonpath-plus@10.3.0",
-    "zod": "npm:zod@3.25.28"
+    "zod": "npm:zod@4.0.14"
   },
   "tasks": {
     "format:check": "deno fmt --check",
@@ -27,7 +27,7 @@
     "issues:check": "deno task format:check ; deno task lint:check ; deno task ts:check",
     "deps:cache": "deno install --allow-import",
     "test:all": "deno test -A",
-    "test:tt": "deno test test/tiktok -A",
+    "test:tt": "deno test -A test/tiktok",
     "test:ig": "deno test test/instagram -A",
     "test:ig:auth": "deno test test/instagram -A --filter auth",
     "test:ig:anon": "deno test test/instagram -A --filter anon",

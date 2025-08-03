@@ -218,6 +218,8 @@ export class TikTokClient extends PlatformClient {
     const bogus = windowExtended._0x32d649(url.searchParams.toString());
     url.searchParams.append("X-Bogus", bogus);
 
+    // Aborts any ongoing operations (such as fetch and timers)
+    await window.happyDOM.abort();
     window.close();
 
     return url.toString();
