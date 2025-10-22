@@ -108,12 +108,12 @@ export class InstagramClient extends PlatformClient {
       case MediaType.Image: {
         const file = createMediaFile(mediaItem);
 
-        return PostBuilder.single({ description, pageUrl, file });
+        return PostBuilder.singleFile({ description, pageUrl, file });
       }
       case MediaType.Video: {
         const file = createMediaFile(mediaItem);
 
-        return PostBuilder.single({ description, pageUrl, file });
+        return PostBuilder.singleFile({ description, pageUrl, file });
       }
       case MediaType.Carousel: {
         const files = mediaItem.carousel_media.map((media) => {
@@ -127,7 +127,7 @@ export class InstagramClient extends PlatformClient {
           }
         });
 
-        return PostBuilder.multi({ description, pageUrl, files });
+        return PostBuilder.multiFile({ description, pageUrl, files });
       }
     }
   }
@@ -143,7 +143,7 @@ export class InstagramClient extends PlatformClient {
 
     const mediaInfoJson = authenticated
       ? await this.extractMediaInfoAuthenticated(doc)
-      : this.extractMediaInfoAnonymously(doc);
+      : await this.extractMediaInfoAnonymously(doc);
 
     // Parse media info
 
@@ -201,9 +201,8 @@ export class InstagramClient extends PlatformClient {
       if (!script.textContent.includes(key)) continue;
 
       const json = JSON.parse(script.textContent);
-      const mediaInfoJson = JSONPath({ path: `\$..['${key}']`, json })[0];
 
-      return mediaInfoJson;
+      return JSONPath({ path: `\$..['${key}']`, json })[0];
     }
 
     throw new Error("No media info data found");
@@ -299,7 +298,7 @@ const MediaCaptionSchema = z.object({
 });
 
 const MediaItem = z.object({
-  url: z.string().url(),
+  url: z.url(),
   width: z.number().int(),
   height: z.number().int(),
 });

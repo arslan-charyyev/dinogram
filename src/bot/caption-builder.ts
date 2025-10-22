@@ -22,9 +22,7 @@ export class CaptionBuilder {
       parts.push("\n\n", truncate(post.pageUrl.toString(), 100));
     }
 
-    const caption = fmt(parts);
-
-    return caption;
+    return fmt(parts);
   }
 
   static multi(post: MultiFilePost, batchIndex: number): FormattedString {
@@ -60,8 +58,6 @@ export class CaptionBuilder {
       );
     }
 
-    const caption = fmt(parts);
-
-    return caption;
+    return fmt(parts);
   }
 }

@@ -15,6 +15,7 @@
         "--allow-net",
         "--allow-env",
         "--allow-import",
+        "--allow-run",
         "--inspect-wait"
       ],
       "attachSimplePort": 9229

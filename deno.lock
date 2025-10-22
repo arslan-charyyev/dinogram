@@ -22,6 +22,8 @@
     "npm:@types/node@*": "22.12.0",
     "npm:happy-dom@18.0.1": "18.0.1",
     "npm:jsonpath-plus@10.3.0": "10.3.0_jsep@1.4.0",
+    "npm:temp-dir@3": "3.0.0",
+    "npm:ytdlp-nodejs@^2.3.5": "2.3.5",
     "npm:zod@4.0.14": "4.0.14"
   },
   "jsr": {
@@ -375,6 +377,9 @@
       ],
       "bin": true
     },
+    "temp-dir@3.0.0": {
+      "integrity": "sha512-nHc6S/bwIilKHNRgK/3jlhDoIHcp45YgyiwcAk46Tr0LfEqGBVpmiAyuiuxeVE44m3mXnEeVhaipLOEWmH+Njw=="
+    },
     "undici-types@6.20.0": {
       "integrity": "sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg=="
     },
@@ -425,6 +430,11 @@
         "buffer-crc32",
         "fd-slicer"
       ]
+    },
+    "ytdlp-nodejs@2.3.5": {
+      "integrity": "sha512-7V08DRv8C1K0HxJFvRoaoLYFS/reJ9VJBlaMVhEvdi2IsYK/9Hae1Mah65Y+bhk3RAmx7G9eTfpOhkj3bp0Zbw==",
+      "scripts": true,
+      "bin": true
     },
     "zod@4.0.14": {
       "integrity": "sha512-nGFJTnJN6cM2v9kXL+SOBq3AtjQby3Mv5ySGFof5UGRHrRioSJ5iG680cYNjE/yWk671nROcpPj4hAS8nyLhSw=="
@@ -527,6 +537,8 @@
       "jsr:@std/path@1.1.1",
       "npm:happy-dom@18.0.1",
       "npm:jsonpath-plus@10.3.0",
+      "npm:temp-dir@3",
+      "npm:ytdlp-nodejs@^2.3.5",
       "npm:zod@4.0.14"
     ]
   }

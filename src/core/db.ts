@@ -7,6 +7,9 @@ export const db = {
   instagram: {
     cookie: createModel<string>(["instagram", "cookie"]),
   },
+  youtube: {
+    cookie: createModel<string>(["youtube", "cookie"]),
+  },
 };
 
 const dbPath = config.DATA_DIR

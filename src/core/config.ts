@@ -76,6 +76,15 @@ const Config = z.object({
     .default(true)
     .describe("Enables support for downloading TikTok media"),
 
+  YOUTUBE_ENABLED: bool
+    .default(true)
+    .describe("Enables support for downloading Youtube videos"),
+
+  YT_DLP_PATH: z
+    .string()
+    .default("yt-dlp")
+    .describe("Path to the yt-dlp binary"),
+
   WHITELIST: intCsv
     .default([])
     .describe(

@@ -1,5 +1,6 @@
 import { autoRetry } from "@grammyjs/auto-retry";
 import {
+  ConversationConfig,
   ConversationFlavor,
   conversations,
   createConversation,
@@ -17,14 +18,21 @@ import { commands } from "./commands.ts";
 import { dinoConversations } from "./conversations.ts";
 import { menus } from "./menus.ts";
 import { UrlHandler } from "./url-handler.ts";
+import { youtubeCallback } from "./callbacks.ts";
+
+export type DinoSession = Record<string, unknown>;
 
 export type DinoParseModeContext =
   & ParseModeFlavor<Context>
-  & SessionFlavor<Record<string, unknown>>;
+  & SessionFlavor<DinoSession>;
 
+/**
+ * Outside context objects (knows all middleware plugins)
+ */
 export type DinoContext = ConversationFlavor<DinoParseModeContext>;
 
 export class Dinogram {
+  // Use the outside context type for the bot.
   bot: Bot<DinoContext>;
 
   constructor() {
@@ -44,14 +52,31 @@ export class Dinogram {
     this.bot.use(hydrateReply);
     this.bot.use(session({ initial: () => ({}) }));
     this.bot.use(conversations());
-    this.bot.use(createConversation(dinoConversations.setInstagramCookie, {
+
+    const conversationOptions: ConversationConfig<
+      DinoContext,
+      DinoParseModeContext
+    > = {
       plugins: [hydrateReply],
-    }));
+    };
+
+    this.bot.use(
+      createConversation(
+        dinoConversations.updateInstagramCookie,
+        conversationOptions,
+      ),
+      createConversation(
+        dinoConversations.updateYoutubeCookie,
+        conversationOptions,
+      ),
+    );
 
     this.bot.use(menus.settings);
     for (const command in commands) {
       this.bot.command(command, commands[command]);
     }
+
+    this.bot.callbackQuery(/youtube\|.+/, youtubeCallback);
 
     this.listenToUrlEntities();
 

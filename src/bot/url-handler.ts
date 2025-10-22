@@ -1,18 +1,25 @@
-import { bold, fmt } from "@grammyjs/parse-mode";
+import { blockquote, bold, fmt, pre } from "@grammyjs/parse-mode";
 import type {
   InputMediaPhoto,
   InputMediaVideo,
   Message,
   ReplyParameters,
 } from "@grammyjs/types";
-import { Context, InputFile } from "grammy";
+import { Context, InlineKeyboard, InputFile } from "grammy";
 import type { PlatformClient } from "../client/platform-client.ts";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { AudioFile } from "../model/file.ts";
-import { FilePost, MultiFilePost, SingleFilePost } from "../model/post.ts";
+import {
+  FilePost,
+  MultiFilePost,
+  MultiQualityVideoPost,
+  SingleFilePost,
+} from "../model/post.ts";
 import { reportError } from "../utils/reports.ts";
 import { CaptionBuilder } from "./caption-builder.ts";
+import { encodeCallbackData, YoutubeCallbackData } from "./callbacks.ts";
+import { messages } from "../core/messages.ts";
 
 export class UrlHandler {
   constructor(
@@ -34,10 +41,12 @@ export class UrlHandler {
     }
 
     switch (post.type) {
-      case "single":
+      case "single-file":
         return await this.replyWithSingleMedia(post, client);
-      case "multi":
+      case "multi-file":
         return await this.replyWithMediaGroup(post, client);
+      case "multi-quality-video":
+        return await this.replyWithQualityOptions(post, client);
     }
   }
 
@@ -173,7 +182,7 @@ export class UrlHandler {
     }
 
     if (post.audio) {
-      this.replyWithAudio(post.audio, lastSentMessageId);
+      await this.replyWithAudio(post.audio, lastSentMessageId);
     }
   }
 
@@ -209,6 +218,58 @@ export class UrlHandler {
           message_id: lastSentMessageId ?? this.message.message_id,
         },
       },
+    );
+  }
+
+  private async replyWithQualityOptions(
+    post: MultiQualityVideoPost,
+    client: PlatformClient,
+  ) {
+    const replyParameters = config.SEND_AS_REPLY
+      ? {
+        message_id: this.message.message_id,
+        allow_sending_without_reply: true,
+        quote: post.pageUrl.toString(),
+      } satisfies ReplyParameters
+      : undefined;
+
+    const keyboard = new InlineKeyboard();
+    for (const quality of post.qualityVariants) {
+      const icon = quality.type === "video" ? "📽️" : "🔊";
+      const mbSize = (quality.approxByteCount / 1_000_000).toFixed(2);
+      const buttonText = `${icon} ${quality.name} ~ ${mbSize}mb`;
+
+      // Embed the quality and the original URL in the callback data
+      const callbackData: YoutubeCallbackData = {
+        type: "youtube",
+        quality: quality.name,
+        videoId: post.videoId,
+      };
+
+      `${post.videoId}|${quality.name}`;
+      keyboard.text(buttonText, encodeCallbackData(callbackData)).row();
+    }
+
+    const prompt = fmt([
+      blockquote(post.description),
+      "\n\n",
+      messages.SELECT_QUALITY,
+    ]);
+
+    // Send the message with the inline keyboard
+    const sentMessage = await this.ctx.api.sendMessage(
+      this.message.chat.id,
+      prompt.text,
+      {
+        entities: prompt.entities,
+        reply_parameters: replyParameters,
+        reply_markup: keyboard,
+        message_thread_id: this.message.message_thread_id,
+      },
+    );
+
+    log.debug(
+      `Asking ${client.name} video quality. ID: ${sentMessage.message_id}`,
     );
   }
 }

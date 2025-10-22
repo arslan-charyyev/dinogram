@@ -107,7 +107,7 @@ export class TikTokClient extends PlatformClient {
       throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
     }
 
-    return PostBuilder.single({
+    return PostBuilder.singleFile({
       description,
       pageUrl: this.pageUrl,
       file: FileBuilder.video({ downloadUrl }),
@@ -166,7 +166,7 @@ export class TikTokClient extends PlatformClient {
       FileBuilder.photo({ downloadUrl })
     );
 
-    return PostBuilder.multi({
+    return PostBuilder.multiFile({
       title,
       description,
       files,

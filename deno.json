@@ -17,6 +17,8 @@
     "grammy/core/api": "https://deno.land/x/grammy@v1.36.1/core/api.ts",
     "happy-dom": "npm:happy-dom@18.0.1",
     "jsonpath-plus": "npm:jsonpath-plus@10.3.0",
+    "temp-dir": "npm:temp-dir@^3.0.0",
+    "ytdlp-nodejs": "npm:ytdlp-nodejs@^2.3.5",
     "zod": "npm:zod@4.0.14"
   },
   "tasks": {
@@ -31,7 +33,7 @@
     "test:ig": "deno test test/instagram -A",
     "test:ig:auth": "deno test test/instagram -A --filter auth",
     "test:ig:anon": "deno test test/instagram -A --filter anon",
-    "main": "deno --allow-read --allow-write --allow-net --allow-env --allow-import --unstable-detect-cjs ./src/main.ts"
+    "main": "deno --allow-read --allow-write --allow-net --allow-env --allow-import --allow-run --unstable-detect-cjs ./src/main.ts"
   },
   "exclude": [
     "assets/**"
