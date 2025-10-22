@@ -20,7 +20,7 @@ async function test(firstImageSize: number, firstImageHash: string) {
   const post = await client.fetchPost();
 
   assert(
-    post.type === "multi" &&
+    post.type === "multi-file" &&
       post.files.map((it) => it.type).includes("photo") &&
       post.files.map((it) => it.type).includes("video"),
     "Instagram link is for photos with videos",

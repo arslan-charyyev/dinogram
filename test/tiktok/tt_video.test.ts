@@ -8,7 +8,7 @@ Deno.test("Download TikTok video", async () => {
   const post = await client.fetchPost();
 
   assert(
-    post.type === "single" && post.file.type === "video",
+    post.type === "single-file" && post.file.type === "video",
     "Link is for a video",
   );
 

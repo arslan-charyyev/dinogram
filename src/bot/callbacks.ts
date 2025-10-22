@@ -2,8 +2,7 @@ import { type CallbackQueryContext, InputFile } from "grammy";
 import { YouTubeClient } from "../client/youtube-client.ts";
 import type { DinoContext } from "./dinogram.ts";
 import { log } from "../core/log.ts";
-import { config } from "../core/config.ts";
-import { ReplyParameters } from "@grammyjs/types";
+import { make_reply_params } from "../utils/utils.ts";
 
 type CommonCallbackData = {
   type: string;
@@ -38,21 +37,16 @@ export async function youtubeCallback(ctx: CallbackQueryContext<DinoContext>) {
   const youtubeClient = new YouTubeClient(url);
 
   const videoStream = await youtubeClient.getVideoStream(data.quality);
-  const inputFile = new InputFile(videoStream);
 
-  const replyParameters = config.SEND_AS_REPLY
-    ? {
-      message_id: message.message_id,
-      allow_sending_without_reply: true,
-    } satisfies ReplyParameters
-    : undefined;
+  const filename = message.text?.substring(0, message.text?.indexOf("\n"));
+  const inputFile = new InputFile(videoStream, `${filename}.webm`);
 
   const sentMessage = await ctx.api.sendVideo(
     message.chat.id,
     inputFile,
     {
-      reply_parameters: replyParameters,
       message_thread_id: message?.message_thread_id,
+      reply_parameters: make_reply_params(message.reply_to_message?.message_id),
     },
   );
 

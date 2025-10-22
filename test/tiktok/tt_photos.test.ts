@@ -8,7 +8,8 @@ Deno.test("Download TikTok photos", async () => {
   const post = await client.fetchPost();
 
   assert(
-    post.type === "multi" && post.files.every(({ type }) => type === "photo"),
+    post.type === "multi-file" &&
+      post.files.every(({ type }) => type === "photo"),
     "TikTok link is for photos",
   );
 

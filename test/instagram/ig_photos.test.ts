@@ -20,7 +20,8 @@ async function test(firstImageSize: number, firstImageHash: string) {
   const post = await client.fetchPost();
 
   assert(
-    post.type === "multi" && post.files.every(({ type }) => type === "photo"),
+    post.type === "multi-file" &&
+      post.files.every(({ type }) => type === "photo"),
     "Instagram link is for photos",
   );
 

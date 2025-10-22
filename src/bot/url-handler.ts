@@ -1,4 +1,4 @@
-import { blockquote, bold, fmt, pre } from "@grammyjs/parse-mode";
+import { blockquote, bold, fmt } from "@grammyjs/parse-mode";
 import type {
   InputMediaPhoto,
   InputMediaVideo,

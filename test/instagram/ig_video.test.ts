@@ -20,7 +20,7 @@ async function test(videoSize: number, videoHash: string) {
   const post = await client.fetchPost();
 
   assert(
-    post.type === "single" && post.file.type === "video",
+    post.type === "single-file" && post.file.type === "video",
     "Link is for a video",
   );
 

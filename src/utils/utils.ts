@@ -1,3 +1,6 @@
+import { ReplyParameters } from "@grammyjs/types";
+import { config } from "../core/config.ts";
+
 export function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -28,4 +31,15 @@ export function getUrlSegments(url: URL): string[] {
   return url.pathname
     .split("/")
     .filter((it) => it.length > 0); // Removes empty strings
+}
+
+export function make_reply_params(
+  message_id: number | undefined,
+): ReplyParameters | undefined {
+  return (config.SEND_AS_REPLY && message_id)
+    ? {
+      message_id: message_id,
+      allow_sending_without_reply: true,
+    }
+    : undefined;
 }
