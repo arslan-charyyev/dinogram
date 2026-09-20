@@ -140,6 +140,38 @@ what they send to an admin to ask for access.
 Regardless of the deployment method, you need to obtain a token from the
 [BotFather](https://telegram.me/BotFather).
 
+### Coolify
+
+The public instance runs on [Coolify](https://coolify.io). A push of a version
+tag runs [publish-release.yml](.github/workflows/publish-release.yml), which
+builds the image, pushes it to GHCR, and then calls
+[deploy-to-coolify.yml](.github/workflows/deploy-to-coolify.yml).
+
+That workflow runs [coolify_deploy.py](.github/scripts/coolify_deploy.py), which
+holds the whole Coolify config of the app — image, resource limits, and every
+environment variable — in its `SPEC` and `ENVS` tables. Edit them, push a tag,
+and CI reconciles the app: the first run creates the project and the
+application, and every later run PATCHes them. It also creates the persistent
+volume at `/app/data` once, which is where the settings and the whitelist live.
+
+A manual run of the workflow covers the two cases that a tag push does not. With
+no version, it redeploys `latest`, which is how a rotated token reaches the
+container, because every run re-syncs the whole environment. With a version, it
+redeploys that release, which is the rollback path.
+
+Repository secrets: `COOLIFY_TOKEN`, `BOT_TOKEN`. Repository variables:
+`COOLIFY_URL`, `BOT_ADMINS`, `WHITELIST`, `REPORT_ERRORS_TO`. The Telegram IDs
+stay in variables, because this repository is public.
+
+> [!NOTE]
+> The bot talks to a
+> [local Bot API server](https://core.telegram.org/bots/api#using-a-local-bot-api-server)
+> at `http://telegram-bot-api:8081`, which raises the upload limit from 50 MB to
+> 2 GB. That container runs beside Coolify, not inside it, so the application
+> needs its **Connect to Predefined Network** option on. Without that option
+> Coolify isolates the container, the name does not resolve, and every upload
+> fails.
+
 ### Docker
 
 One-liner with default configuration:
