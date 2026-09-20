@@ -12,8 +12,9 @@ import { Bot, type Context, session, type SessionFlavor } from "grammy";
 import { ClientFactory } from "../client/client-factory.ts";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
+import { messages } from "../core/messages.ts";
 import { reportError } from "../utils/reports.ts";
-import { isRequestAuthorized } from "./authorization.ts";
+import { isAllowed } from "./access.ts";
 import { commands } from "./commands.ts";
 import { dinoConversations } from "./conversations.ts";
 import {
@@ -121,10 +122,17 @@ export class Dinogram {
 
   private listenToUrlEntities() {
     this.bot.on("message:entities:url", async (ctx) => {
-      if (!isRequestAuthorized(ctx.message.from.id, ctx.message.chat.id)) {
-        ctx.reply(
-          "🚫 Sorry. You are not authorized to make requests to this bot.",
-        );
+      const { from, chat } = ctx.message;
+
+      if (!await isAllowed(from.id, chat.id)) {
+        // The IDs go into the answer, because that is what the sender forwards
+        // to an admin to ask for access.
+        await ctx.reply(messages.NOT_ALLOWED(from.id, chat.id), {
+          reply_parameters: {
+            message_id: ctx.message.message_id,
+            allow_sending_without_reply: true,
+          },
+        });
         return;
       }
 

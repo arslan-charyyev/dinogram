@@ -1,5 +1,6 @@
 import { CommandMiddleware, Context } from "grammy";
 import { config } from "../core/config.ts";
+import { allow, deny, listAllowed } from "./access.ts";
 import { menus } from "./menus.ts";
 
 export const commands: Record<string, CommandMiddleware<Context>> = {
@@ -14,4 +15,8 @@ export const commands: Record<string, CommandMiddleware<Context>> = {
       "🚫 You are not authorized to manage Dinogram settings",
     );
   },
+
+  allow: allow,
+  deny: deny,
+  allowed: listAllowed,
 };

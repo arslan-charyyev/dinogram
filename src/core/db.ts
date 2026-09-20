@@ -2,18 +2,20 @@
 
 import { resolve } from "@std/path";
 import { config } from "./config.ts";
-
-export const db = {
-  instagram: {
-    cookie: createModel<string>(["instagram", "cookie"]),
-  },
-};
+import { Whitelist } from "./whitelist.ts";
 
 const dbPath = config.DATA_DIR
   ? resolve(config.DATA_DIR, "kv.sqlite3")
   : undefined;
 
 const kv = await Deno.openKv(dbPath);
+
+export const db = {
+  instagram: {
+    cookie: createModel<string>(["instagram", "cookie"]),
+  },
+  whitelist: new Whitelist(kv),
+};
 
 /**
  * This function allows us to create a DB layer that:

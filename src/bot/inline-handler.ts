@@ -15,7 +15,7 @@ import { messages } from "../core/messages.ts";
 import type { FilePost } from "../model/post.ts";
 import { reportInlineError } from "../utils/reports.ts";
 import { truncate } from "../utils/utils.ts";
-import { isRequestAuthorized } from "./authorization.ts";
+import { isAllowed } from "./access.ts";
 import { CaptionBuilder } from "./caption-builder.ts";
 
 type InlineQueryContext = Filter<Context, "inline_query">;
@@ -36,7 +36,7 @@ type UploadedMedia = {
 export async function handleInlineQuery(ctx: InlineQueryContext) {
   const { query, from } = ctx.inlineQuery;
 
-  if (!isRequestAuthorized(from.id)) {
+  if (!await isAllowed(from.id)) {
     await answerWithHint(ctx, messages.INLINE_UNAUTHORIZED);
     return;
   }
