@@ -52,7 +52,8 @@ Extra bot features:
   `WITH_CAPTION`,`SEND_AS_REPLY`,`SHOW_CAPTION_ABOVE_MEDIA`).
 - Tag the bot in any chat, including a private chat with another person (⚙️:
   `INLINE_ENABLED`, `INLINE_STORAGE_CHAT`). See `Inline mode`.
-- Restrict bot access by user ID or chat ID (⚙️`WHITELIST`).
+- Restrict bot access by user ID or chat ID, from the config (⚙️`WHITELIST`) or
+  with a chat command (`/allow`). See `Access control`.
 - Report errors to original chat (⚙️`SEND_ERRORS`) or pre-configured
   recipients(⚙️ `REPORT_ERRORS_TO`).
 - Configurable
@@ -88,6 +89,44 @@ request. That user must start the bot first, or the upload fails.
 > [!NOTE]
 > An inline message holds one media item. For a post with more items, the bot
 > sends the first item, and shows the total count in the caption.
+
+## 🔐 Access control
+
+The bot serves everyone while `BOT_ADMINS` and `WHITELIST` are both empty. As
+soon as one of them names somebody, the gate closes: an admin always passes, and
+everybody else needs an entry.
+
+Two lists feed that gate:
+
+- ⚙️ `WHITELIST` — the static list of the deployment. It changes only with a
+  redeploy.
+- The dynamic list — an admin changes it in chat, and the change survives a
+  restart, because the list lives in the database of the bot (⚙️ `DATA_DIR`).
+
+One entry holds one ID. A user ID admits that person in every chat. A chat ID
+admits every member of that chat, which is how a whole group gets access.
+
+| Command    | Description                             |
+| ---------- | --------------------------------------- |
+| `/allow`   | Adds an entry to the dynamic list.      |
+| `/deny`    | Removes an entry from the dynamic list. |
+| `/allowed` | Lists the admins and both lists.        |
+
+Only an admin (⚙️ `BOT_ADMINS`) runs these commands. `/allow` and `/deny` find
+their target in three ways:
+
+- With arguments, they act on each ID: `/allow 12345 -1009876`
+- In a reply, they act on the author of the message that you reply to.
+- With neither, they act on the current chat. Thus an admin opens a whole group
+  with one `/allow` inside it.
+
+A refused user gets an answer that names their user ID and the chat ID, which is
+what they send to an admin to ask for access.
+
+> [!NOTE]
+> A deployment that sets `BOT_ADMINS` and leaves `WHITELIST` empty served
+> everyone before this change. It now serves the admins only, until an `/allow`
+> names somebody.
 
 ## 🔮 Future plans:
 
