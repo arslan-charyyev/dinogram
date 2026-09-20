@@ -9,7 +9,7 @@ export const test_url = {
   },
   instagram: {
     single_image: "https://www.instagram.com/instagram/p/Cnr0t5oOrgC/",
-    images_only: "https://www.instagram.com/p/B8pUDhTFZVj",
+    images_only: "https://www.instagram.com/p/DdHyaYAifb6/",
     images_with_videos: "https://www.instagram.com/p/CyWn_tQyKAH",
     video: "https://www.instagram.com/reel/C_TNM2ivzHF/",
   },

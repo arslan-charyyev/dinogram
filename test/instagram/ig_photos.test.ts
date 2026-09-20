@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { InstagramClient } from "../../src/client/instagram-client.ts";
 import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 import { db } from "../../src/core/db.ts";
@@ -6,12 +6,12 @@ import { config } from "../../src/core/config.ts";
 
 Deno.test("Download Instagram photos [auth]", async () => {
   await db.instagram.cookie.set(config.TEST_INSTAGRAM_COOKIE);
-  await test(158_203, "2f90091a1aebaff36eff315ef49a5c3492605093");
+  await test(722_577, "fe77c7fd83a096c5d694eb2777070e0d7b3d0ecc");
 });
 
 Deno.test("Download Instagram photos [anon]", async () => {
   await db.instagram.cookie.delete();
-  await test(158_203, "2f90091a1aebaff36eff315ef49a5c3492605093");
+  await test(722_577, "fe77c7fd83a096c5d694eb2777070e0d7b3d0ecc");
 });
 
 async function test(firstImageSize: number, firstImageHash: string) {
@@ -24,13 +24,13 @@ async function test(firstImageSize: number, firstImageHash: string) {
     "Instagram link is for photos",
   );
 
-  assertEquals(
+  assertStringIncludes(
     post.description,
-    "White M🥶",
+    "Artemis III",
     "photo description matches",
   );
 
-  assertEquals(post.files.length, 2, "Array elements match");
+  assertEquals(post.files.length, 4, "Array elements match");
 
   const firstImageBytes = await client
     .fetch(post.files[0].downloadUrl)
