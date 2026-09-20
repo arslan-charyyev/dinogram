@@ -23,6 +23,8 @@ export const messages = {
     "Send /start to the bot in a private chat, then try again. The bot needs that chat to upload the media.",
   INLINE_UNAUTHORIZED: "🚫 You are not authorized to use this bot",
   INVALID_LINK: "Invalid link",
+  PHOTO_POST_UNAVAILABLE:
+    "Cannot download this TikTok photo post. TikTok now serves the images only through a request that it refuses from this bot. Videos still work.",
   NOT_ADMIN: "🚫 Only an admin can change the whitelist.",
   NOT_ALLOWED: (userId: number, chatId: number) =>
     "🚫 Sorry. You are not authorized to make requests to this bot.\n" +

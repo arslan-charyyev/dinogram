@@ -138,8 +138,16 @@ export class TikTokClient extends PlatformClient {
     const signedUrl = await TikTokClient.signUrl(unsignedUrl, this.userAgent);
 
     const res = await retry(() => this.fetch(signedUrl));
+    const body = await res.text();
 
-    const itemDetailJson = await res.json();
+    // TikTok answers a request that it does not trust with 200 and an empty
+    // body rather than with an error status. Parsing that yields "Unexpected
+    // end of JSON input", which says nothing to the person who sent the link.
+    if (body.length === 0) {
+      throw new Error(messages.PHOTO_POST_UNAVAILABLE);
+    }
+
+    const itemDetailJson = JSON.parse(body);
     const itemDetail = ItemDetailSchema.parse(itemDetailJson);
 
     if (!itemDetail.itemInfo) {
