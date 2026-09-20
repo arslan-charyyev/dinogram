@@ -6,7 +6,8 @@ import {
   Stringable,
 } from "@grammyjs/parse-mode";
 import { config } from "../core/config.ts";
-import { MultiFilePost, SingleFilePost } from "../model/post.ts";
+import { messages } from "../core/messages.ts";
+import { FilePost, MultiFilePost, SingleFilePost } from "../model/post.ts";
 import { truncate } from "../utils/utils.ts";
 import { BATCH_SIZE } from "./constants.ts";
 
@@ -25,6 +26,35 @@ export class CaptionBuilder {
     const caption = fmt(parts);
 
     return caption;
+  }
+
+  /**
+   * An inline message holds a single media item and no reply, so the caption
+   * carries the whole context of the post.
+   */
+  static inline(post: FilePost): FormattedString {
+    const parts: Stringable[] = [];
+
+    if (config.WITH_CAPTION) {
+      const title = post.type === "multi" ? post.title : undefined;
+
+      if (title) {
+        parts.push(bold(truncate(title, 100)), "\n");
+      }
+
+      if (post.description.length > 0 && post.description !== title) {
+        parts.push(expandableBlockquote(truncate(post.description, 800)));
+      }
+    }
+
+    if (post.type === "multi" && post.files.length > 1) {
+      parts.push(
+        "\n\n",
+        `1 out of ${post.files.length} — ${messages.INLINE_MORE_ITEMS}`,
+      );
+    }
+
+    return fmt(parts);
   }
 
   static multi(post: MultiFilePost, batchIndex: number): FormattedString {

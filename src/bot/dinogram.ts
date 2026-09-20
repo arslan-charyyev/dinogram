@@ -13,8 +13,13 @@ import { ClientFactory } from "../client/client-factory.ts";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { reportError } from "../utils/reports.ts";
+import { isRequestAuthorized } from "./authorization.ts";
 import { commands } from "./commands.ts";
 import { dinoConversations } from "./conversations.ts";
+import {
+  handleChosenInlineResult,
+  handleInlineQuery,
+} from "./inline-handler.ts";
 import { menus } from "./menus.ts";
 import { UrlHandler } from "./url-handler.ts";
 
@@ -40,6 +45,10 @@ export class Dinogram {
     await this.logoutFromBotApi();
     this.setupErrorHandler();
     this.listenToStopSignals();
+
+    if (config.INLINE_ENABLED) {
+      this.listenToInlineQueries();
+    }
 
     this.bot.use(hydrateReply);
     this.bot.use(session({ initial: () => ({}) }));
@@ -101,9 +110,18 @@ export class Dinogram {
     });
   }
 
+  /**
+   * Inline queries and chosen results carry no chat, so these handlers run
+   * before the middleware that expects one.
+   */
+  private listenToInlineQueries() {
+    this.bot.on("inline_query", handleInlineQuery);
+    this.bot.on("chosen_inline_result", handleChosenInlineResult);
+  }
+
   private listenToUrlEntities() {
     this.bot.on("message:entities:url", async (ctx) => {
-      if (!this.isRequestAuthorized(ctx.message.from.id, ctx.message.chat.id)) {
+      if (!isRequestAuthorized(ctx.message.from.id, ctx.message.chat.id)) {
         ctx.reply(
           "🚫 Sorry. You are not authorized to make requests to this bot.",
         );
@@ -168,12 +186,6 @@ export class Dinogram {
         }
       }
     });
-  }
-
-  private isRequestAuthorized(userId: number, chatId: number): boolean {
-    return config.WHITELIST.length === 0 ||
-      config.WHITELIST.includes(userId) ||
-      config.WHITELIST.includes(chatId);
   }
 
   private listenToStopSignals() {

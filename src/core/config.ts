@@ -40,6 +40,24 @@ const Config = z.object({
       "A path to directory for storing app data, such as database files",
     ),
 
+  INLINE_ENABLED: bool
+    .default(true)
+    .describe(
+      "Enables inline mode, so that the bot can be tagged (@bot <link>) in " +
+        "any chat, including a private chat that the bot is not a member of. " +
+        "Inline mode and inline feedback must also be enabled in the BotFather.",
+    ),
+
+  INLINE_STORAGE_CHAT: z.coerce
+    .number()
+    .int()
+    .default(0)
+    .describe(
+      "A user or chat ID that inline media is uploaded to before it is " +
+        "shared, because an inline message cannot carry a fresh upload. " +
+        "When 0, the private chat of the requesting user is used instead.",
+    ),
+
   INSTAGRAM_ENABLED: bool
     .default(true)
     .describe("Enables support for downloading Instagram media"),
