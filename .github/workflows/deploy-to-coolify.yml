@@ -1,0 +1,46 @@
+name: 🎛️ Deploy to Coolify
+
+on:
+  # With no tag given, it redeploys the `latest` image, which is how a rotated
+  # secret reaches the container: every run re-syncs the whole environment.
+  # With a tag, it redeploys that released version, which is the rollback path.
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Released version to deploy, such as 1.2.5
+        required: false
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
+    secrets:
+      COOLIFY_TOKEN:
+        required: true
+      BOT_TOKEN:
+        required: true
+
+concurrency:
+  group: deploy-to-coolify
+
+jobs:
+  deploy:
+    name: 🎛️ Deploy to Coolify
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 📥 Check out repository code
+        uses: actions/checkout@v4
+
+      # The script reconciles the whole Coolify app from its own spec, and then
+      # deploys the image. It uses the Python standard library only, so the
+      # runner needs no setup step.
+      - name: 🎛️ Reconcile and deploy
+        env:
+          COOLIFY_URL: ${{ vars.COOLIFY_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          BOT_ADMINS: ${{ vars.BOT_ADMINS }}
+          WHITELIST: ${{ vars.WHITELIST }}
+          REPORT_ERRORS_TO: ${{ vars.REPORT_ERRORS_TO }}
+        run: python3 .github/scripts/coolify_deploy.py
