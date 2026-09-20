@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.1] - 2026-09-20
+
+[1.3.1]: https://github.com/arslan-charyyev/dinogram/compare/v1.3.0...v1.3.1
+
+### Fixed
+
+- Instagram downloads, which stopped working when Instagram renamed the media
+  payload in the page
+
+### Changed
+
+- A TikTok photo post now reports why it fails, because TikTok no longer serves
+  those images to the bot
+
 ## [1.3.0] - 2026-09-20
 
 [1.3.0]: https://github.com/arslan-charyyev/dinogram/compare/v1.2.5...v1.3.0
