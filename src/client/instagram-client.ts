@@ -1,8 +1,8 @@
 import { DOMParser, HTMLDocument } from "@b-fuze/deno-dom";
-import { JSONPath } from "jsonpath-plus";
 import z from "zod";
 import { db } from "../core/db.ts";
 import { log } from "../core/log.ts";
+import { messages } from "../core/messages.ts";
 import { FileBuilder, type MediaFile } from "../model/file.ts";
 import { FilePost, PostBuilder } from "../model/post.ts";
 import { AppCookieJar } from "../utils/app-cookie-jar.ts";
@@ -188,25 +188,36 @@ export class InstagramClient extends PlatformClient {
     }
   }
 
-  private extractMediaInfoAnonymously(
-    doc: HTMLDocument,
-  ): Promise<unknown> {
+  /**
+   * The page embeds the media of the post in one of its JSON payloads.
+   * Instagram renames the key that holds it from time to time: it was
+   * `xdt_api__v1__media__shortcode__web_info`, and it now sits under
+   * `xig_polaris_media`. Therefore this searches for the shape of a media
+   * object instead of a fixed key, and survives the next rename.
+   */
+  private extractMediaInfoAnonymously(doc: HTMLDocument): unknown {
     const scripts = doc.querySelectorAll(
       'script[type="application/json"][data-sjs]',
     );
 
-    const key = "xdt_api__v1__media__shortcode__web_info";
-
     for (const script of scripts) {
-      if (!script.textContent.includes(key)) continue;
+      const text = script.textContent;
+      if (
+        !text.includes("image_versions2") && !text.includes("video_versions")
+      ) {
+        continue;
+      }
 
-      const json = JSON.parse(script.textContent);
-      const mediaInfoJson = JSONPath({ path: `\$..['${key}']`, json })[0];
+      const media = findMediaObject(JSON.parse(text));
 
-      return mediaInfoJson;
+      // The authenticated endpoint answers with a list, so both paths hand the
+      // same shape to the schema
+      if (media) return { items: [media] };
     }
 
-    throw new Error("No media info data found");
+    // Instagram serves a post that it gates for logged-out visitors as a page
+    // with no media in it at all
+    throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
   }
 
   private async fetchWithBypass(
@@ -300,8 +311,11 @@ const MediaCaptionSchema = z.object({
 
 const MediaItem = z.object({
   url: z.string().url(),
-  width: z.number().int(),
-  height: z.number().int(),
+  // The page payload trims the dimensions from some candidate lists, and gives
+  // them only for the media that the page renders itself. Without them the
+  // best candidate falls back to the first one, which is the largest.
+  width: z.number().int().optional(),
+  height: z.number().int().optional(),
 });
 
 const MediaSchema = z.object({
@@ -340,6 +354,42 @@ const MediaInfoSchema = z.object({
     ]),
   ),
 });
+
+/**
+ * The outermost object in a payload that looks like a media item. A carousel
+ * holds children of the same shape, so stopping at the first match returns the
+ * post itself rather than one of its slides.
+ *
+ * The search needs no depth limit, because JSON.parse yields a finite tree.
+ */
+function findMediaObject(node: unknown): unknown {
+  if (node === null || typeof node !== "object") return null;
+
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const media = findMediaObject(item);
+      if (media) return media;
+    }
+    return null;
+  }
+
+  const record = node as Record<string, unknown>;
+
+  if (
+    "media_type" in record &&
+    ("carousel_media" in record || "image_versions2" in record ||
+      "video_versions" in record)
+  ) {
+    return record;
+  }
+
+  for (const value of Object.values(record)) {
+    const media = findMediaObject(value);
+    if (media) return media;
+  }
+
+  return null;
+}
 
 function findBestCandidate(
   media: z.infer<typeof MediaSchema>,
