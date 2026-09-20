@@ -10,16 +10,12 @@ use it, add the bot to a group, send it a direct message with a link to a post,
 or tag it in any chat (see `Inline mode`), and it will respond with the
 corresponding media items.
 
-🎁 Checkout the demo Bot instance: https://t.me/dinogram_bot
-
 https://github.com/user-attachments/assets/7d3e5f91-f126-4fa7-b232-2cc41d3d1f21
 
 > [!NOTE]
-> This public instance is for demonstration purposes only. Therefore, it might
-> frequently run into rate limits of social media platforms, or into usage
-> quotas set by cloud VM provider. For optimal results, it is recommended to
-> self-host the bot. To learn more, refer to the `Deployment` section of this
-> document.
+> There is no shared instance to try. Social media platforms rate-limit a busy
+> bot hard, so the bot is meant to be self-hosted. To learn more, refer to the
+> `Deployment` section of this document.
 
 Supported social media platforms:
 
@@ -142,9 +138,9 @@ Regardless of the deployment method, you need to obtain a token from the
 
 ### Coolify
 
-The public instance runs on [Coolify](https://coolify.io). A push of a version
-tag runs [publish-release.yml](.github/workflows/publish-release.yml), which
-builds the image, pushes it to GHCR, and then calls
+[Coolify](https://coolify.io) is one way to run it. A push of a version tag runs
+[publish-release.yml](.github/workflows/publish-release.yml), which builds the
+image, pushes it to GHCR, and then calls
 [deploy-to-coolify.yml](.github/workflows/deploy-to-coolify.yml).
 
 That workflow runs [coolify_deploy.py](.github/scripts/coolify_deploy.py), which

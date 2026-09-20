@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Provision + deploy dinogram on Coolify (https://coolify.charyyev.dev).
+"""Provision + deploy dinogram on a Coolify instance.
 
 The release workflow builds the image and pushes it to GHCR; this script
 reconciles the Coolify app that runs it. The whole Coolify config of the app
@@ -9,7 +9,7 @@ the application, and every later run PATCHes them. The script uses only the
 standard library, so the workflow needs no setup step.
 
 Required environment:
-  COOLIFY_URL   e.g. https://coolify.charyyev.dev
+  COOLIFY_URL   the base URL of the Coolify instance
   COOLIFY_TOKEN API token (Coolify UI -> Keys & Tokens) with the read, write
                 and deploy abilities
   IMAGE_TAG     image tag to deploy, which is a released version such as 1.2.5
@@ -59,10 +59,10 @@ SPEC = {
     "name": APP_NAME,
     "docker_registry_image_name": "ghcr.io/arslan-charyyev/dinogram",
     "docker_registry_image_tag": _required("IMAGE_TAG"),
-    # The Telegram Bot API server runs on the host, in the charyyev.dev repo.
-    # This joins the shared `coolify` network, where the name
-    # telegram-bot-api resolves. Without it Coolify isolates the container and
-    # BOT_API_ROOT points at nothing.
+    # The Telegram Bot API server runs beside Coolify, not inside it. This
+    # joins the shared `coolify` network, where the name telegram-bot-api
+    # resolves. Without it Coolify isolates the container and BOT_API_ROOT
+    # points at nothing.
     "connect_to_docker_network": True,
     # Nothing listens here: the bot polls Telegram and makes only outbound
     # requests. The Coolify validator still wants a number, so this is a
@@ -89,7 +89,7 @@ CREATE_ONLY = {"autogenerate_domain": False, "instant_deploy": False}
 # dropped, so an unset optional value keeps the default of the bot.
 _ENV_SPEC = {
     "BOT_TOKEN": _required("BOT_TOKEN"),
-    # The local Bot API server of the charyyev.dev host. It lifts the upload
+    # The local Bot API server that runs beside Coolify. It lifts the upload
     # limit from 50 MB to 2 GB.
     "BOT_API_ROOT": "http://telegram-bot-api:8081",
     "BOT_ADMINS": os.environ.get("BOT_ADMINS", ""),
