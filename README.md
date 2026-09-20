@@ -6,8 +6,9 @@
 
 **Dinogram** is a Telegram bot that can download public videos & photos from
 social media platforms (TikTok & Instagram) and send them to a Telegram chat. To
-use it, add the bot to a group or send it a direct message with a link to a post
-and it will respond with the corresponding media items.
+use it, add the bot to a group, send it a direct message with a link to a post,
+or tag it in any chat (see `Inline mode`), and it will respond with the
+corresponding media items.
 
 🎁 Checkout the demo Bot instance: https://t.me/dinogram_bot
 
@@ -49,6 +50,8 @@ Extra bot features:
   [max character count limit](https://limits.tginfo.me/en).
 - Configurable reply behavior (⚙️:
   `WITH_CAPTION`,`SEND_AS_REPLY`,`SHOW_CAPTION_ABOVE_MEDIA`).
+- Tag the bot in any chat, including a private chat with another person (⚙️:
+  `INLINE_ENABLED`, `INLINE_STORAGE_CHAT`). See `Inline mode`.
 - Restrict bot access by user ID or chat ID (⚙️`WHITELIST`).
 - Report errors to original chat (⚙️`SEND_ERRORS`) or pre-configured
   recipients(⚙️ `REPORT_ERRORS_TO`).
@@ -58,6 +61,33 @@ Extra bot features:
 
 > [!TIP]
 > You can use `@raw_data_bot` to get the user or chat ID
+
+## 🏷️ Inline mode
+
+Inline mode lets you tag the bot in any chat, even in a private chat with
+another person, where the bot is not a member. Type `@your_bot` followed by a
+link in the message field, wait for the result card, then tap it. Your own
+account sends a placeholder message, and the bot replaces that message with the
+downloaded media.
+
+Telegram keeps inline mode off by default. Therefore the owner of the bot must
+change two settings in the [BotFather](https://telegram.me/BotFather):
+
+- `/setinline` — enable inline mode, and give a placeholder text, for example
+  `Paste a link…`
+- `/setinlinefeedback` — set the probability to `Enabled` (100%), because the
+  bot starts the download only after Telegram reports the chosen result.
+
+An inline message cannot carry a fresh upload. Thus the bot first sends the
+media to a storage chat, and then shows the resulting file in the inline
+message. The bot deletes the storage message immediately after the upload,
+because the file stays available through its ID. When `INLINE_STORAGE_CHAT` is
+`0` (the default), the bot uses the private chat of the user who made the
+request. That user must start the bot first, or the upload fails.
+
+> [!NOTE]
+> An inline message holds one media item. For a post with more items, the bot
+> sends the first item, and shows the total count in the caption.
 
 ## 🔮 Future plans:
 
