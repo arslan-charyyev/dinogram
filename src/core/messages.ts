@@ -34,4 +34,32 @@ export const messages = {
   NOT_AN_ID: (arg: string) => `❌ "${arg}" is not an ID`,
   POSSIBLY_SIGN_IN_REQUIRED:
     "Cannot download the media. Probable reasons: private video or sign-in required.",
+  YOUTUBE_AUDIO: "🎵 Audio",
+  YOUTUBE_BACK: "⬅️ Back",
+  YOUTUBE_BUSY_CARD: "Somebody already chose a format for this video.",
+  YOUTUBE_BUSY_USER:
+    "You already have a YouTube download running. Wait until it finishes.",
+  YOUTUBE_CANCEL: "✖️ Cancel",
+  YOUTUBE_CANCEL_DENIED: "Only the person who sent the link can cancel.",
+  YOUTUBE_CHOOSE_AUDIO: "Choose the audio quality",
+  YOUTUBE_CHOOSE_FORMAT: "Choose a format",
+  YOUTUBE_CHOOSE_VIDEO: "Choose the video quality",
+  YOUTUBE_CLOSE: "✖️ Close",
+  YOUTUBE_DOWNLOADING: (label: string, percent?: number) =>
+    `⏳ Downloading ${label}` +
+    (percent === undefined ? "…" : ` · ${percent}%`),
+  YOUTUBE_FAILED: "❌ The download failed. Choose a format to try again.",
+  YOUTUBE_INLINE_AUDIO: "🎵 Audio",
+  YOUTUBE_INLINE_MEDIUM: "🎬 Video · medium quality",
+  YOUTUBE_INLINE_SHORT: "🎬 Download the Short",
+  YOUTUBE_LIVE: "Cannot download a live stream or a premiere.",
+  YOUTUBE_NO_OPTIONS:
+    "No format of this video fits the upload limit or the length limit.",
+  YOUTUBE_OUTDATED: "This menu is out of date. Send the link again.",
+  YOUTUBE_PLAYLIST: "Playlists are not supported. Send a link to one video.",
+  YOUTUBE_QUEUED: "⏳ Waiting for a free download slot…",
+  YOUTUBE_REQUESTED_BY: "Requested by ",
+  YOUTUBE_TOO_LARGE: "The file is larger than the upload limit.",
+  YOUTUBE_UPLOADING: "📤 Uploading…",
+  YOUTUBE_VIDEO: "🎬 Video",
 };

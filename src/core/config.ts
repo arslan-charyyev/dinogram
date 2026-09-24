@@ -40,6 +40,15 @@ const Config = z.object({
       "A path to directory for storing app data, such as database files",
     ),
 
+  DOWNLOAD_DIR: z
+    .string()
+    .default("")
+    .describe(
+      "A path to directory for temporary downloads, such as YouTube videos. " +
+        "When empty, the temp directory of the system is used. " +
+        "With UPLOAD_BY_PATH, the Bot API server must see it at the same path.",
+    ),
+
   INLINE_ENABLED: bool
     .default(true)
     .describe(
@@ -94,6 +103,25 @@ const Config = z.object({
     .default(true)
     .describe("Enables support for downloading TikTok media"),
 
+  UPLOAD_BY_PATH: bool
+    .default(false)
+    .describe(
+      "Send downloaded files to the Bot API server by their path, so that the " +
+        "bytes never pass through the bot. Needs a local Bot API server in " +
+        "--local mode (TELEGRAM_LOCAL=1), which sees DOWNLOAD_DIR at the same path.",
+    ),
+
+  UPLOAD_LIMIT_MB: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .default(0)
+    .describe(
+      "The largest file in MB that the bot uploads. When 0, the limit is " +
+        "just under 2000 with BOT_API_ROOT (a local Bot API server), and just " +
+        "under 50 without it.",
+    ),
+
   WHITELIST: intCsv
     .default([])
     .describe(
@@ -104,6 +132,33 @@ const Config = z.object({
   WITH_CAPTION: bool
     .default(true)
     .describe("Send media with title/description as caption"),
+
+  YOUTUBE_ENABLED: bool
+    .default(true)
+    .describe("Enables support for downloading YouTube videos and audio"),
+
+  YOUTUBE_MAX_AUDIO_MINUTES: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .default(180)
+    .describe(
+      "The longest YouTube video, in minutes, that the bot downloads as audio",
+    ),
+
+  YOUTUBE_MAX_VIDEO_MINUTES: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .default(120)
+    .describe(
+      "The longest YouTube video, in minutes, that the bot downloads as video",
+    ),
+
+  YT_DLP_PATH: z
+    .string()
+    .default("yt-dlp")
+    .describe("A path to the yt-dlp binary, which downloads YouTube media"),
 });
 
 const env = {
@@ -112,3 +167,10 @@ const env = {
 };
 
 export const config = Config.parse(env);
+
+/**
+ * A local Bot API server accepts uploads up to 2000 MB, and the hosted one up
+ * to 50 MB. A small margin keeps the container overhead of a merge in bounds.
+ */
+export const uploadLimitBytes =
+  (config.UPLOAD_LIMIT_MB || (config.BOT_API_ROOT ? 1950 : 49)) * 1024 * 1024;
