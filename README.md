@@ -5,9 +5,9 @@
 <p align="center"><img src="./assets/img/logo.jpg" height=200/></p>
 
 **Dinogram** is a Telegram bot that can download public videos & photos from
-social media platforms (TikTok & Instagram) and send them to a Telegram chat. To
-use it, add the bot to a group, send it a direct message with a link to a post,
-or tag it in any chat (see `Inline mode`), and it will respond with the
+social media platforms (TikTok, Instagram & YouTube) and send them to a Telegram
+chat. To use it, add the bot to a group, send it a direct message with a link to
+a post, or tag it in any chat (see `Inline mode`), and it will respond with the
 corresponding media items.
 
 https://github.com/user-attachments/assets/7d3e5f91-f126-4fa7-b232-2cc41d3d1f21
@@ -30,6 +30,10 @@ Supported social media platforms:
   - Instagram has severe rate limits for non-authenticated users: 200 requests
     per hour. Therefore, frequent errors caused by rate limits are to be
     expected.
+- YouTube (see `YouTube`)
+  - Videos and their audio, in the quality that you choose.
+  - Shorts come at once, in the best quality that fits.
+  - Playlists, live streams, and premieres are NOT supported.
 
 Extra bot features:
 
@@ -86,6 +90,43 @@ request. That user must start the bot first, or the upload fails.
 > An inline message holds one media item. For a post with more items, the bot
 > sends the first item, and shows the total count in the caption.
 
+For a YouTube link, the result list shows one result for each video quality and
+audio quality, with its size. When YouTube answers slowly, the list shows a
+medium-quality video and an audio result instead.
+
+## ▶️ YouTube
+
+A YouTube link turns the "Processing" message into a card with the thumbnail of
+the video and two buttons: 🎬 Video and 🎵 Audio. The next step lists the
+qualities with their sizes, and the card then turns into the file. In a group, a
+member who presses a button gets a private picker that only they see (a Telegram
+ephemeral message), and the file names that member. A Short skips the card.
+
+The bot runs [yt-dlp](https://github.com/yt-dlp/yt-dlp) with
+[ffmpeg](https://ffmpeg.org), which the Docker image includes. yt-dlp uses Deno
+from the image to solve the challenges of YouTube.
+
+- Video is H.264 MP4 up to 1080p, because every Telegram client plays it. Larger
+  sizes exist only as VP9 or AV1, which some clients show as a black screen.
+- Audio is the M4A (AAC) track of YouTube, which Telegram plays in its music
+  player.
+- The menu hides every quality that is larger than the upload limit (⚙️
+  `UPLOAD_LIMIT_MB`), and every kind that is longer than its length limit (⚙️
+  `YOUTUBE_MAX_VIDEO_MINUTES`, `YOUTUBE_MAX_AUDIO_MINUTES`).
+- The bot keeps the ID of every file that it sends, so a repeated request comes
+  at once.
+- Each user runs one download at a time, and two downloads run in parallel.
+
+YouTube often blocks the IP addresses of servers with "Sign in to confirm you're
+not a bot". An admin can then set a YouTube cookie in the settings (🗨️). The bot
+tries without the cookie first, because YouTube can ban the account of the
+cookie. Export the cookie from a private browser window with a spare account,
+and close that window right after the export.
+
+YouTube breaks yt-dlp often, so the image uses its nightly build. The
+[bump-yt-dlp.yml](.github/workflows/bump-yt-dlp.yml) workflow opens a pull
+request every day when a new nightly build exists.
+
 ## 🔐 Access control
 
 The bot serves everyone while `BOT_ADMINS` and `WHITELIST` are both empty. As
@@ -128,7 +169,6 @@ what they send to an admin to ask for access.
 
 - TikTok Authentication (to access posts that require sign-in)
 - Automated authentication
-- Youtube videos
 - Rate limiter (to give everyone a fair chance)
 
 ## 🚀 Deployment
@@ -148,7 +188,8 @@ holds the whole Coolify config of the app — image, resource limits, and every
 environment variable — in its `SPEC` and `ENVS` tables. Edit them, push a tag,
 and CI reconciles the app: the first run creates the project and the
 application, and every later run PATCHes them. It also creates the persistent
-volume at `/app/data` once, which is where the settings and the whitelist live.
+volumes once: `/app/data`, which is where the settings and the whitelist live,
+and `/app/downloads`, which holds the YouTube downloads.
 
 A manual run of the workflow covers the two cases that a tag push does not. With
 no version, it redeploys `latest`, which is how a rotated token reaches the
@@ -167,6 +208,20 @@ stay in variables, because this repository is public.
 > needs its **Connect to Predefined Network** option on. Without that option
 > Coolify isolates the container, the name does not resolve, and every upload
 > fails.
+
+> [!IMPORTANT]
+> YouTube videos go to the Bot API server by their path (⚙️ `UPLOAD_BY_PATH`),
+> so that a 2 GB video never passes through the bot. Thus the Bot API container
+> needs two things before a release with YouTube support goes out:
+>
+> - the environment variable `TELEGRAM_LOCAL=1`, which starts the server in
+>   `--local` mode;
+> - the Docker volume `dinogram-downloads`, mounted at `/app/downloads`, the
+>   same path as in the bot container. Coolify creates the volume on the first
+>   deploy.
+>
+> For example:
+> `docker run ... -e TELEGRAM_LOCAL=1 -v dinogram-downloads:/app/downloads aiogram/telegram-bot-api`
 
 ### Docker
 
@@ -229,7 +284,26 @@ Steps:
   cp .template.env .env
   ```
 - Update `BOT_TOKEN` variable in the [.env](.env) file with your bot token.
+- For YouTube, install [yt-dlp](https://github.com/yt-dlp/yt-dlp) and
+  [ffmpeg](https://ffmpeg.org). The live YouTube test runs only when yt-dlp is
+  installed.
 - Run the project using the `main` configuration in VS Code.
+
+### Local Bot API server
+
+The hosted Bot API limits uploads to 50 MB. To test larger files, and uploads by
+path, run a local Bot API server beside the bot:
+
+- Set `TELEGRAM_API_ID` and `TELEGRAM_API_HASH` in the [.env](.env) file. You
+  get both on [my.telegram.org](https://my.telegram.org).
+- Set `BOT_API_ROOT=http://localhost:8081`, `UPLOAD_BY_PATH=true`, and
+  `DOWNLOAD_DIR` to the absolute path of an existing directory. The server
+  mounts that directory at the same path, so it can read the files of the bot.
+- Start the server with `docker compose -f compose.bot-api.yml up -d`, and then
+  the bot with `deno task main`.
+
+On start, the bot logs out of the hosted Bot API. After that, the hosted Bot API
+refuses the token for 10 minutes, so wait that long before you go back to it.
 
 ### Useful commands
 
