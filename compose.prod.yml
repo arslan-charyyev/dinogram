@@ -8,19 +8,28 @@ services:
     depends_on: [telegram-bot-api]
     volumes:
       - bot-data:/app/data/
+      - downloads:/app/downloads/
     environment:
       BOT_ADMINS: ${BOT_ADMINS}
       BOT_API_ROOT: http://telegram-bot-api:8081
       BOT_TOKEN: ${BOT_TOKEN}
       INSTAGRAM_ENABLED: false
+      UPLOAD_BY_PATH: "true"
 
   telegram-bot-api:
     image: aiogram/telegram-bot-api:latest
     pull_policy: always
     restart: unless-stopped
+    # The server reads the downloads of the bot by their path, so it mounts the
+    # volume at the same path as the bot
+    volumes:
+      - downloads:/app/downloads/
     environment:
       TELEGRAM_API_ID: ${TELEGRAM_API_ID}
       TELEGRAM_API_HASH: ${TELEGRAM_API_HASH}
+      # --local mode: uploads by file path, and files up to 2000 MB
+      TELEGRAM_LOCAL: "1"
 
 volumes:
   bot-data:
+  downloads:

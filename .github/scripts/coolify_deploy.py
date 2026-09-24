@@ -38,6 +38,19 @@ APP_NAME = "dinogram"
 DATA_MOUNT_PATH = "/app/data"
 DATA_VOLUME_NAME = "dinogram-data"
 
+# YouTube downloads land here, and the bot sends them to the Bot API server by
+# their path (UPLOAD_BY_PATH), so that a 2 GB video never passes through the
+# bot. The Bot API server runs outside Coolify, so its container must mount
+# this same named volume at the same path, and run with TELEGRAM_LOCAL=1.
+# Coolify names the Docker volume exactly as given here.
+DOWNLOADS_MOUNT_PATH = "/app/downloads"
+DOWNLOADS_VOLUME_NAME = "dinogram-downloads"
+
+VOLUMES = {
+    DATA_MOUNT_PATH: DATA_VOLUME_NAME,
+    DOWNLOADS_MOUNT_PATH: DOWNLOADS_VOLUME_NAME,
+}
+
 
 def _required(name):
     """Read a value that the deployment cannot proceed without.
@@ -70,10 +83,10 @@ SPEC = {
     "ports_exposes": "8080",
     # For the same reason, a health check could only fail.
     "health_check_enabled": False,
-    # The bot streams a download straight into an upload, so it holds no whole
-    # video in memory. The limit leaves room for several parallel requests.
-    "limits_memory": "512m",
-    "limits_memory_reservation": "128m",
+    # A YouTube probe can start a Deno process of about 350 MB beside yt-dlp,
+    # which alone takes about 100 MB. Downloads go to disk, not to memory.
+    "limits_memory": "1g",
+    "limits_memory_reservation": "256m",
     "limits_cpus": "1",
 }
 
@@ -99,6 +112,9 @@ _ENV_SPEC = {
     "SEND_AS_REPLY": "false",
     "SEND_ERRORS": "true",
     "SHOW_CAPTION_ABOVE_MEDIA": "false",
+    # Needs the Bot API server in --local mode with the downloads volume; see
+    # DOWNLOADS_VOLUME_NAME
+    "UPLOAD_BY_PATH": "true",
     "WITH_CAPTION": "true",
 }
 ENVS = {k: v for k, v in _ENV_SPEC.items() if v}
@@ -166,17 +182,19 @@ def main():
     storages = api("GET", f"/applications/{uuid}/storages") or {}
     volumes = storages.get("persistent_storages", [])
     mount_paths = {volume.get("mount_path") for volume in volumes}
-    if DATA_MOUNT_PATH not in mount_paths:
+    for mount_path, volume_name in VOLUMES.items():
+        if mount_path in mount_paths:
+            continue
         api(
             "POST",
             f"/applications/{uuid}/storages",
             {
                 "type": "persistent",
-                "name": DATA_VOLUME_NAME,
-                "mount_path": DATA_MOUNT_PATH,
+                "name": volume_name,
+                "mount_path": mount_path,
             },
         )
-        print(f"created volume {DATA_VOLUME_NAME} at {DATA_MOUNT_PATH}")
+        print(f"created volume {volume_name} at {mount_path}")
 
     # Prune managed keys that left the spec: envs/bulk only upserts, so a
     # removed value would otherwise stay in Coolify with its stale content.

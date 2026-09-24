@@ -7,12 +7,22 @@ services:
     depends_on: [telegram-bot-api]
     volumes:
       - bot-data:/app/data/
+      - downloads:/app/downloads/
     environment:
       BOT_API_ROOT: http://telegram-bot-api:8081
+      UPLOAD_BY_PATH: "true"
 
   telegram-bot-api:
     image: aiogram/telegram-bot-api:10.3
     env_file: .env
+    # The server reads the downloads of the bot by their path, so it mounts the
+    # volume at the same path as the bot
+    volumes:
+      - downloads:/app/downloads/
+    environment:
+      # --local mode: uploads by file path, and files up to 2000 MB
+      TELEGRAM_LOCAL: "1"
 
 volumes:
   bot-data:
+  downloads:
