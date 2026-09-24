@@ -6,15 +6,20 @@ import { config } from "../../src/core/config.ts";
 
 Deno.test("Download Instagram video [auth]", async () => {
   await db.instagram.cookie.set(config.TEST_INSTAGRAM_COOKIE);
-  await test(1_031_328, "cbf3afd94ec57a0856368712cf6fbabd8f721642");
+  // A signed-in session gets another encoding of the same reel, and which one
+  // it gets changes over time. Thus only the anonymous test pins the bytes.
+  await test();
 });
 
 Deno.test("Download Instagram video [anon]", async () => {
   await db.instagram.cookie.delete();
-  await test(1_031_328, "cbf3afd94ec57a0856368712cf6fbabd8f721642");
+  await test({
+    size: 1_031_328,
+    hash: "cbf3afd94ec57a0856368712cf6fbabd8f721642",
+  });
 });
 
-async function test(videoSize: number, videoHash: string) {
+async function test(expected?: { size: number; hash: string }) {
   const url = new URL(test_url.instagram.video);
   const client = new InstagramClient(url);
   const post = await client.fetchPost();
@@ -37,6 +42,15 @@ async function test(videoSize: number, videoHash: string) {
 
   await writeToTestOutput(videoBytes, "ig_video.mp4");
 
-  assertEquals(videoBytes.byteLength, videoSize, "video size matches");
-  assertEquals(await computeSHA1(videoBytes), videoHash, "video hash matches");
+  if (expected) {
+    assertEquals(videoBytes.byteLength, expected.size, "video size matches");
+    assertEquals(
+      await computeSHA1(videoBytes),
+      expected.hash,
+      "video hash matches",
+    );
+  } else {
+    const boxType = new TextDecoder().decode(videoBytes.subarray(4, 8));
+    assertEquals(boxType, "ftyp", "video is an MP4 file");
+  }
 }
