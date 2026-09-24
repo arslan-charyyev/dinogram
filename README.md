@@ -216,12 +216,13 @@ stay in variables, because this repository is public.
 >
 > - the environment variable `TELEGRAM_LOCAL=1`, which starts the server in
 >   `--local` mode;
-> - the Docker volume `dinogram-downloads`, mounted at `/app/downloads`, the
->   same path as in the bot container. Coolify creates the volume on the first
->   deploy.
+> - the downloads volume of the bot, mounted at `/app/downloads`, the same path
+>   as in the bot container. Coolify creates the volume on the first deploy, and
+>   prefixes its name with the UUID of the application, so
+>   `docker volume ls | grep dinogram-downloads` shows the full name.
 >
 > For example:
-> `docker run ... -e TELEGRAM_LOCAL=1 -v dinogram-downloads:/app/downloads aiogram/telegram-bot-api`
+> `docker run ... -e TELEGRAM_LOCAL=1 -v <uuid>-dinogram-downloads:/app/downloads aiogram/telegram-bot-api`
 
 ### Docker
 

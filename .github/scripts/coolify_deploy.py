@@ -42,7 +42,9 @@ DATA_VOLUME_NAME = "dinogram-data"
 # their path (UPLOAD_BY_PATH), so that a 2 GB video never passes through the
 # bot. The Bot API server runs outside Coolify, so its container must mount
 # this same named volume at the same path, and run with TELEGRAM_LOCAL=1.
-# Coolify names the Docker volume exactly as given here.
+# Coolify prefixes the name of the Docker volume with the UUID of the
+# application, such as <uuid>-dinogram-downloads, and the Bot API server must
+# mount it under that full name.
 DOWNLOADS_MOUNT_PATH = "/app/downloads"
 DOWNLOADS_VOLUME_NAME = "dinogram-downloads"
 
