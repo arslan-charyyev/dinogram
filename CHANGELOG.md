@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.0.0] - 2026-09-25
+
+[2.0.0]: https://github.com/arslan-charyyev/dinogram/compare/v1.3.1...v2.0.0
+
+### Changed
+
+- **Breaking:** the Bot API server must run in `--local` mode
+  (`TELEGRAM_LOCAL=1`) and mount the downloads volume of the bot at
+  `/app/downloads`, because the bot sends YouTube files to it by their path
+  (`UPLOAD_BY_PATH`)
+- **Breaking:** the bot needs 1 GB of memory, because yt-dlp starts Deno to
+  solve the challenges of YouTube
+- The Docker image includes yt-dlp and ffmpeg
+- grammY and its plugins come from npm, and support Bot API 10.3
+- The settings buttons check that the user is an admin
+
+### Added
+
+- YouTube videos and audio, in the quality that the user chooses
+- A private quality picker in groups, which only the member who presses sees
+- One inline result for each YouTube quality
+- YouTube Shorts, which come at once, with no menu
+- A YouTube cookie in the settings, for a server that YouTube blocks
+- New config options: `YOUTUBE_ENABLED`, `YOUTUBE_MAX_VIDEO_MINUTES`,
+  `YOUTUBE_MAX_AUDIO_MINUTES`, `YT_DLP_PATH`, `DOWNLOAD_DIR`, `UPLOAD_BY_PATH`,
+  `UPLOAD_LIMIT_MB`
+
 ## [1.3.1] - 2026-09-20
 
 [1.3.1]: https://github.com/arslan-charyyev/dinogram/compare/v1.3.0...v1.3.1
