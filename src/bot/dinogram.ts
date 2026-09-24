@@ -10,11 +10,14 @@ import type { ReplyParameters } from "@grammyjs/types";
 import { retry } from "@std/async/retry";
 import { Bot, type Context, session, type SessionFlavor } from "grammy";
 import { ClientFactory } from "../client/client-factory.ts";
+import { YouTubeClient } from "../client/youtube-client.ts";
+import { YtDlp } from "../client/yt-dlp.ts";
 import { config } from "../core/config.ts";
+import { Downloads } from "../core/downloads.ts";
 import { log } from "../core/log.ts";
 import { messages } from "../core/messages.ts";
 import { reportError } from "../utils/reports.ts";
-import { isAllowed } from "./access.ts";
+import { isAdmin, isAllowed } from "./access.ts";
 import { commands } from "./commands.ts";
 import { dinoConversations } from "./conversations.ts";
 import {
@@ -23,6 +26,11 @@ import {
 } from "./inline-handler.ts";
 import { menus } from "./menus.ts";
 import { UrlHandler } from "./url-handler.ts";
+import {
+  handleYouTubeCallback,
+  handleYouTubeLink,
+  YOUTUBE_CALLBACK,
+} from "./youtube-handler.ts";
 
 export type DinoParseModeContext =
   & ParseModeFlavor<Context>
@@ -44,6 +52,7 @@ export class Dinogram {
 
   async launch() {
     await this.logoutFromBotApi();
+    await this.prepareYouTube();
     this.setupErrorHandler();
     this.listenToStopSignals();
 
@@ -57,11 +66,21 @@ export class Dinogram {
     this.bot.use(createConversation(dinoConversations.setInstagramCookie, {
       plugins: [hydrateReply],
     }));
+    this.bot.use(createConversation(dinoConversations.setYouTubeCookie, {
+      plugins: [hydrateReply],
+    }));
 
-    this.bot.use(menus.settings);
+    // Telegram runs a menu button from its callback data alone, so the
+    // buttons check the admin again, the same way as the /settings command
+    this.bot.filter(
+      (ctx) => isAdmin(ctx.from?.id) || isAdmin(ctx.chat?.id),
+      menus.settings,
+    );
     for (const command in commands) {
       this.bot.command(command, commands[command]);
     }
+
+    this.bot.callbackQuery(YOUTUBE_CALLBACK, handleYouTubeCallback);
 
     this.listenToUrlEntities();
 
@@ -93,6 +112,25 @@ export class Dinogram {
       log.info(`Logged out from the ${telegramApiHost} server`);
     } catch (e) {
       log.error("Failed to logout from Bot API", e);
+    }
+  }
+
+  /**
+   * A missing yt-dlp binary fails only when somebody sends a YouTube link, so
+   * the start log says it up front
+   */
+  private async prepareYouTube() {
+    if (!config.YOUTUBE_ENABLED) return;
+
+    await Downloads.init();
+
+    try {
+      log.info(`Using yt-dlp ${await YtDlp.version()}`);
+    } catch (e) {
+      log.error(
+        `yt-dlp is not available at "${config.YT_DLP_PATH}", so YouTube links will fail`,
+        e,
+      );
     }
   }
 
@@ -156,12 +194,26 @@ export class Dinogram {
           continue;
         }
 
-        const client = ClientFactory.find(url);
-        if (!client) continue;
+        const youtube = config.YOUTUBE_ENABLED
+          ? YouTubeClient.parseLink(url)
+          : null;
+
+        if (youtube?.type === "playlist") {
+          await ctx.reply(messages.YOUTUBE_PLAYLIST, {
+            reply_parameters: {
+              message_id: ctx.message.message_id,
+              allow_sending_without_reply: true,
+            },
+          });
+          continue;
+        }
+
+        const client = youtube ? null : ClientFactory.find(url);
+        if (!youtube && !client) continue;
 
         const processingMessage = await ctx.api.sendMessage(
           ctx.chatId,
-          `Processing ${client.name} link...`,
+          `Processing ${client?.name ?? "YouTube"} link...`,
           {
             reply_parameters: config.SEND_AS_REPLY
               ? {
@@ -173,9 +225,23 @@ export class Dinogram {
           },
         );
 
+        // The YouTube handler turns this message into its menu, so it keeps it
+        if (youtube) {
+          try {
+            await handleYouTubeLink(ctx, youtube, processingMessage);
+          } catch (e) {
+            await reportError(
+              ctx,
+              `Error handling url ${urlText}`,
+              e instanceof Error ? e : undefined,
+            );
+          }
+          continue;
+        }
+
         try {
           const handler = new UrlHandler(ctx, ctx.message);
-          await handler.handle(client);
+          await handler.handle(client!);
         } catch (e) {
           reportError(
             ctx,

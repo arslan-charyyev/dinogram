@@ -3,15 +3,87 @@ import {
   expandableBlockquote,
   fmt,
   FormattedString,
+  mentionUser,
   Stringable,
 } from "@grammyjs/parse-mode";
+import type { User } from "@grammyjs/types";
+import { YouTubeClient } from "../client/youtube-client.ts";
 import { config } from "../core/config.ts";
 import { messages } from "../core/messages.ts";
 import { FilePost, MultiFilePost, SingleFilePost } from "../model/post.ts";
-import { truncate } from "../utils/utils.ts";
+import type { YouTubeVideo } from "../model/youtube.ts";
+import { formatDuration, truncate } from "../utils/utils.ts";
 import { BATCH_SIZE } from "./constants.ts";
 
 export class CaptionBuilder {
+  /**
+   * The menu card shows the video, the state of the menu or the download,
+   * and in a group, the member whose download runs
+   */
+  static youtubeCard(
+    video: YouTubeVideo,
+    status: string,
+    requester?: User,
+  ): FormattedString {
+    const parts: Stringable[] = [
+      bold(truncate(video.title, 200)),
+      "\n",
+      [video.channel, formatDuration(video.duration)].filter(Boolean).join(
+        " · ",
+      ),
+    ];
+
+    if (!config.SEND_AS_REPLY) {
+      parts.push("\n", YouTubeClient.watchUrl(video.id));
+    }
+
+    parts.push("\n\n", status);
+
+    if (requester) {
+      parts.push(
+        "\n",
+        messages.YOUTUBE_REQUESTED_BY,
+        mentionUser(truncate(requester.first_name, 64), requester.id),
+      );
+    }
+
+    return fmt(parts);
+  }
+
+  /**
+   * An inline message has a button to the original video, so it needs no
+   * link in the caption
+   */
+  static youtube(
+    video: YouTubeVideo,
+    options: { requester?: User; inline?: boolean } = {},
+  ): FormattedString {
+    const parts: Stringable[] = [];
+
+    if (config.WITH_CAPTION) {
+      parts.push(bold(truncate(video.title, 200)));
+      if (video.channel) parts.push("\n", video.channel);
+    }
+
+    if (options.requester) {
+      if (parts.length > 0) parts.push("\n");
+      parts.push(
+        messages.YOUTUBE_REQUESTED_BY,
+        mentionUser(
+          truncate(options.requester.first_name, 64),
+          options.requester.id,
+        ),
+      );
+    }
+
+    if (!config.SEND_AS_REPLY && !options.inline) {
+      if (parts.length > 0) parts.push("\n\n");
+      parts.push(YouTubeClient.watchUrl(video.id));
+    }
+
+    return fmt(parts);
+  }
+
   static single(post: SingleFilePost): FormattedString {
     const parts: Stringable[] = [];
 

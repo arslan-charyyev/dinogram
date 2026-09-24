@@ -1,25 +1,31 @@
 import { FormattedString } from "@grammyjs/parse-mode";
 import type { Message } from "@grammyjs/types";
-import {
-  Context,
-  Filter,
-  GrammyError,
-  InlineKeyboard,
-  InputFile,
-} from "grammy";
+import { InputFile } from "grammy";
 import { ClientFactory } from "../client/client-factory.ts";
 import type { PlatformClient } from "../client/platform-client.ts";
+import { YouTubeClient } from "../client/youtube-client.ts";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { messages } from "../core/messages.ts";
 import type { FilePost } from "../model/post.ts";
+import type { YouTubeLink } from "../model/youtube.ts";
 import { reportInlineError } from "../utils/reports.ts";
 import { truncate } from "../utils/utils.ts";
 import { isAllowed } from "./access.ts";
 import { CaptionBuilder } from "./caption-builder.ts";
-
-type InlineQueryContext = Filter<Context, "inline_query">;
-type ChosenResultContext = Filter<Context, "chosen_inline_result">;
+import {
+  answerWithHint,
+  type ChosenResultContext,
+  inlineErrorReason,
+  type InlineQueryContext,
+  originalPostKeyboard,
+  parseUrl,
+} from "./inline-utils.ts";
+import {
+  answerYouTubeInlineQuery,
+  handleYouTubeChosenResult,
+  YOUTUBE_RESULT_PREFIX,
+} from "./youtube-inline.ts";
 
 type UploadedMedia = {
   readonly type: "photo" | "video" | "animation";
@@ -38,6 +44,16 @@ export async function handleInlineQuery(ctx: InlineQueryContext) {
 
   if (!await isAllowed(from.id)) {
     await answerWithHint(ctx, messages.INLINE_UNAUTHORIZED);
+    return;
+  }
+
+  const youtube = findYouTubeLink(query);
+  if (youtube?.type === "playlist") {
+    await answerWithHint(ctx, messages.YOUTUBE_PLAYLIST);
+    return;
+  }
+  if (youtube) {
+    await answerYouTubeInlineQuery(ctx, youtube);
     return;
   }
 
@@ -74,6 +90,11 @@ export async function handleChosenInlineResult(ctx: ChosenResultContext) {
 
   if (!inlineMessageId) {
     log.error("Chosen inline result carries no inline_message_id");
+    return;
+  }
+
+  if (ctx.chosenInlineResult.result_id.startsWith(YOUTUBE_RESULT_PREFIX)) {
+    await handleYouTubeChosenResult(ctx, inlineMessageId);
     return;
   }
 
@@ -188,37 +209,6 @@ function buildInputMedia(uploaded: UploadedMedia, caption: FormattedString) {
   }
 }
 
-function originalPostKeyboard(url: URL): InlineKeyboard {
-  return new InlineKeyboard().url(
-    messages.INLINE_OPEN_ORIGINAL,
-    url.toString(),
-  );
-}
-
-/**
- * An empty result list with a button is the only way to tell the user what
- * went wrong, because Telegram shows no other text above inline results.
- */
-function answerWithHint(ctx: InlineQueryContext, text: string) {
-  return ctx.answerInlineQuery([], {
-    cache_time: 0,
-    is_personal: true,
-    button: { text: text, start_parameter: "inline" },
-  });
-}
-
-/**
- * A storage chat is unreachable until the user starts a chat with the bot, so
- * that failure gets an instruction instead of a raw error.
- */
-function inlineErrorReason(error: unknown, url: string): string {
-  const isForbidden = error instanceof GrammyError && error.error_code === 403;
-
-  return isForbidden && !config.INLINE_STORAGE_CHAT
-    ? messages.INLINE_START_BOT
-    : `Error handling url ${url}`;
-}
-
 function findSupportedUrl(
   query: string,
 ): { url: URL; client: PlatformClient } | null {
@@ -235,21 +225,18 @@ function findSupportedUrl(
   return null;
 }
 
-function parseUrl(word: string): URL | null {
-  const text = word.trim();
-  if (text.length === 0) return null;
+function findYouTubeLink(query: string): YouTubeLink | null {
+  if (!config.YOUTUBE_ENABLED) return null;
 
-  try {
-    return new URL(text);
-  } catch (_e) {
-    // Telegram marks no entities in an inline query, so a link that the user
-    // pasted without a scheme still has to be recognized.
-    if (!text.includes(".")) return null;
+  for (const word of query.split(/\s+/)) {
+    const url = parseUrl(word);
+    if (!url) continue;
 
-    try {
-      return new URL(`https://${text}`);
-    } catch (_e) {
-      return null;
-    }
+    if (!["http:", "https:"].includes(url.protocol)) continue;
+
+    const link = YouTubeClient.parseLink(url);
+    if (link) return link;
   }
+
+  return null;
 }
