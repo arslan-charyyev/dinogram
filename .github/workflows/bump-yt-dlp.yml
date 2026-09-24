@@ -1,0 +1,73 @@
+name: ⬆️ Bump yt-dlp
+
+# YouTube breaks yt-dlp often, and the fixes reach the nightly builds first.
+# This workflow moves the Dockerfile to the latest nightly build on one branch,
+# and keeps one pull request open for it. A merge and a version tag ship it.
+#
+# GITHUB_TOKEN can open the pull request only when the repository allows it:
+# Settings → Actions → General → "Allow GitHub Actions to create and approve
+# pull requests".
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: bump-yt-dlp
+
+jobs:
+  bump:
+    name: ⬆️ Bump yt-dlp
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 📥 Check out repository code
+        uses: actions/checkout@v4
+
+      - name: ⬆️ Update the Dockerfile and the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: bump/yt-dlp
+        run: |
+          set -euo pipefail
+
+          latest=$(gh api repos/yt-dlp/yt-dlp-nightly-builds/releases/latest --jq .tag_name)
+          current=$(sed -n 's/^ARG YT_DLP_VERSION=//p' Dockerfile)
+
+          if [ "$latest" = "$current" ]; then
+            echo "The Dockerfile already has the latest nightly, $current"
+            exit 0
+          fi
+
+          sums_url="https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/download/$latest/SHA2-256SUMS"
+          sha=$(curl -fsSL "$sums_url" | awk '$2 == "yt-dlp_linux" { print $1 }')
+          if [ -z "$sha" ]; then
+            echo "No checksum for yt-dlp_linux in $sums_url"
+            exit 1
+          fi
+
+          sed -i \
+            -e "s/^ARG YT_DLP_VERSION=.*/ARG YT_DLP_VERSION=$latest/" \
+            -e "s/^ARG YT_DLP_SHA256=.*/ARG YT_DLP_SHA256=$sha/" \
+            Dockerfile
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --create "$BRANCH"
+          git commit --all --message "Bump yt-dlp to $latest"
+          # The branch always holds one commit on top of master, so an open
+          # pull request follows the newest nightly
+          git push --force origin "$BRANCH"
+
+          title="Bump yt-dlp to $latest"
+          body="Moves the Dockerfile from yt-dlp $current to the nightly build $latest. Changes: https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/tag/$latest"
+
+          open_pr=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+          if [ -n "$open_pr" ]; then
+            gh pr edit "$open_pr" --title "$title" --body "$body"
+          else
+            gh pr create --head "$BRANCH" --title "$title" --body "$body"
+          fi
