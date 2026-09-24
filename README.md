@@ -258,12 +258,14 @@ devbox run docker
 
 ### Dependency considerations
 
-Most libraries are fetched from `jsr` or `npm`. However, there are some
-exceptions:
+All libraries are fetched from `jsr` or `npm`. However, there are some points to
+know:
 
-- `grammy` libraries are sourced from deno-land because sourcing them from npm
-  breaks their typings. Additionally, it is pinned to version `1.30.0` at the
-  moment, since its plugins have not been updated to make use of latest version.
+- `grammy` and its plugins come from `npm`, because `deno.land/x` stops at
+  grammY 1.45.1. All of them must come from the same source, or two copies of
+  grammY end up in the dependency graph.
+- `@grammyjs/parse-mode` stays on 1.x, because 2.x removed `hydrateReply` and
+  `replyFmt`, and turned `bold()` and similar functions into template tags.
 
 ## 🙏🏻 Acknowledgements
 
