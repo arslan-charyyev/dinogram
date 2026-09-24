@@ -1,0 +1,22 @@
+name: dinogram-bot-api
+
+# The local Bot API server alone, for a bot that runs on the host with
+# `deno task main`. It raises the upload limit to 2000 MB, and in --local mode
+# it reads the downloads of the bot by their path. Thus it mounts DOWNLOAD_DIR
+# of the host at the same absolute path. Compose reads the values from .env.
+services:
+  telegram-bot-api:
+    image: aiogram/telegram-bot-api:10.3
+    ports:
+      - 127.0.0.1:8081:8081
+    volumes:
+      - ${DOWNLOAD_DIR:?Set DOWNLOAD_DIR in .env to an absolute path}:${DOWNLOAD_DIR}
+      - bot-api-data:/var/lib/telegram-bot-api
+    environment:
+      TELEGRAM_API_ID: ${TELEGRAM_API_ID:?Set TELEGRAM_API_ID in .env}
+      TELEGRAM_API_HASH: ${TELEGRAM_API_HASH:?Set TELEGRAM_API_HASH in .env}
+      # --local mode: uploads by file path, and files up to 2000 MB
+      TELEGRAM_LOCAL: "1"
+
+volumes:
+  bot-api-data:
