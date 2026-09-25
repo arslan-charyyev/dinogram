@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.1] - 2026-09-25
+
+[2.0.1]: https://github.com/arslan-charyyev/dinogram/compare/v2.0.0...v2.0.1
+
+### Fixed
+
+- A YouTube sign-in wall now reports its real reason, and tells an admin to set
+  a YouTube cookie. Before, the bot reported only "Requested format is not
+  available".
+- After a sign-in wall, the bot tries the YouTube cookie first for 30 minutes,
+  instead of trying the blocked ways first on every request
+
 ## [2.0.0] - 2026-09-25
 
 [2.0.0]: https://github.com/arslan-charyyev/dinogram/compare/v1.3.1...v2.0.0
