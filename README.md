@@ -135,6 +135,29 @@ YouTube breaks yt-dlp often, so the image uses its nightly build. The
 [bump-yt-dlp.yml](.github/workflows/bump-yt-dlp.yml) workflow opens a pull
 request every day when a new nightly build exists.
 
+## 🔔 YouTube subscriptions
+
+In a private chat with the bot, you can follow a YouTube channel, and its new
+videos arrive in the chat by themselves. Send a channel link, such as
+`https://www.youtube.com/@RickAstleyYT`, or `/subscribe` with a link to the
+channel or to one of its videos. A menu then asks three things:
+
+- the format: 🎬 high (1080p), medium (720p), low (360p), or 🎵 audio;
+- the frequency: ⚡ as soon as posted, 📅 once a day, or 🗓 once a week;
+- whether Shorts come too.
+
+`/subscriptions` lists the channels that you follow. There you change the
+format, the frequency, and the Shorts, or unsubscribe.
+
+The bot reads the RSS feed of each channel every 15 minutes (⚙️
+`SUBSCRIPTION_CHECK_MINUTES`). The feed is not the video player, so the sign-in
+wall of YouTube does not block it; only the download of a new video can meet the
+wall. Only videos that come out after the subscription arrive. A daily or weekly
+subscription sends up to ten videos per batch, a day or a week after the last
+batch. A premiere, or a video that the sign-in wall blocks, gets up to eight
+tries, and then the bot sends its link instead. A user can follow up to 20
+channels. ⚙️ `SUBSCRIPTIONS_ENABLED` turns the feature off.
+
 ## 🔐 Access control
 
 The bot serves everyone while `BOT_ADMINS` and `WHITELIST` are both empty. As
