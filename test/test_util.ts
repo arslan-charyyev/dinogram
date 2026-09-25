@@ -13,6 +13,25 @@ export const test_url = {
     images_with_videos: "https://www.instagram.com/p/CyWn_tQyKAH",
     video: "https://www.instagram.com/reel/C_TNM2ivzHF/",
   },
+  pinterest: {
+    image: "https://www.pinterest.com/pin/858146903966145189/",
+    regional_image: "https://www.pinterest.ca/pin/412994228343400946/",
+    video: "https://www.pinterest.com/pin/70437485604616/",
+    story_video:
+      "https://www.pinterest.com/pin/gadget-cool-products-amazon-product-technology-kitchen-gadgets--1084663891475263837/",
+    hls_only_video: "https://www.pinterest.com/pin/63824519713049795/",
+    multi_page: "https://jp.pinterest.com/pin/858146904010573850/",
+    carousel: "https://www.pinterest.com/pin/1196337405828254/",
+    gif: "https://www.pinterest.com/pin/35888128285791877/",
+    // A 3840×2160 original
+    high_res: "https://www.pinterest.com/pin/9359111718946929/",
+    // A 12.8 MB PNG original, above the photo limit of Telegram
+    oversized: "https://www.pinterest.com/pin/36732553207657029/",
+    vimeo: "https://www.pinterest.ca/pin/441282463481903715/",
+    not_found: "https://www.pinterest.com/pin/858146903966145188/",
+    short_link: "https://pin.it/42pZ430rg",
+    short_link_to_board: "https://pin.it/72hPRLLfr",
+  },
 };
 
 /**
