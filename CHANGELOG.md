@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.1.0] - 2026-09-25
+
+[3.1.0]: https://github.com/arslan-charyyev/dinogram/compare/v3.0.0...v3.1.0
+
+### Added
+
+- YouTube channel subscriptions in private chats: `/subscribe` or a channel link
+  opens a menu that asks for the format (high, medium, low, or audio), the
+  frequency (as soon as posted, once a day, or once a week), and the Shorts, and
+  `/subscriptions` manages them
+- New config options: `SUBSCRIPTIONS_ENABLED`, `SUBSCRIPTION_CHECK_MINUTES`
+
 ## [3.0.0] - 2026-09-25
 
 [3.0.0]: https://github.com/arslan-charyyev/dinogram/compare/v2.0.1...v3.0.0
