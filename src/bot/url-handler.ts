@@ -6,7 +6,10 @@ import type {
   ReplyParameters,
 } from "@grammyjs/types";
 import { Context, InputFile } from "grammy";
-import type { PlatformClient } from "../client/platform-client.ts";
+import {
+  ExternalMediaError,
+  type PlatformClient,
+} from "../client/platform-client.ts";
 import { config } from "../core/config.ts";
 import { log } from "../core/log.ts";
 import { AudioFile } from "../model/file.ts";
@@ -20,11 +23,17 @@ export class UrlHandler {
     private message: Message,
   ) {}
 
-  async handle(client: PlatformClient) {
+  /**
+   * Returns the link of the media, when the post only shows media that
+   * another site hosts. The caller decides what to do with that link.
+   */
+  async handle(client: PlatformClient): Promise<URL | undefined> {
     let post: FilePost;
     try {
       post = await client.fetchPost();
     } catch (e) {
+      if (e instanceof ExternalMediaError) return e.url;
+
       await reportError(
         this.ctx,
         "Error fetching post details",
@@ -35,9 +44,11 @@ export class UrlHandler {
 
     switch (post.type) {
       case "single":
-        return await this.replyWithSingleMedia(post, client);
+        await this.replyWithSingleMedia(post, client);
+        break;
       case "multi":
-        return await this.replyWithMediaGroup(post, client);
+        await this.replyWithMediaGroup(post, client);
+        break;
     }
   }
 
@@ -83,6 +94,13 @@ export class UrlHandler {
         break;
       case "photo":
         sentMessage = await this.ctx.api.sendPhoto(chatId, inputFile, other);
+        break;
+      case "animation":
+        sentMessage = await this.ctx.api.sendAnimation(
+          chatId,
+          inputFile,
+          other,
+        );
         break;
     }
 

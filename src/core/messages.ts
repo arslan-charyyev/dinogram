@@ -14,6 +14,8 @@ export const messages = {
     ].join("\n"),
   DENY_MISSING: (target: string) => `ℹ️ ${target} was not on the whitelist`,
   DENY_REMOVED: (target: string) => `✅ Denied ${target}`,
+  EXTERNAL_MEDIA: (url: string) =>
+    `This post shows a video from another site, which the bot does not download: ${url}`,
   INLINE_DOWNLOADING: "⏳ Downloading…",
   INLINE_MORE_ITEMS: "open the original post for the rest",
   INLINE_NO_LINK: "Paste a link to a supported post",
@@ -32,6 +34,12 @@ export const messages = {
     `This chat ID: ${chatId}\n` +
     "Send them to an admin to ask for access.",
   NOT_AN_ID: (arg: string) => `❌ "${arg}" is not an ID`,
+  PINTEREST_NOT_A_PIN:
+    "Only single pins are supported, not boards or profiles.",
+  PINTEREST_NOT_FOUND:
+    "Pin not found. It may be deleted, or visible only to signed-in users.",
+  PINTEREST_NO_VIDEO_FILE:
+    "Pinterest offers this video only as a stream, which the bot cannot send.",
   POSSIBLY_SIGN_IN_REQUIRED:
     "Cannot download the media. Probable reasons: private video or sign-in required.",
   YOUTUBE_AUDIO: "🎵 Audio",

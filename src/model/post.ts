@@ -1,4 +1,4 @@
-import { AudioFile, MediaFile } from "./file.ts";
+import { AudioFile, MediaFile, SingleMediaFile } from "./file.ts";
 
 type CommonPost = {
   readonly pageUrl: URL;
@@ -7,7 +7,7 @@ type CommonPost = {
 
 export type SingleFilePost = CommonPost & {
   readonly type: "single";
-  readonly file: MediaFile;
+  readonly file: SingleMediaFile;
 };
 
 export type MultiFilePost = CommonPost & {

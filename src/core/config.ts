@@ -76,6 +76,10 @@ const Config = z.object({
     .default("DEBUG")
     .describe("Log level. Source: https://jsr.io/@std/log/0.224.7/levels.ts"),
 
+  PINTEREST_ENABLED: bool
+    .default(true)
+    .describe("Enables support for downloading Pinterest pins"),
+
   REPORT_ERRORS_TO: intCsv
     .default([])
     .describe(

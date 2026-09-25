@@ -156,6 +156,9 @@ async function uploadToStorage(
     case "photo":
       message = await ctx.api.sendPhoto(chatId, inputFile, other);
       break;
+    case "animation":
+      message = await ctx.api.sendAnimation(chatId, inputFile, other);
+      break;
   }
 
   const uploaded = extractMedia(message);

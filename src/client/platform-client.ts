@@ -6,6 +6,16 @@ import { FilePost } from "../model/post.ts";
 import { MediaFile } from "../model/file.ts";
 import { MediaStream } from "../model/input-file.ts";
 
+/**
+ * The post shows media that another site hosts, such as a YouTube video in a
+ * pin. The caller can handle that link instead.
+ */
+export class ExternalMediaError extends Error {
+  constructor(readonly url: URL) {
+    super(`The post shows media from ${url.hostname}`);
+  }
+}
+
 export abstract class PlatformClient {
   constructor(protected readonly pageUrl: URL) {}
 

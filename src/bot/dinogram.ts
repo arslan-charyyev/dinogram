@@ -6,9 +6,15 @@ import {
 } from "@grammyjs/conversations";
 import { hydrateReply, ParseModeFlavor } from "@grammyjs/parse-mode";
 import { run } from "@grammyjs/runner";
-import type { ReplyParameters } from "@grammyjs/types";
+import type { Message, ReplyParameters } from "@grammyjs/types";
 import { retry } from "@std/async/retry";
-import { Bot, type Context, session, type SessionFlavor } from "grammy";
+import {
+  Bot,
+  type Context,
+  type Filter,
+  session,
+  type SessionFlavor,
+} from "grammy";
 import { ClientFactory } from "../client/client-factory.ts";
 import { YouTubeClient } from "../client/youtube-client.ts";
 import { YtDlp } from "../client/yt-dlp.ts";
@@ -239,9 +245,19 @@ export class Dinogram {
           continue;
         }
 
+        // The YouTube handler keeps the processing message as its menu, when a
+        // post only shows a YouTube video
+        let handedOver = false;
         try {
           const handler = new UrlHandler(ctx, ctx.message);
-          await handler.handle(client!);
+          const external = await handler.handle(client!);
+          if (external) {
+            handedOver = await this.handleExternalMedia(
+              ctx,
+              external,
+              processingMessage,
+            );
+          }
         } catch (e) {
           reportError(
             ctx,
@@ -249,17 +265,47 @@ export class Dinogram {
             e instanceof Error ? e : undefined,
           );
         } finally {
-          try {
-            await ctx.api.deleteMessage(
-              ctx.chatId,
-              processingMessage.message_id,
-            );
-          } catch (e) {
-            log.error("Failed to delete processing message", e);
+          if (!handedOver) {
+            try {
+              await ctx.api.deleteMessage(
+                ctx.chatId,
+                processingMessage.message_id,
+              );
+            } catch (e) {
+              log.error("Failed to delete processing message", e);
+            }
           }
         }
       }
     });
+  }
+
+  /**
+   * A post can show media from another site, such as a YouTube video in a
+   * pin. A YouTube video goes to the YouTube handler; any other link goes back
+   * to the user. Returns true when the YouTube handler took the message over.
+   */
+  private async handleExternalMedia(
+    ctx: Filter<DinoContext, "message:entities:url">,
+    url: URL,
+    processingMessage: Message,
+  ): Promise<boolean> {
+    const youtube = config.YOUTUBE_ENABLED
+      ? YouTubeClient.parseLink(url)
+      : null;
+
+    if (youtube?.type === "video") {
+      await handleYouTubeLink(ctx, youtube, processingMessage);
+      return true;
+    }
+
+    await ctx.reply(messages.EXTERNAL_MEDIA(url.toString()), {
+      reply_parameters: {
+        message_id: ctx.message.message_id,
+        allow_sending_without_reply: true,
+      },
+    });
+    return false;
   }
 
   private listenToStopSignals() {
