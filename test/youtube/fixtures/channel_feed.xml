@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed
+  xmlns:yt="http://www.youtube.com/xml/schemas/2015"
+  xmlns:media="http://search.yahoo.com/mrss/"
+  xmlns="http://www.w3.org/2005/Atom"
+>
+  <link
+    rel="self"
+    href="http://www.youtube.com/feeds/videos.xml?channel_id=UCX6OQ3DkcsbYNE6H8uQQuVA"
+  />
+  <id>yt:channel:X6OQ3DkcsbYNE6H8uQQuVA</id>
+  <yt:channelId>X6OQ3DkcsbYNE6H8uQQuVA</yt:channelId>
+  <title>MrBeast</title>
+  <link
+    rel="alternate"
+    href="https://www.youtube.com/channel/UCX6OQ3DkcsbYNE6H8uQQuVA"
+  />
+  <author>
+    <name>MrBeast</name>
+    <uri>https://www.youtube.com/channel/UCX6OQ3DkcsbYNE6H8uQQuVA</uri>
+  </author>
+  <published>2012-02-20T00:43:50+00:00</published>
+  <entry>
+    <id>yt:video:v9QtM6qnG50</id>
+    <yt:videoId>v9QtM6qnG50</yt:videoId>
+    <yt:channelId>UCX6OQ3DkcsbYNE6H8uQQuVA</yt:channelId>
+    <title>I Built A City To Save Kids From Illegal Labor</title>
+    <link rel="alternate" href="https://www.youtube.com/watch?v=v9QtM6qnG50" />
+    <author>
+      <name>MrBeast</name>
+      <uri>https://www.youtube.com/channel/UCX6OQ3DkcsbYNE6H8uQQuVA</uri>
+    </author>
+    <published>2026-09-19T16:00:01+00:00</published>
+    <updated>2026-09-25T08:07:44+00:00</updated>
+  </entry>
+  <entry>
+    <id>yt:video:T_SMf9j50uc</id>
+    <yt:videoId>T_SMf9j50uc</yt:videoId>
+    <yt:channelId>UCX6OQ3DkcsbYNE6H8uQQuVA</yt:channelId>
+    <title>Can We Build an Entire Village?</title>
+    <link rel="alternate" href="https://www.youtube.com/shorts/T_SMf9j50uc" />
+    <author>
+      <name>MrBeast</name>
+      <uri>https://www.youtube.com/channel/UCX6OQ3DkcsbYNE6H8uQQuVA</uri>
+    </author>
+    <published>2026-09-18T16:00:01+00:00</published>
+    <updated>2026-09-25T08:18:20+00:00</updated>
+  </entry>
+  <entry>
+    <id>yt:video:gTKS8SAwUzE</id>
+    <yt:videoId>gTKS8SAwUzE</yt:videoId>
+    <yt:channelId>UCX6OQ3DkcsbYNE6H8uQQuVA</yt:channelId>
+    <title>I Survived The Most Extreme Places On Earth</title>
+    <link rel="alternate" href="https://www.youtube.com/watch?v=gTKS8SAwUzE" />
+    <author>
+      <name>MrBeast</name>
+      <uri>https://www.youtube.com/channel/UCX6OQ3DkcsbYNE6H8uQQuVA</uri>
+    </author>
+    <published>2026-09-05T16:00:01+00:00</published>
+    <updated>2026-09-22T11:18:27+00:00</updated>
+  </entry>
+  <entry>
+    <id>yt:video:5mU6SRS2Bxo</id>
+    <yt:videoId>5mU6SRS2Bxo</yt:videoId>
+    <yt:channelId>UCX6OQ3DkcsbYNE6H8uQQuVA</yt:channelId>
+    <title>World’s Largest Tennis Match</title>
+    <link rel="alternate" href="https://www.youtube.com/shorts/5mU6SRS2Bxo" />
+    <author>
+      <name>MrBeast</name>
+      <uri>https://www.youtube.com/channel/UCX6OQ3DkcsbYNE6H8uQQuVA</uri>
+    </author>
+    <published>2026-08-23T16:00:04+00:00</published>
+    <updated>2026-09-24T18:14:59+00:00</updated>
+  </entry>
+</feed>
