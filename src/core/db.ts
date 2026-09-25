@@ -1,12 +1,14 @@
 /// <reference lib="deno.unstable" />
 
 import { resolve } from "@std/path";
+import type { Channel } from "../model/subscription.ts";
 import type {
   CachedYouTubeFile,
   YouTubeCard,
   YouTubeVideo,
 } from "../model/youtube.ts";
 import { config } from "./config.ts";
+import { Subscriptions } from "./subscriptions.ts";
 import { Whitelist } from "./whitelist.ts";
 
 const dbPath = config.DATA_DIR
@@ -37,11 +39,19 @@ export const db = {
      * Keyed by the chat ID and the message ID of the card. A press on an
      * older card asks for the link again.
      */
+    /**
+     * The channels that a subscription menu shows, keyed by the channel ID.
+     * A menu step finds the title here instead of asking YouTube again.
+     */
+    channel: createKeyedModel<Channel>(["youtube", "channel"], {
+      expireIn: 7 * 24 * 60 * 60 * 1000,
+    }),
     card: createKeyedModel<YouTubeCard>(["youtube", "card"], {
       expireIn: 30 * 24 * 60 * 60 * 1000,
     }),
   },
   whitelist: new Whitelist(kv),
+  subscriptions: new Subscriptions(kv),
 };
 
 /**

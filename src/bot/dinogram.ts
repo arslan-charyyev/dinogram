@@ -16,6 +16,7 @@ import {
   type SessionFlavor,
 } from "grammy";
 import { ClientFactory } from "../client/client-factory.ts";
+import { YouTubeChannels } from "../client/youtube-channels.ts";
 import { YouTubeClient } from "../client/youtube-client.ts";
 import { YtDlp } from "../client/yt-dlp.ts";
 import { config } from "../core/config.ts";
@@ -31,6 +32,14 @@ import {
   handleInlineQuery,
 } from "./inline-handler.ts";
 import { menus } from "./menus.ts";
+import {
+  handleSubscribeCommand,
+  handleSubscriptionCallback,
+  handleSubscriptionsCommand,
+  startSubscription,
+  SUBSCRIPTION_CALLBACK,
+} from "./subscription-menu.ts";
+import { startSubscriptionWorker } from "./subscription-worker.ts";
 import { UrlHandler } from "./url-handler.ts";
 import {
   handleYouTubeCallback,
@@ -88,11 +97,22 @@ export class Dinogram {
 
     this.bot.callbackQuery(YOUTUBE_CALLBACK, handleYouTubeCallback);
 
+    if (subscriptionsEnabled()) {
+      this.bot.command("subscribe", handleSubscribeCommand);
+      this.bot.command("subscriptions", handleSubscriptionsCommand);
+      this.bot.callbackQuery(SUBSCRIPTION_CALLBACK, handleSubscriptionCallback);
+    }
+
     this.listenToUrlEntities();
 
-    this.bot.init().then(() => {
+    this.bot.init().then(async () => {
       const { first_name, username } = this.bot.botInfo;
       log.info(`🚀 Launching bot "${first_name}" with username: @${username}`);
+
+      if (subscriptionsEnabled()) {
+        await this.showPrivateCommands();
+        startSubscriptionWorker(this.bot.api);
+      }
     });
 
     run(this.bot);
@@ -137,6 +157,21 @@ export class Dinogram {
         `yt-dlp is not available at "${config.YT_DLP_PATH}", so YouTube links will fail`,
         e,
       );
+    }
+  }
+
+  /**
+   * The command menu of a private chat offers the subscriptions, which work
+   * only there
+   */
+  private async showPrivateCommands() {
+    try {
+      await this.bot.api.setMyCommands([
+        { command: "subscribe", description: "Follow a YouTube channel" },
+        { command: "subscriptions", description: "Manage your subscriptions" },
+      ], { scope: { type: "all_private_chats" } });
+    } catch (e) {
+      log.error("Failed to set the command menu", e);
     }
   }
 
@@ -211,6 +246,15 @@ export class Dinogram {
               allow_sending_without_reply: true,
             },
           });
+          continue;
+        }
+
+        // A channel link in a private chat opens the subscription menu
+        if (
+          !youtube && chat.type === "private" && subscriptionsEnabled() &&
+          YouTubeChannels.isChannelLink(url)
+        ) {
+          await startSubscription(ctx, url);
           continue;
         }
 
@@ -325,4 +369,8 @@ export class Dinogram {
       Deno.addSignalListener(signal, this.bot.stop);
     }
   }
+}
+
+function subscriptionsEnabled(): boolean {
+  return config.YOUTUBE_ENABLED && config.SUBSCRIPTIONS_ENABLED;
 }

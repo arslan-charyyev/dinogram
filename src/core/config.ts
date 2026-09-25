@@ -98,6 +98,23 @@ const Config = z.object({
     .default(false)
     .describe("Send caption above media (true), or below (false)"),
 
+  SUBSCRIPTION_CHECK_MINUTES: z.coerce
+    .number()
+    .int()
+    .min(5)
+    .default(15)
+    .describe(
+      "How often, in minutes, the bot checks the subscribed YouTube channels " +
+        "for new videos",
+    ),
+
+  SUBSCRIPTIONS_ENABLED: bool
+    .default(true)
+    .describe(
+      "Enables YouTube channel subscriptions in private chats. Needs " +
+        "YOUTUBE_ENABLED.",
+    ),
+
   TEST_INSTAGRAM_COOKIE: z
     .string()
     .default("")

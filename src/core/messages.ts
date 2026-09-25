@@ -42,6 +42,34 @@ export const messages = {
     "Pinterest offers this video only as a stream, which the bot cannot send.",
   POSSIBLY_SIGN_IN_REQUIRED:
     "Cannot download the media. Probable reasons: private video or sign-in required.",
+  SUBSCRIPTION_ALREADY: "You already follow this channel.",
+  SUBSCRIPTION_ASK_FORMAT: "Which format should new videos come in?",
+  SUBSCRIPTION_ASK_FREQUENCY: "How often should they come?",
+  SUBSCRIPTION_ASK_SHORTS: "Should Shorts come too?",
+  SUBSCRIPTION_CANCELLED: "Subscription cancelled.",
+  SUBSCRIPTION_DONE:
+    "✅ Subscribed. Videos that come out from now on arrive here.",
+  SUBSCRIPTION_EMPTY:
+    "You follow no channel yet. Send a link to a YouTube channel to subscribe.",
+  SUBSCRIPTION_GAVE_UP: (title: string, url: string) =>
+    `❌ Could not download "${title}" from your subscription: ${url}`,
+  SUBSCRIPTION_HOW:
+    "Send a link to a YouTube channel, or to one of its videos. For example: /subscribe https://www.youtube.com/@RickAstleyYT",
+  SUBSCRIPTION_LIMIT: (limit: number) =>
+    `You can follow up to ${limit} channels. Remove one in /subscriptions first.`,
+  SUBSCRIPTION_LIST: (count: number) => `🔔 Your subscriptions: ${count}`,
+  SUBSCRIPTION_LOOKING_UP: "🔎 Looking up the channel…",
+  SUBSCRIPTION_NEW: (channel: string, title: string) =>
+    `🔔 New from ${channel}: ${title}`,
+  SUBSCRIPTION_NO_CHANNEL: "No YouTube channel was found at this link.",
+  SUBSCRIPTION_NO_FORMAT: (title: string, url: string) =>
+    `⚠️ "${title}" is too large or too long for the chosen format: ${url}`,
+  SUBSCRIPTION_PENDING: (count: number) =>
+    `⏳ Waiting for the next delivery: ${count}`,
+  SUBSCRIPTION_PRIVATE_ONLY:
+    "Subscriptions work only in a private chat with the bot.",
+  SUBSCRIPTION_UNSUBSCRIBE_ASK: "Unsubscribe from this channel?",
+  SUBSCRIPTION_UNSUBSCRIBED: "Unsubscribed.",
   YOUTUBE_AUDIO: "🎵 Audio",
   YOUTUBE_BACK: "⬅️ Back",
   YOUTUBE_BUSY_CARD: "Somebody already chose a format for this video.",
