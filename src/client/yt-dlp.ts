@@ -10,15 +10,18 @@ const DOWNLOAD_TIMEOUT_MS = 30 * 60_000;
  */
 const DOWNLOAD_STALL_MS = 90_000;
 
+/**
+ * YouTube asks to sign in when it distrusts the IP address, or when the video
+ * is age-restricted. A cookie can help in both cases.
+ */
+const SIGN_IN = /sign in|not a bot|login_required|confirm your age/i;
+
+const GENERIC_WARNING =
+  /Requested format is not available|No video formats found|No title found/i;
+
 export class YtDlpError extends Error {
-  /**
-   * YouTube asks to sign in when it distrusts the IP address, or when the
-   * video is age-restricted. A cookie can help in both cases.
-   */
   get needsSignIn(): boolean {
-    return /sign in|not a bot|login_required|confirm your age/i.test(
-      this.message,
-    );
+    return SIGN_IN.test(this.message);
   }
 }
 
@@ -140,6 +143,21 @@ export const YtDlp = {
     return path;
   },
 };
+
+/**
+ * yt-dlp explains a failed extraction in several warnings, and the last one,
+ * "Requested format is not available", only repeats the result. This picks
+ * the cause: a sign-in wall first, then any warning that is not generic.
+ */
+export function mainWarning(warnings: string): string | undefined {
+  const lines = warnings
+    .split("\n")
+    .map((it) => it.replace(/^WARNING:\s*(\[[^\]]+\]\s*)?/, "").trim())
+    .filter((it) => it.length > 0);
+
+  return lines.find((it) => SIGN_IN.test(it)) ??
+    lines.find((it) => !GENERIC_WARNING.test(it));
+}
 
 function commonArgs(access: YouTubeAccess, cookieFile?: string): string[] {
   const args = [

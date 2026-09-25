@@ -18,7 +18,7 @@ import {
   selectOptions,
   VideoInfo,
 } from "./youtube-formats.ts";
-import { YtDlp, YtDlpError } from "./yt-dlp.ts";
+import { mainWarning, YtDlp, YtDlpError } from "./yt-dlp.ts";
 
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 const YOUTUBE_HOST = /(^|\.)(youtube|youtube-nocookie)\.com$/;
@@ -207,8 +207,7 @@ async function probe(id: string): Promise<YouTubeVideo> {
       // returns only the storyboard images, and another access can do better.
       if (!hasMediaFormats(info)) {
         throw new YtDlpError(
-          warnings.split("\n").at(-1) ||
-            `The ${access} access returned no formats`,
+          mainWarning(warnings) ?? `The ${access} access returned no formats`,
         );
       }
 
@@ -233,8 +232,7 @@ async function probe(id: string): Promise<YouTubeVideo> {
     }
   }
 
-  // The sign-in wall explains more than the errors that followed it
-  throw errors.find(isSignInWall) ?? errors[0];
+  throw await failureOf(errors);
 }
 
 async function downloadWithFallbacks(
@@ -287,7 +285,22 @@ async function downloadWithFallbacks(
     }
   }
 
-  throw errors.find(isSignInWall) ?? errors[0];
+  throw await failureOf(errors);
+}
+
+/**
+ * The sign-in wall explains more than the errors that followed it, and an
+ * admin can act on it with a cookie
+ */
+async function failureOf(errors: unknown[]): Promise<unknown> {
+  const wall = errors.find(isSignInWall);
+  if (!wall) return errors[0];
+
+  const hasCookie = !!await db.youtube.cookie.get();
+  return new YouTubeUserError(
+    hasCookie ? messages.YOUTUBE_SIGN_IN_COOKIE : messages.YOUTUBE_SIGN_IN,
+    { cause: wall },
+  );
 }
 
 async function accessOrder(): Promise<YouTubeAccess[]> {

@@ -59,6 +59,10 @@ export const messages = {
   YOUTUBE_PLAYLIST: "Playlists are not supported. Send a link to one video.",
   YOUTUBE_QUEUED: "⏳ Waiting for a free download slot…",
   YOUTUBE_REQUESTED_BY: "Requested by ",
+  YOUTUBE_SIGN_IN:
+    "YouTube asks this server to sign in. An admin can set a YouTube cookie in /settings.",
+  YOUTUBE_SIGN_IN_COOKIE:
+    "YouTube asks this server to sign in, and the YouTube cookie did not help. An admin can set a new one in /settings.",
   YOUTUBE_TOO_LARGE: "The file is larger than the upload limit.",
   YOUTUBE_UPLOADING: "📤 Uploading…",
   YOUTUBE_VIDEO: "🎬 Video",
