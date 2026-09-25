@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.0.0] - 2026-09-25
+
+[3.0.0]: https://github.com/arslan-charyyev/dinogram/compare/v2.0.1...v3.0.0
+
+### Added
+
+- Pinterest pins with an image, a GIF, a video, several pages, or a carousel,
+  with no login, including `pin.it` short links
+- A pin of a YouTube video goes to the YouTube menu; a pin of a video from any
+  other site gets a reply with its link
+- New config option `PINTEREST_ENABLED`
+
+### Changed
+
+- A single GIF goes out as an animation, so that it plays
+
 ## [2.0.1] - 2026-09-25
 
 [2.0.1]: https://github.com/arslan-charyyev/dinogram/compare/v2.0.0...v2.0.1
