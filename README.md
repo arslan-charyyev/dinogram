@@ -5,10 +5,10 @@
 <p align="center"><img src="./assets/img/logo.jpg" height=200/></p>
 
 **Dinogram** is a Telegram bot that can download public videos & photos from
-social media platforms (TikTok, Instagram & YouTube) and send them to a Telegram
-chat. To use it, add the bot to a group, send it a direct message with a link to
-a post, or tag it in any chat (see `Inline mode`), and it will respond with the
-corresponding media items.
+social media platforms (TikTok, Instagram, YouTube & Pinterest) and send them to
+a Telegram chat. To use it, add the bot to a group, send it a direct message
+with a link to a post, or tag it in any chat (see `Inline mode`), and it will
+respond with the corresponding media items.
 
 https://github.com/user-attachments/assets/7d3e5f91-f126-4fa7-b232-2cc41d3d1f21
 
@@ -34,6 +34,14 @@ Supported social media platforms:
   - Videos and their audio, in the quality that you choose.
   - Shorts come at once, in the best quality that fits.
   - Playlists, live streams, and premieres are NOT supported.
+- Pinterest
+  - Pins with an image, a GIF, a video, several pages, or a carousel are
+    supported, with no login.
+  - A pin of a video from another site, such as YouTube or Vimeo, gets that
+    video: the bot handles a YouTube link itself, and replies with any other
+    link.
+  - Boards, profiles, and pins that only signed-in users may see are NOT
+    supported.
 
 Extra bot features:
 
