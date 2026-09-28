@@ -1,5 +1,6 @@
 import { retry } from "@std/async";
 import { z } from "zod";
+import { log } from "../core/log.ts";
 import { messages } from "../core/messages.ts";
 import {
   AudioFile,
@@ -77,7 +78,7 @@ const PinResponse = z.object({
 export class PinterestClient extends PlatformClient {
   override name = "Pinterest";
 
-  private pageHtml?: Promise<string>;
+  private pinQuery?: Promise<string>;
 
   static override supportsLink(url: URL): boolean {
     const host = url.hostname.toLowerCase();
@@ -249,9 +250,10 @@ export class PinterestClient extends PlatformClient {
   }
 
   /**
-   * Many newer video pins list only an HLS playlist in the JSON. The web page
-   * of the pin still links the MP4 file of the same video, which carries the
-   * same hash in its name.
+   * Many newer video pins list only an HLS playlist in the JSON. The pin query
+   * of the web app names the MP4 file of the same video, which carries the
+   * same hash in its name. When the query gives no MP4 file, the file is looked
+   * for next to the playlist, under the names that HLS_TO_MP4 lists.
    */
   private async videoOf(id: string, list: VideoList): Promise<MediaFile> {
     const urls = Object.values(list ?? {}).map((it) => it?.url ?? "");
@@ -261,36 +263,84 @@ export class PinterestClient extends PlatformClient {
       urls.find((it) => it.endsWith(".mp4"));
     if (mp4) return FileBuilder.video({ downloadUrl: mp4 });
 
-    const hash = urls
-      .map((it) => it.match(/([0-9a-f]{32})\.m3u8/)?.[1])
-      .find(Boolean);
-    if (!hash) throw Error(messages.PINTEREST_NO_VIDEO_FILE, { cause: { id } });
-
-    const html = await this.fetchPageHtml(id);
-    const fromPage = [...html.matchAll(MP4_IN_PAGE)]
-      .map((it) => it[1])
-      .find((it) => it.includes(hash));
-    if (!fromPage) {
-      throw Error(messages.PINTEREST_NO_VIDEO_FILE, { cause: { id, hash } });
+    const hls = urls.find((it) => HLS_URL.test(it));
+    const hash = hls?.match(HLS_URL)?.[1];
+    if (!hls || !hash) {
+      throw Error(messages.PINTEREST_NO_VIDEO_FILE, { cause: { id } });
     }
 
-    return FileBuilder.video({ downloadUrl: fromPage });
+    const fromQuery = [...(await this.fetchPinQuery(id)).matchAll(MP4_URL)]
+      .map((it) => it[1])
+      .find((it) => it.includes(hash));
+    if (fromQuery) {
+      log.debug(`Pinterest pin ${id}: MP4 from the pin query`);
+      return FileBuilder.video({ downloadUrl: fromQuery });
+    }
+
+    for (const [dir, suffix] of HLS_TO_MP4) {
+      const url = hls.replace("/hls/", `/${dir}/`)
+        .replace(HLS_URL_END, `${hash}${suffix}`);
+      try {
+        const response = await this.fetch(url, { method: "HEAD" });
+        if (response.ok) {
+          log.debug(`Pinterest pin ${id}: MP4 next to the HLS playlist`);
+          return FileBuilder.video({ downloadUrl: url });
+        }
+      } catch (_e) {
+        // The next name still works
+      }
+    }
+
+    throw Error(messages.PINTEREST_NO_VIDEO_FILE, { cause: { id, hash } });
   }
 
   /**
-   * The page is about 1.2 MB of HTML, so the video search reads it with a
-   * regular expression instead of a DOM, and fetches it once per post
+   * Asks the persisted query that the web app uses for a pin, once per post.
+   * The query ID changes when Pinterest ships a new web app, and then the
+   * query answers with an error. So a failure only logs a warning and gives
+   * an empty text, and the caller looks for the file by its name. The MP4
+   * link sits at a different depth for each kind of pin, so the caller reads
+   * the text with a regular expression.
    */
-  private fetchPageHtml(id: string): Promise<string> {
-    this.pageHtml ??= retry(async () => {
-      const response = await this.fetch(`https://www.pinterest.com/pin/${id}/`);
-      if (!response.ok) {
-        throw Error("Pin page not OK", { cause: { status: response.status } });
-      }
-      return await response.text();
-    });
+  private fetchPinQuery(id: string): Promise<string> {
+    this.pinQuery ??= (async () => {
+      try {
+        const response = await retry(() =>
+          this.fetch("https://www.pinterest.com/_/graphql/", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              // Any token works, when the cookie carries the same one
+              "x-csrftoken": CSRF_TOKEN,
+              "cookie": `csrftoken=${CSRF_TOKEN}`,
+            },
+            body: JSON.stringify({
+              queryHash: PIN_QUERY_ID,
+              variables: {
+                isAuth: false,
+                isAuthDesktop: false,
+                isDesktop: true,
+                pinId: id,
+              },
+            }),
+          })
+        );
 
-    return this.pageHtml;
+        const text = await response.text();
+        if (!response.ok || !JSON.parse(text).data) {
+          throw Error("Pin query failed", {
+            cause: { status: response.status, body: text.slice(0, 300) },
+          });
+        }
+
+        return text;
+      } catch (e) {
+        log.warn(`Pinterest pin ${id}: the pin query failed`, e);
+        return "";
+      }
+    })();
+
+    return this.pinQuery;
   }
 
   /**
@@ -336,7 +386,25 @@ export class PinterestClient extends PlatformClient {
 
 const TELEGRAM_PHOTO_LIMIT = 10 * 1024 * 1024;
 
-const MP4_IN_PAGE = /"(https:\/\/v1\.pinimg\.com\/videos\/[^"]+?\.mp4)"/g;
+const MP4_URL = /"(https:\/\/v1\.pinimg\.com\/videos\/[^"]+?\.mp4)"/g;
+
+/**
+ * The persisted query of the web app that answers with the video lists of a
+ * pin, taken from the page of a pin in September 2026
+ */
+const PIN_QUERY_ID =
+  "fe63d9041933722e5ee1b2315a5e72e739f6d049c9a0b8597b262a9882b644b3";
+
+const CSRF_TOKEN = "dinogram";
+
+const HLS_URL = /\/hls\/.*?([0-9a-f]{32})\.m3u8$/;
+const HLS_URL_END = /[0-9a-f]{32}\.m3u8$/;
+
+/**
+ * The folders and name endings of the MP4 file next to an HLS playlist. A
+ * video has one of them, and Pinterest answers 403 for the others.
+ */
+const HLS_TO_MP4 = [["720p", ".mp4"], ["expMp4", "_720w.mp4"]] as const;
 
 /**
  * The embed of a Vimeo pin is the player, whose page is not meant for people
