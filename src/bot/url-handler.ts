@@ -16,6 +16,7 @@ import { AudioFile } from "../model/file.ts";
 import { FilePost, MultiFilePost, SingleFilePost } from "../model/post.ts";
 import { reportError } from "../utils/reports.ts";
 import { CaptionBuilder } from "./caption-builder.ts";
+import { uploadApi } from "./upload-api.ts";
 
 export class UrlHandler {
   constructor(
@@ -80,7 +81,7 @@ export class UrlHandler {
 
     const chatId = this.message.chat.id;
     const inputFile = new InputFile(stream);
-    const other: Parameters<typeof this.ctx.api.sendVideo>[2] = {
+    const other: Parameters<typeof uploadApi.sendVideo>[2] = {
       caption: caption.text,
       caption_entities: caption.entities,
       reply_parameters: replyParameters,
@@ -90,13 +91,13 @@ export class UrlHandler {
     let sentMessage: Message;
     switch (post.file.type) {
       case "video":
-        sentMessage = await this.ctx.api.sendVideo(chatId, inputFile, other);
+        sentMessage = await uploadApi.sendVideo(chatId, inputFile, other);
         break;
       case "photo":
-        sentMessage = await this.ctx.api.sendPhoto(chatId, inputFile, other);
+        sentMessage = await uploadApi.sendPhoto(chatId, inputFile, other);
         break;
       case "animation":
-        sentMessage = await this.ctx.api.sendAnimation(
+        sentMessage = await uploadApi.sendAnimation(
           chatId,
           inputFile,
           other,
@@ -145,13 +146,13 @@ export class UrlHandler {
         } satisfies ReplyParameters
         : undefined;
 
-      const other: Parameters<typeof this.ctx.api.sendMediaGroup>[2] = {
+      const other: Parameters<typeof uploadApi.sendMediaGroup>[2] = {
         reply_parameters: replyParameters,
         message_thread_id: this.message.message_thread_id,
       };
 
       if (mediaGroup.length >= 2) {
-        const messages = await this.ctx.api.sendMediaGroup(
+        const messages = await uploadApi.sendMediaGroup(
           this.message.chat.id,
           mediaGroup,
           other,
@@ -165,7 +166,7 @@ export class UrlHandler {
         const { type, media, caption, caption_entities } = mediaGroup[0];
 
         const chatId = this.message.chat.id;
-        const other: Parameters<typeof this.ctx.api.sendVideo>[2] = {
+        const other: Parameters<typeof uploadApi.sendVideo>[2] = {
           caption: caption,
           caption_entities: caption_entities,
           reply_parameters: replyParameters,
@@ -175,10 +176,10 @@ export class UrlHandler {
         let sentMessage: Message;
         switch (type) {
           case "video":
-            sentMessage = await this.ctx.api.sendVideo(chatId, media, other);
+            sentMessage = await uploadApi.sendVideo(chatId, media, other);
             break;
           case "photo":
-            sentMessage = await this.ctx.api.sendPhoto(chatId, media, other);
+            sentMessage = await uploadApi.sendPhoto(chatId, media, other);
             break;
         }
 
@@ -216,7 +217,7 @@ export class UrlHandler {
       "\n" + file.title,
     ]);
 
-    await this.ctx.api.sendAudio(
+    await uploadApi.sendAudio(
       this.message.chat.id,
       new InputFile(audioRes.body),
       {

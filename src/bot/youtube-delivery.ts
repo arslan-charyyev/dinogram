@@ -13,20 +13,7 @@ import { db } from "../core/db.ts";
 import { log } from "../core/log.ts";
 import { messages } from "../core/messages.ts";
 import type { YouTubeOption, YouTubeVideo } from "../model/youtube.ts";
-
-/**
- * A 2000 MB upload through the local Bot API server can take many minutes,
- * because the server passes the file on to Telegram before it answers. The
- * default client of the bot gives up after 500 s. A network error or a
- * timeout is not retried, because the retry would upload the file again.
- */
-const uploadApi = new Api(config.BOT_TOKEN, {
-  apiRoot: config.BOT_API_ROOT || undefined,
-  timeoutSeconds: 60 * 60,
-});
-uploadApi.config.use(
-  autoRetry({ maxRetryAttempts: 3, rethrowHttpErrors: true }),
-);
+import { uploadApi } from "./upload-api.ts";
 
 /**
  * A status edit that Telegram delays with a flood wait is worth nothing, and

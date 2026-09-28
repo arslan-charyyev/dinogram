@@ -21,6 +21,7 @@ import {
   originalPostKeyboard,
   parseUrl,
 } from "./inline-utils.ts";
+import { uploadApi } from "./upload-api.ts";
 import {
   answerYouTubeInlineQuery,
   handleYouTubeChosenResult,
@@ -151,13 +152,13 @@ async function uploadToStorage(
   let message: Message;
   switch (file.type) {
     case "video":
-      message = await ctx.api.sendVideo(chatId, inputFile, other);
+      message = await uploadApi.sendVideo(chatId, inputFile, other);
       break;
     case "photo":
-      message = await ctx.api.sendPhoto(chatId, inputFile, other);
+      message = await uploadApi.sendPhoto(chatId, inputFile, other);
       break;
     case "animation":
-      message = await ctx.api.sendAnimation(chatId, inputFile, other);
+      message = await uploadApi.sendAnimation(chatId, inputFile, other);
       break;
   }
 
