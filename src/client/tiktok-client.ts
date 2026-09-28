@@ -8,6 +8,11 @@ import { FilePost, MultiFilePost, PostBuilder } from "../model/post.ts";
 import { getUrlSegments, randInt, randStr } from "../utils/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
 
+// The image CDN of TikTok breaks an HTTP/2 connection that carries a second
+// batch of ten parallel downloads, and the bodies fail halfway through.
+// HTTP/1.1 gives each download its own connection.
+const http1Client = Deno.createHttpClient({ http2: false });
+
 export class TikTokClient extends PlatformClient {
   override name = "TikTok";
   userAgent: string;
@@ -41,6 +46,7 @@ export class TikTokClient extends PlatformClient {
         return globalThis.fetch(input, {
           ...init,
           headers,
+          client: http1Client,
         });
       },
     });
