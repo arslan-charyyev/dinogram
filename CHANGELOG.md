@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.1.2] - 2026-09-29
+
+[3.1.2]: https://github.com/arslan-charyyev/dinogram/compare/v3.1.1...v3.1.2
+
+### Fixed
+
+- A Pinterest video that the API lists only as an HLS stream now gets its MP4
+  from the pin query of the Pinterest web app, and then from the known names of
+  the file next to the stream. Before, the bot searched the page of the pin,
+  which Pinterest sends without the video to some servers.
+
 ## [3.1.1] - 2026-09-28
 
 [3.1.1]: https://github.com/arslan-charyyev/dinogram/compare/v3.1.0...v3.1.1
