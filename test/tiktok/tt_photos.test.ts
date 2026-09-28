@@ -2,53 +2,43 @@ import { assert, assertEquals } from "@std/assert";
 import { TikTokClient } from "../../src/client/tiktok-client.ts";
 import { computeSHA1, test_url, writeToTestOutput } from "../test_util.ts";
 
-// TikTok stopped embedding photo posts in the page, and it answers the API
-// that carries them with an empty body unless the request is signed the way its
-// current web app signs it. The bundled signer predates that scheme. Videos are
-// unaffected. Remove `ignore` once the signing works again.
-Deno.test({
-  name: "Download TikTok photos",
-  ignore: true,
-  fn: async () => {
-    const url = new URL(test_url.tiktok.photos);
-    const client = new TikTokClient(url);
-    const post = await client.fetchPost();
+Deno.test("Download TikTok photos", async () => {
+  const url = new URL(test_url.tiktok.photos);
+  const client = new TikTokClient(url);
+  const post = await client.fetchPost();
 
-    assert(
-      post.type === "multi" && post.files.every(({ type }) => type === "photo"),
-      "TikTok link is for photos",
-    );
+  assert(
+    post.type === "multi" && post.files.every(({ type }) => type === "photo"),
+    "TikTok link is for photos",
+  );
 
-    assertEquals(
-      post.title,
-      "Lorem photo title",
-      "photo title matches",
-    );
+  assertEquals(post.title, "", "photo title matches");
 
-    assertEquals(
-      post.description,
-      "Lorem photo description",
-      "photo description matches",
-    );
+  assertEquals(
+    post.description,
+    "Did you spot any artists that you saw at Melkweg? 🤩 #photodump #concert #photography #melkwegamsterdam",
+    "photo description matches",
+  );
 
-    assertEquals(post.files.length, 25, "Array elements match");
+  assertEquals(post.files.length, 28, "Array elements match");
 
-    const firstImageBytes = await client
-      .fetch(post.files[0].downloadUrl)
-      .then((it) => it.bytes());
+  assertEquals(post.audio?.title, "FEEL THE GROOVE", "audio title matches");
 
-    await writeToTestOutput(firstImageBytes, `tt_image.jpg`);
+  const firstImageBytes = await client
+    .fetch(post.files[0].downloadUrl)
+    .then((it) => it.bytes());
 
-    assertEquals(
-      firstImageBytes.byteLength,
-      17_346,
-      "first image length matches",
-    );
+  await writeToTestOutput(firstImageBytes, `tt_image.jpg`);
 
-    assertEquals(
-      await computeSHA1(firstImageBytes),
-      "1a5c5ecec9f89d450fb74c7c92b7f614e04cda1f",
-      "first image hash matches",
-    );
-  },
+  assertEquals(
+    firstImageBytes.byteLength,
+    558_127,
+    "first image length matches",
+  );
+
+  assertEquals(
+    await computeSHA1(firstImageBytes),
+    "7458a750d685fe25032d03606fd2ef1652798530",
+    "first image hash matches",
+  );
 });

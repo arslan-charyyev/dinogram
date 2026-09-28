@@ -3,7 +3,8 @@ import crypto from "node:crypto";
 export const test_url = {
   tiktok: {
     video: "https://www.tiktok.com/@blackscreen.__/video/6904103492093283589",
-    photos: "https://www.tiktok.com/@ma.dishe4ka/photo/7381933376762137873",
+    photos:
+      "https://www.tiktok.com/@melkwegamsterdam/photo/7120615642583158021",
     requires_sign_in: "https://vt.tiktok.com/ZSYpchYqS/",
     video_large_content: "https://vt.tiktok.com/ZS2byCTYy/",
   },
