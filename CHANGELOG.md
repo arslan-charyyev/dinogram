@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.1.1] - 2026-09-28
+
+[3.1.1]: https://github.com/arslan-charyyev/dinogram/compare/v3.1.0...v3.1.1
+
+### Fixed
+
+- TikTok photo posts download again, with their caption and music. The bot reads
+  them from the video page of the same post, which needs no signed request.
+- A TikTok post with more than ten images no longer stops halfway, because the
+  image downloads no longer share one HTTP/2 connection that TikTok breaks
+- A download that breaks during an upload now gets an error reply. Before, the
+  bot retried the upload forever and never answered.
+- A post whose music fails now reports the failure, and a missing music file no
+  longer goes out as a broken audio
+
 ## [3.1.0] - 2026-09-25
 
 [3.1.0]: https://github.com/arslan-charyyev/dinogram/compare/v3.0.0...v3.1.0
