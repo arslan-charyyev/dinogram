@@ -7,8 +7,8 @@ FROM denoland/deno:2.4.3
 # yt-dlp nightly, because YouTube breaks the stable release often. The
 # bump-yt-dlp workflow updates the version and the checksum together. yt-dlp
 # runs Deno from the PATH to solve the YouTube challenges.
-ARG YT_DLP_VERSION=2026.09.16.232951
-ARG YT_DLP_SHA256=69112248177f7c3a6ba7ed981e143a0214910ed6adeb40e075f08543f74a4850
+ARG YT_DLP_VERSION=2026.09.27.232945
+ARG YT_DLP_SHA256=c862f694f81a8977e74946a08ad3ab6285104882061e4e46da9f754bda09db4e
 
 COPY --from=ffmpeg /ffmpeg /ffprobe /usr/local/bin/
 ADD --checksum=sha256:${YT_DLP_SHA256} --chmod=755 \
