@@ -82,7 +82,10 @@ Deno.test("Download Pinterest story video", async () => {
 Deno.test("Download Pinterest video that the API lists only as HLS", async () => {
   const post = await fetchPost(test_url.pinterest.hls_only_video);
   assert(post.type === "single" && post.file.type === "video", "one video");
-  assert(post.file.downloadUrl.endsWith(".mp4"), "the MP4 from the pin page");
+  assert(
+    post.file.downloadUrl.endsWith(".mp4"),
+    "an MP4 file, not the HLS playlist",
+  );
   await assertFile(post.file);
 });
 
