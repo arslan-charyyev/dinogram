@@ -192,7 +192,12 @@ export class UrlHandler {
     }
 
     if (post.audio) {
-      this.replyWithAudio(post.audio, lastSentMessageId);
+      // The media is already out, so a failed audio only gets its own report
+      try {
+        await this.replyWithAudio(post.audio, lastSentMessageId);
+      } catch (e) {
+        await reportError(this.ctx, "Could not send the audio", e);
+      }
     }
   }
 
@@ -202,7 +207,7 @@ export class UrlHandler {
   ) {
     const audioRes = await fetch(file.downloadUrl);
 
-    if (!audioRes.body) {
+    if (!audioRes.ok || !audioRes.body) {
       await reportError(
         this.ctx,
         "Failed to get audio stream",

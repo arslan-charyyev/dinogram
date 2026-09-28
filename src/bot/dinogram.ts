@@ -303,7 +303,7 @@ export class Dinogram {
             );
           }
         } catch (e) {
-          reportError(
+          await reportError(
             ctx,
             `Error handling url ${urlText}`,
             e instanceof Error ? e : undefined,
