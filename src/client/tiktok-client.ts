@@ -2,18 +2,11 @@ import { retry } from "@std/async";
 import { CookieJar, wrapFetch } from "another-cookiejar";
 import { DOMParser } from "@b-fuze/deno-dom";
 import { z } from "zod";
-import { Assets } from "../core/assets.ts";
 import { messages } from "../core/messages.ts";
 import { AudioFile, FileBuilder, MediaFile } from "../model/file.ts";
-import {
-  FilePost,
-  MultiFilePost,
-  PostBuilder,
-  SingleFilePost,
-} from "../model/post.ts";
+import { FilePost, MultiFilePost, PostBuilder } from "../model/post.ts";
 import { getUrlSegments, randInt, randStr } from "../utils/utils.ts";
 import { PlatformClient } from "./platform-client.ts";
-import { Window } from "happy-dom";
 
 export class TikTokClient extends PlatformClient {
   override name = "TikTok";
@@ -54,8 +47,38 @@ export class TikTokClient extends PlatformClient {
   }
 
   override async fetchPost(): Promise<FilePost> {
+    const scope = await this.fetchScope(this.pageUrl);
+    const videoDetail = scope["webapp.video-detail"];
+    if (videoDetail) {
+      return this.parseItem(videoDetail);
+    }
+
+    // TikTok leaves a photo post out of its photo page, but the video page of
+    // the same ID carries the whole post, images and music included.
+    const canonicalUrl = new URL(scope["seo.abtest"].canonical);
+    const canonicalSegments = getUrlSegments(canonicalUrl);
+    const itemId = canonicalSegments.at(-1);
+    if (canonicalSegments.at(-2) === "photo" && itemId) {
+      const author = canonicalSegments.slice(0, -2).join("/");
+      const videoPageUrl = new URL(
+        `/${author}/video/${itemId}`,
+        canonicalUrl,
+      );
+      const photoDetail = (await this.fetchScope(videoPageUrl))[
+        "webapp.video-detail"
+      ];
+      if (!photoDetail) {
+        throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
+      }
+      return this.parseItem(photoDetail);
+    }
+
+    throw new Error("Invalid TikTok link");
+  }
+
+  private async fetchScope(pageUrl: URL): Promise<DefaultScope> {
     const scriptElement = await retry(async () => {
-      const response = await this.fetch(this.pageUrl);
+      const response = await this.fetch(pageUrl);
       const html = await response.text();
       const doc = new DOMParser().parseFromString(html, "text/html");
       const scriptSelector = 'script[id="__UNIVERSAL_DATA_FOR_REHYDRATION__"]';
@@ -73,32 +96,24 @@ export class TikTokClient extends PlatformClient {
     });
 
     const scriptJson = JSON.parse(scriptElement.innerHTML);
-    const script = ScriptSchema.parse(scriptJson);
-    const videoDetail = script.__DEFAULT_SCOPE__["webapp.video-detail"];
-    if (videoDetail) {
-      return this.fetchVideoPost(videoDetail);
-    }
-
-    // TODO: Get it from DOM instead?
-    const abtest = script.__DEFAULT_SCOPE__["seo.abtest"];
-    const canonicalSegments = getUrlSegments(new URL(abtest.canonical));
-    if (canonicalSegments.at(-2) === "photo" && canonicalSegments.at(-1)) {
-      return this.fetchPhotoPost(canonicalSegments.at(-1)!);
-    }
-
-    throw new Error("Invalid TikTok link");
+    return ScriptSchema.parse(scriptJson).__DEFAULT_SCOPE__;
   }
 
-  private fetchVideoPost(videoDetail: VideoDetail): SingleFilePost {
-    // We're dealing with a video
-
+  private parseItem(videoDetail: VideoDetail): FilePost {
+    // TikTok sends the detail without the item when the post is private or
+    // needs a sign-in
     if (!videoDetail.itemInfo) {
-      throw new Error("Video detail has no item info", {
+      throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED, {
         cause: videoDetail,
       });
     }
 
-    const { video, desc } = videoDetail.itemInfo.itemStruct;
+    const { itemStruct } = videoDetail.itemInfo;
+    if (itemStruct.imagePost) {
+      return this.parsePhotoPost(itemStruct, itemStruct.imagePost);
+    }
+
+    const { video, desc } = itemStruct;
 
     const description = desc.trim();
     const downloadUrl = video.playAddr ?? video.downloadAddr;
@@ -114,65 +129,24 @@ export class TikTokClient extends PlatformClient {
     });
   }
 
-  private async fetchPhotoPost(itemId: string): Promise<MultiFilePost> {
-    const params = new URLSearchParams({
-      "itemId": itemId,
-      "aid": "1998",
-      "app_language": "en",
-      "app_name": "tiktok_web",
-      "browser_language": "en-US",
-      "browser_name": "Mozilla",
-      "browser_platform": "Win32",
-      "browser_version": "4.0",
-      "device_id": "1234567890123456789",
-      "device_platform": "web_pc",
-      "os": "windows",
-      "region": "US",
-      "screen_height": "720",
-      "screen_width": "1280",
-      "webcast_language": "en",
-    }).toString();
-
-    const unsignedUrl = `https://www.tiktok.com/api/item/detail?${params}`;
-
-    const signedUrl = await TikTokClient.signUrl(unsignedUrl, this.userAgent);
-
-    const res = await retry(() => this.fetch(signedUrl));
-    const body = await res.text();
-
-    // TikTok answers a request that it does not trust with 200 and an empty
-    // body rather than with an error status. Parsing that yields "Unexpected
-    // end of JSON input", which says nothing to the person who sent the link.
-    if (body.length === 0) {
-      throw new Error(messages.PHOTO_POST_UNAVAILABLE);
-    }
-
-    const itemDetailJson = JSON.parse(body);
-    const itemDetail = ItemDetailSchema.parse(itemDetailJson);
-
-    if (!itemDetail.itemInfo) {
-      throw new Error(messages.POSSIBLY_SIGN_IN_REQUIRED);
-    }
-
-    const { itemStruct } = itemDetail.itemInfo;
-
+  private parsePhotoPost(
+    itemStruct: ItemStruct,
+    imagePost: ImagePost,
+  ): MultiFilePost {
     const description = itemStruct.desc.trim();
-    const title = itemStruct.imagePost.title.trim();
-    const downloadUrls = itemStruct.imagePost.images.map(
-      (it) => it.imageURL.urlList[0],
+    const title = imagePost.title.trim();
+    const files: MediaFile[] = imagePost.images.map((it) =>
+      FileBuilder.photo({ downloadUrl: it.imageURL.urlList[0] })
     );
-    const audioUrl = itemStruct.music.playUrl;
-    const audioTitle = itemStruct.music.title;
-    const audioAuthor = itemStruct.music.authorName;
-    const audio: AudioFile = FileBuilder.audio({
-      downloadUrl: audioUrl,
-      title: audioTitle,
-      author: audioAuthor,
-    });
 
-    const files: MediaFile[] = downloadUrls.map((downloadUrl) =>
-      FileBuilder.photo({ downloadUrl })
-    );
+    const { music } = itemStruct;
+    const audio: AudioFile | undefined = music?.playUrl
+      ? FileBuilder.audio({
+        downloadUrl: music.playUrl,
+        title: music.title,
+        author: music.authorName,
+      })
+      : undefined;
 
     return PostBuilder.multi({
       title,
@@ -185,52 +159,6 @@ export class TikTokClient extends PlatformClient {
 
   static override supportsLink(url: URL): boolean {
     return url.hostname.endsWith("tiktok.com");
-  }
-
-  private static async signUrl(unsignedUrl: string, userAgent: string) {
-    const signatureJs = await Deno.readTextFile(Assets.js.signature);
-    const webmssdkJs = await Deno.readTextFile(Assets.js.webmssdk);
-
-    const window: Window = new Window({
-      url: "https://www.tiktok.com",
-      height: 1920,
-      width: 1080,
-      settings: {
-        navigator: {
-          userAgent,
-        },
-      },
-    });
-
-    window.eval(signatureJs);
-
-    const windowExtended = window as unknown as {
-      _0x32d649: (searchParams: string) => string;
-      byted_acrawler: {
-        init: (o: { aid: number; dfp: boolean }) => string;
-        sign: (o: { url: string }) => string;
-      };
-    };
-
-    windowExtended.byted_acrawler.init({ aid: 24, dfp: true });
-
-    window.eval(webmssdkJs);
-
-    const url = new URL(unsignedUrl);
-
-    const signature = windowExtended.byted_acrawler.sign({
-      url: url.toString(),
-    });
-    url.searchParams.append("_signature", signature);
-
-    const bogus = windowExtended._0x32d649(url.searchParams.toString());
-    url.searchParams.append("X-Bogus", bogus);
-
-    // Aborts any ongoing operations (such as fetch and timers)
-    await window.happyDOM.abort();
-    window.close();
-
-    return url.toString();
   }
 }
 
@@ -251,35 +179,31 @@ const ScriptSchema = z.object({
             playAddr: z.string().describe("without watermark").optional(),
             downloadAddr: z.string().describe("with watermark").optional(),
           }),
+          imagePost: z.object({
+            title: z.string(),
+            images: z.array(z.object({
+              imageHeight: z.number().int(),
+              imageWidth: z.number().int(),
+              imageURL: z.object({
+                urlList: z.array(z.string()),
+              }),
+            })),
+          }).optional(),
+          music: z.object({
+            authorName: z.string(),
+            playUrl: z.string().optional(),
+            title: z.string(),
+          }).optional(),
         }),
       }).optional(),
     }).optional(),
   }),
 });
 
-type VideoDetail = NonNullable<
-  z.TypeOf<typeof ScriptSchema>["__DEFAULT_SCOPE__"]["webapp.video-detail"]
->;
+type DefaultScope = z.TypeOf<typeof ScriptSchema>["__DEFAULT_SCOPE__"];
 
-const ItemDetailSchema = z.object({
-  itemInfo: z.object({
-    itemStruct: z.object({
-      desc: z.string(),
-      imagePost: z.object({
-        title: z.string(),
-        images: z.array(z.object({
-          imageHeight: z.number().int(),
-          imageWidth: z.number().int(),
-          imageURL: z.object({
-            urlList: z.array(z.string()),
-          }),
-        })),
-      }),
-      music: z.object({
-        authorName: z.string(),
-        playUrl: z.string(),
-        title: z.string(),
-      }),
-    }),
-  }).optional(),
-});
+type VideoDetail = NonNullable<DefaultScope["webapp.video-detail"]>;
+
+type ItemStruct = NonNullable<VideoDetail["itemInfo"]>["itemStruct"];
+
+type ImagePost = NonNullable<ItemStruct["imagePost"]>;

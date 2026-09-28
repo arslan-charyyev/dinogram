@@ -28,8 +28,7 @@
     "Tele",
     "tiktok",
     "Vibing",
-    "webid",
-    "webmssdk"
+    "webid"
   ],
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"

@@ -377,7 +377,6 @@ know:
 
 - [TeleTok](https://github.com/captaincolonelfox/TeleTok) - inspiration for the
   TikTok video downloader.
-- [SignTok](https://github.com/pablouser1/SignTok) - TikTok URL signing method.
 
 ## ⚖️ License
 

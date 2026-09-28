@@ -27,7 +27,6 @@
     "npm:@grammyjs/types@5.0.0": "5.0.0",
     "npm:@types/node@*": "22.12.0",
     "npm:grammy@1.46.0": "1.46.0",
-    "npm:happy-dom@18.0.1": "18.0.1",
     "npm:jsonpath-plus@10.3.0": "10.3.0_jsep@1.4.0",
     "npm:zod@4.0.14": "4.0.14"
   },
@@ -147,20 +146,11 @@
         "jsep"
       ]
     },
-    "@types/node@20.19.9": {
-      "integrity": "sha512-cuVNgarYWZqxRJDQHEB58GEONhOK79QVR/qYx4S7kcUObQvUwvFnYxJuuHUKm2aieN9X3yZB4LZsuYNU1Qphsw==",
-      "dependencies": [
-        "undici-types@6.21.0"
-      ]
-    },
     "@types/node@22.12.0": {
       "integrity": "sha512-Fll2FZ1riMjNmlmJOdAyY5pUbkftXslB5DgEzlIuNaiWhXd00FhWxVC/r4yV/4wBb9JfImTu+jiSvXTkJ7F/gA==",
       "dependencies": [
-        "undici-types@6.20.0"
+        "undici-types"
       ]
-    },
-    "@types/whatwg-mimetype@3.0.2": {
-      "integrity": "sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA=="
     },
     "abort-controller@3.0.0": {
       "integrity": "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==",
@@ -184,14 +174,6 @@
         "abort-controller",
         "debug",
         "node-fetch"
-      ]
-    },
-    "happy-dom@18.0.1": {
-      "integrity": "sha512-qn+rKOW7KWpVTtgIUi6RVmTBZJSe2k0Db0vh1f7CWrWclkkc7/Q+FrOfkZIb2eiErLyqu5AXEzE7XthO9JVxRA==",
-      "dependencies": [
-        "@types/node@20.19.9",
-        "@types/whatwg-mimetype",
-        "whatwg-mimetype"
       ]
     },
     "jsep@1.4.0": {
@@ -221,14 +203,8 @@
     "undici-types@6.20.0": {
       "integrity": "sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg=="
     },
-    "undici-types@6.21.0": {
-      "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="
-    },
     "webidl-conversions@3.0.1": {
       "integrity": "sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ=="
-    },
-    "whatwg-mimetype@3.0.0": {
-      "integrity": "sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q=="
     },
     "whatwg-url@5.0.0": {
       "integrity": "sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==",
@@ -265,7 +241,6 @@
       "npm:@grammyjs/runner@2.0.3",
       "npm:@grammyjs/types@5.0.0",
       "npm:grammy@1.46.0",
-      "npm:happy-dom@18.0.1",
       "npm:jsonpath-plus@10.3.0",
       "npm:zod@4.0.14"
     ]

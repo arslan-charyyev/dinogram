@@ -14,7 +14,6 @@
     "@std/path": "jsr:@std/path@1.1.1",
     "another-cookiejar": "jsr:@jd1378/another-cookiejar@5.0.7",
     "grammy": "npm:grammy@1.46.0",
-    "happy-dom": "npm:happy-dom@18.0.1",
     "jsonpath-plus": "npm:jsonpath-plus@10.3.0",
     "zod": "npm:zod@4.0.14"
   },
