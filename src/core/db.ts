@@ -50,6 +50,16 @@ export const db = {
       expireIn: 30 * 24 * 60 * 60 * 1000,
     }),
   },
+  inline: {
+    /**
+     * The links of the posts behind the "all items" buttons of inline
+     * messages, keyed by a hash of the link. An old button asks for the link
+     * again.
+     */
+    link: createKeyedModel<string>(["inline", "link"], {
+      expireIn: 30 * 24 * 60 * 60 * 1000,
+    }),
+  },
   whitelist: new Whitelist(kv),
   subscriptions: new Subscriptions(kv),
 };

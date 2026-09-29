@@ -16,6 +16,7 @@ import {
   type SessionFlavor,
 } from "grammy";
 import { ClientFactory } from "../client/client-factory.ts";
+import type { PlatformClient } from "../client/platform-client.ts";
 import { YouTubeChannels } from "../client/youtube-channels.ts";
 import { YouTubeClient } from "../client/youtube-client.ts";
 import { YtDlp } from "../client/yt-dlp.ts";
@@ -27,6 +28,7 @@ import { reportError } from "../utils/reports.ts";
 import { isAdmin, isAllowed } from "./access.ts";
 import { commands } from "./commands.ts";
 import { dinoConversations } from "./conversations.ts";
+import { findAllItemsLink, parseAllItemsPayload } from "./deep-link.ts";
 import {
   handleChosenInlineResult,
   handleInlineQuery,
@@ -103,6 +105,7 @@ export class Dinogram {
       this.bot.callbackQuery(SUBSCRIPTION_CALLBACK, handleSubscriptionCallback);
     }
 
+    this.listenToAllItemsLinks();
     this.listenToUrlEntities();
 
     this.bot.init().then(async () => {
@@ -261,18 +264,11 @@ export class Dinogram {
         const client = youtube ? null : ClientFactory.find(url);
         if (!youtube && !client) continue;
 
-        const processingMessage = await ctx.api.sendMessage(
-          ctx.chatId,
-          `Processing ${client?.name ?? "YouTube"} link...`,
-          {
-            reply_parameters: config.SEND_AS_REPLY
-              ? {
-                message_id: ctx.message.message_id,
-                allow_sending_without_reply: true,
-                quote: urlText,
-              } satisfies ReplyParameters
-              : undefined,
-          },
+        const processingMessage = await this.replyProcessing(
+          ctx,
+          ctx.message,
+          client?.name ?? "YouTube",
+          urlText,
         );
 
         // The YouTube handler turns this message into its menu, so it keeps it
@@ -289,39 +285,114 @@ export class Dinogram {
           continue;
         }
 
-        // The YouTube handler keeps the processing message as its menu, when a
-        // post only shows a YouTube video
-        let handedOver = false;
-        try {
-          const handler = new UrlHandler(ctx, ctx.message);
-          const external = await handler.handle(client!);
-          if (external) {
-            handedOver = await this.handleExternalMedia(
-              ctx,
-              external,
-              processingMessage,
-            );
-          }
-        } catch (e) {
-          await reportError(
-            ctx,
-            `Error handling url ${urlText}`,
-            e instanceof Error ? e : undefined,
-          );
-        } finally {
-          if (!handedOver) {
-            try {
-              await ctx.api.deleteMessage(
-                ctx.chatId,
-                processingMessage.message_id,
-              );
-            } catch (e) {
-              log.error("Failed to delete processing message", e);
-            }
-          }
-        }
+        await this.sendPost(
+          ctx,
+          ctx.message,
+          client!,
+          urlText,
+          processingMessage,
+        );
       }
     });
+  }
+
+  /**
+   * The "all items" button of an inline message opens the private chat with
+   * a start payload that names the post. The bot posts the link first, so the
+   * post has a message to reply to, and the chat shows where it came from.
+   */
+  private listenToAllItemsLinks() {
+    this.bot.chatType("private").command("start", async (ctx, next) => {
+      const id = parseAllItemsPayload(ctx.match);
+      if (!id) return next();
+
+      if (!await isAllowed(ctx.from.id, ctx.chat.id)) {
+        await ctx.reply(messages.NOT_ALLOWED(ctx.from.id, ctx.chat.id));
+        return;
+      }
+
+      const url = await findAllItemsLink(id);
+      const client = url ? ClientFactory.find(url) : null;
+      if (!url || !client) {
+        await ctx.reply(messages.INLINE_LINK_EXPIRED);
+        return;
+      }
+
+      const urlText = url.toString();
+      const source = await ctx.reply(urlText, {
+        link_preview_options: { is_disabled: true },
+      });
+      const processingMessage = await this.replyProcessing(
+        ctx,
+        source,
+        client.name,
+        urlText,
+      );
+
+      await this.sendPost(ctx, source, client, urlText, processingMessage);
+    });
+  }
+
+  private replyProcessing(
+    ctx: Filter<DinoContext, "message">,
+    source: Message,
+    name: string,
+    urlText: string,
+  ): Promise<Message> {
+    return ctx.api.sendMessage(ctx.chatId, `Processing ${name} link...`, {
+      reply_parameters: config.SEND_AS_REPLY
+        ? {
+          message_id: source.message_id,
+          allow_sending_without_reply: true,
+          quote: urlText,
+        } satisfies ReplyParameters
+        : undefined,
+    });
+  }
+
+  /**
+   * Sends the post as a reply to the source message, which must contain the
+   * link, because a reply quotes it
+   */
+  private async sendPost(
+    ctx: Filter<DinoContext, "message">,
+    source: Message,
+    client: PlatformClient,
+    urlText: string,
+    processingMessage: Message,
+  ) {
+    // The YouTube handler keeps the processing message as its menu, when a
+    // post only shows a YouTube video
+    let handedOver = false;
+    try {
+      const handler = new UrlHandler(ctx, source);
+      const external = await handler.handle(client);
+      if (external) {
+        handedOver = await this.handleExternalMedia(
+          ctx,
+          source,
+          external,
+          processingMessage,
+        );
+      }
+    } catch (e) {
+      await reportError(
+        ctx,
+        `Error handling url ${urlText}`,
+        e instanceof Error ? e : undefined,
+      );
+    } finally {
+      if (!handedOver) {
+        try {
+          await ctx.api.deleteMessage(
+            ctx.chatId,
+            processingMessage.message_id,
+          );
+        } catch (e) {
+          log.error("Failed to delete processing message", e);
+        }
+      }
+    }
   }
 
   /**
@@ -330,7 +401,8 @@ export class Dinogram {
    * to the user. Returns true when the YouTube handler took the message over.
    */
   private async handleExternalMedia(
-    ctx: Filter<DinoContext, "message:entities:url">,
+    ctx: Filter<DinoContext, "message">,
+    source: Message,
     url: URL,
     processingMessage: Message,
   ): Promise<boolean> {
@@ -345,7 +417,7 @@ export class Dinogram {
 
     await ctx.reply(messages.EXTERNAL_MEDIA(url.toString()), {
       reply_parameters: {
-        message_id: ctx.message.message_id,
+        message_id: source.message_id,
         allow_sending_without_reply: true,
       },
     });

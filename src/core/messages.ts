@@ -16,8 +16,14 @@ export const messages = {
   DENY_REMOVED: (target: string) => `✅ Denied ${target}`,
   EXTERNAL_MEDIA: (url: string) =>
     `This post shows a video from another site, which the bot does not download: ${url}`,
+  INLINE_ALL_ITEMS: (count: number) => `📥 Get all ${count}`,
   INLINE_DOWNLOADING: "⏳ Downloading…",
-  INLINE_MORE_ITEMS: "open the original post for the rest",
+  INLINE_ITEM_COUNT: (number: number, count: number) =>
+    `${number} out of ${count}`,
+  INLINE_ITEM_TITLE: (type: "photo" | "video", number: number, count: number) =>
+    `${type === "video" ? "🎬 Video" : "🖼️ Photo"} ${number} of ${count}`,
+  INLINE_LINK_EXPIRED:
+    "This button no longer works. Send the link of the post to the bot instead.",
   INLINE_NO_LINK: "Paste a link to a supported post",
   INLINE_OPEN_ORIGINAL: "🔗 Open original",
   INLINE_RESULT_TITLE: "Download from",

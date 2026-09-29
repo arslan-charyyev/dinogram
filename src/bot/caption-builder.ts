@@ -103,8 +103,10 @@ export class CaptionBuilder {
   /**
    * An inline message holds a single media item and no reply, so the caption
    * carries the whole context of the post.
+   *
+   * @param index the position of the sent item in a multi post
    */
-  static inline(post: FilePost): FormattedString {
+  static inline(post: FilePost, index: number): FormattedString {
     const parts: Stringable[] = [];
 
     if (config.WITH_CAPTION) {
@@ -120,10 +122,8 @@ export class CaptionBuilder {
     }
 
     if (post.type === "multi" && post.files.length > 1) {
-      parts.push(
-        "\n\n",
-        `1 out of ${post.files.length} — ${messages.INLINE_MORE_ITEMS}`,
-      );
+      if (parts.length > 0) parts.push("\n\n");
+      parts.push(messages.INLINE_ITEM_COUNT(index + 1, post.files.length));
     }
 
     return fmt(parts);
