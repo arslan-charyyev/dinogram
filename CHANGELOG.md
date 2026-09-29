@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.2.0] - 2026-09-30
+
+[3.2.0]: https://github.com/arslan-charyyev/dinogram/compare/v3.1.3...v3.2.0
+
+### Added
+
+- In inline mode, a post with several items now shows one result for each item,
+  so you choose the item that goes out. Before, only the first item went out.
+- An inline item from such a post has a `📥 Get all` button, which opens the
+  private chat with the bot, and the bot sends the whole post there
+
 ## [3.1.3] - 2026-09-29
 
 [3.1.3]: https://github.com/arslan-charyyev/dinogram/compare/v3.1.2...v3.1.3
