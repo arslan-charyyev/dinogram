@@ -14,7 +14,7 @@ export type SubscriptionFrequency = "instant" | "daily" | "weekly";
 export type PendingVideo = {
   readonly id: string;
   readonly title: string;
-  /** Failed delivery attempts, such as a premiere that has not started yet */
+  /** Failed delivery attempts; a live stream that has not ended is no attempt */
   readonly attempts: number;
 };
 

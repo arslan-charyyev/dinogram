@@ -1,6 +1,6 @@
 import type { Api } from "grammy";
 import { YouTubeChannels } from "../client/youtube-channels.ts";
-import { YouTubeClient } from "../client/youtube-client.ts";
+import { YouTubeClient, YouTubeLiveError } from "../client/youtube-client.ts";
 import { config } from "../core/config.ts";
 import { db } from "../core/db.ts";
 import { log } from "../core/log.ts";
@@ -24,8 +24,9 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const BATCH_SIZE = 10;
 
 /**
- * A premiere stays undownloadable until it ends, and a sign-in wall can pass,
- * so a video gets several tries before the user gets its link instead
+ * A sign-in wall can pass, so a video gets several tries before the user gets
+ * its link instead. A live stream or a premiere that has not ended costs no
+ * try, because it can run for hours.
  */
 const MAX_ATTEMPTS = 8;
 
@@ -168,7 +169,9 @@ async function deliverDueBatches(api: Api) {
         log.warn(`Subscription video ${item.id} failed: ${e}`);
         return "retry" as const;
       });
-      if (result === "retry") {
+      if (result === "wait") {
+        retry.push(item);
+      } else if (result === "retry") {
         if (item.attempts + 1 < MAX_ATTEMPTS) {
           retry.push({ ...item, attempts: item.attempts + 1 });
         } else {
@@ -206,12 +209,19 @@ async function deliverOne(
   api: Api,
   subscription: Subscription,
   item: PendingVideo,
-): Promise<"done" | "retry"> {
+): Promise<"done" | "retry" | "wait"> {
   let video: YouTubeVideo;
   try {
     video = await YouTubeClient.fetchVideo(item.id);
   } catch (e) {
-    // A premiere that has not ended, or a sign-in wall
+    if (e instanceof YouTubeLiveError) {
+      log.info(
+        `Subscription video ${item.id} waits for its live stream to end`,
+      );
+      return "wait";
+    }
+
+    // A sign-in wall
     log.warn(`Subscription video ${item.id} is not ready: ${e}`);
     return "retry";
   }

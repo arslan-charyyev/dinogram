@@ -65,6 +65,16 @@ let cookieFirstUntil = 0;
  */
 export class YouTubeUserError extends Error {}
 
+/**
+ * The video is a live stream or a premiere that has not ended, so it has
+ * nothing to download yet
+ */
+export class YouTubeLiveError extends YouTubeUserError {
+  constructor() {
+    super(messages.YOUTUBE_LIVE);
+  }
+}
+
 export type DownloadedFile = {
   readonly path: string;
   readonly size: number;
@@ -199,7 +209,7 @@ async function probe(id: string): Promise<YouTubeVideo> {
       if (
         ["is_live", "is_upcoming", "post_live"].includes(info.live_status ?? "")
       ) {
-        throw new YouTubeUserError(messages.YOUTUBE_LIVE);
+        throw new YouTubeLiveError();
       }
 
       // The visionOS client cannot play some videos, such as the ones made
