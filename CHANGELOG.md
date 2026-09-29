@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.1.3] - 2026-09-29
+
+[3.1.3]: https://github.com/arslan-charyyev/dinogram/compare/v3.1.2...v3.1.3
+
+### Fixed
+
+- A subscription now waits for a live stream or a premiere to end, and then
+  sends the video. Before, each check of an ongoing stream cost one of the eight
+  tries, so a stream of more than two hours ended as a link instead of a video.
+
 ## [3.1.2] - 2026-09-29
 
 [3.1.2]: https://github.com/arslan-charyyev/dinogram/compare/v3.1.1...v3.1.2
