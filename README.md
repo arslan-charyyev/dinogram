@@ -94,9 +94,16 @@ because the file stays available through its ID. When `INLINE_STORAGE_CHAT` is
 `0` (the default), the bot uses the private chat of the user who made the
 request. That user must start the bot first, or the upload fails.
 
+An inline message holds one media item, because Telegram has no album result in
+inline mode. Thus a post with more items gets one result for each item, and you
+tap the item that you want to send. The sent item has a `📥 Get all` button,
+which opens the private chat with the bot, and the bot sends the whole post
+there. The button works for 30 days after the last share of the post.
+
 > [!NOTE]
-> An inline message holds one media item. For a post with more items, the bot
-> sends the first item, and shows the total count in the caption.
+> The bot downloads the post details while it builds the result list. When the
+> platform is too slow to answer, the list shows one result for the first item
+> instead.
 
 For a YouTube link, the result list shows one result for each video quality and
 audio quality, with its size. When YouTube answers slowly, the list shows a
