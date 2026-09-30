@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.2.1] - 2026-09-30
+
+[3.2.1]: https://github.com/arslan-charyyev/dinogram/compare/v3.2.0...v3.2.1
+
+### Fixed
+
+- A TikTok video in inline mode downloads again. Since 3.2.0, the chosen result
+  downloaded the video without the cookies of the post, so TikTok refused it
+  with "Download URL not OK".
+
 ## [3.2.0] - 2026-09-30
 
 [3.2.0]: https://github.com/arslan-charyyev/dinogram/compare/v3.1.3...v3.2.0
