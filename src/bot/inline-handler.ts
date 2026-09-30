@@ -23,6 +23,7 @@ import {
   originalPostKeyboard,
   parseUrl,
 } from "./inline-utils.ts";
+import { RecentPosts } from "./recent-posts.ts";
 import { uploadApi } from "./upload-api.ts";
 import {
   answerYouTubeInlineQuery,
@@ -51,13 +52,7 @@ const FETCH_BUDGET_MS = 4_000;
  */
 const MAX_RESULTS = 50;
 
-/**
- * The post that answers an inline query also serves the chosen result, so the
- * platform gets one request instead of two. The download links of a post stay
- * valid much longer than an entry lives here.
- */
-const RECENT_POST_MS = 5 * 60_000;
-const recentPosts = new Map<string, Promise<FilePost>>();
+const recentPosts = new RecentPosts(5 * 60_000);
 
 /**
  * Inline mode lets the user tag the bot in any chat, including a private chat
@@ -96,7 +91,8 @@ export async function handleInlineQuery(ctx: InlineQueryContext) {
 
   const { url, client } = match;
 
-  const post = await withTimeout(fetchPost(url, client), FETCH_BUDGET_MS);
+  const { post: fetched } = recentPosts.fetch(url, client);
+  const post = await withTimeout(fetched, FETCH_BUDGET_MS);
   if (post?.type === "multi" && post.files.length > 1) {
     await answerWithItems(ctx, url, post);
     return;
@@ -146,11 +142,12 @@ export async function handleChosenInlineResult(ctx: ChosenResultContext) {
     return;
   }
 
-  const { url, client } = match;
+  const { url } = match;
   const index = itemIndex(ctx.chosenInlineResult.result_id);
 
   try {
-    const post = await fetchPost(url, client);
+    const { client, post: fetched } = recentPosts.fetch(url, match.client);
+    const post = await fetched;
     const uploaded = await uploadToStorage(ctx, client, pickFile(post, index));
     const caption = CaptionBuilder.inline(post, index);
 
@@ -214,24 +211,6 @@ async function answerWithItems(
       options,
     );
   }
-}
-
-function fetchPost(url: URL, client: PlatformClient): Promise<FilePost> {
-  const key = url.toString();
-
-  let post = recentPosts.get(key);
-  if (!post) {
-    post = client.fetchPost();
-    recentPosts.set(key, post);
-
-    // A failed fetch leaves at once, so that the chosen result tries again
-    post.then(
-      () => setTimeout(() => recentPosts.delete(key), RECENT_POST_MS),
-      () => recentPosts.delete(key),
-    );
-  }
-
-  return post;
 }
 
 function itemIndex(resultId: string): number {
