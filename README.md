@@ -60,8 +60,8 @@ Extra bot features:
   `WITH_CAPTION`,`SEND_AS_REPLY`,`SHOW_CAPTION_ABOVE_MEDIA`).
 - Tag the bot in any chat, including a private chat with another person (⚙️:
   `INLINE_ENABLED`, `INLINE_STORAGE_CHAT`). See `Inline mode`.
-- Restrict bot access by user ID or chat ID, from the config (⚙️`WHITELIST`) or
-  with a chat command (`/allow`). See `Access control`.
+- Restrict bot access by user ID or chat ID with a chat command (`/allow`). See
+  `Access control`.
 - Report errors to original chat (⚙️`SEND_ERRORS`) or pre-configured
   recipients(⚙️ `REPORT_ERRORS_TO`).
 - Configurable
@@ -167,28 +167,28 @@ channels. ⚙️ `SUBSCRIPTIONS_ENABLED` turns the feature off.
 
 ## 🔐 Access control
 
-The bot serves everyone while `BOT_ADMINS` and `WHITELIST` are both empty. As
-soon as one of them names somebody, the gate closes: an admin always passes, and
-everybody else needs an entry.
+The bot serves everyone while ⚙️ `BOT_ADMINS` is empty. As soon as it names
+somebody, the gate closes: an admin always passes, and everybody else needs an
+entry in the whitelist.
 
-Two lists feed that gate:
-
-- ⚙️ `WHITELIST` — the static list of the deployment. It changes only with a
-  redeploy.
-- The dynamic list — an admin changes it in chat, and the change survives a
-  restart, because the list lives in the database of the bot (⚙️ `DATA_DIR`).
+An admin changes the whitelist in chat, so a new user needs no redeploy. The
+change survives a restart, because the whitelist lives in the database of the
+bot (⚙️ `DATA_DIR`). `BOT_ADMINS` is the only access setting in the config.
 
 One entry holds one ID. A user ID admits that person in every chat. A chat ID
 admits every member of that chat, which is how a whole group gets access.
 
-| Command    | Description                             |
-| ---------- | --------------------------------------- |
-| `/allow`   | Adds an entry to the dynamic list.      |
-| `/deny`    | Removes an entry from the dynamic list. |
-| `/allowed` | Lists the admins and both lists.        |
+| Command    | Description                          |
+| ---------- | ------------------------------------ |
+| `/allow`   | Adds an entry to the whitelist.      |
+| `/deny`    | Removes an entry from the whitelist. |
+| `/allowed` | Lists the admins and the whitelist.  |
 
-Only an admin (⚙️ `BOT_ADMINS`) runs these commands. `/allow` and `/deny` find
-their target in three ways:
+Only an admin (⚙️ `BOT_ADMINS`) runs these commands and `/settings`. The command
+menu of an admin shows them; the menu of everybody else does not. Telegram shows
+that menu only after the admin has started the bot, and the bot sets it when it
+starts. Thus a new admin sees it after the next restart. `/allow` and `/deny`
+find their target in three ways:
 
 - With arguments, they act on each ID: `/allow 12345 -1009876`
 - In a reply, they act on the author of the message that you reply to.
@@ -199,9 +199,8 @@ A refused user gets an answer that names their user ID and the chat ID, which is
 what they send to an admin to ask for access.
 
 > [!NOTE]
-> A deployment that sets `BOT_ADMINS` and leaves `WHITELIST` empty served
-> everyone before this change. It now serves the admins only, until an `/allow`
-> names somebody.
+> The ⚙️ `WHITELIST` setting is gone, and the bot ignores it. Add its IDs with
+> `/allow 12345 -1009876`.
 
 ## 🔮 Future plans:
 
@@ -234,9 +233,10 @@ no version, it redeploys `latest`, which is how a rotated token reaches the
 container, because every run re-syncs the whole environment. With a version, it
 redeploys that release, which is the rollback path.
 
-Repository secrets: `COOLIFY_TOKEN`, `BOT_TOKEN`. Repository variables:
-`COOLIFY_URL`, `BOT_ADMINS`, `WHITELIST`, `REPORT_ERRORS_TO`. The Telegram IDs
-stay in variables, because this repository is public.
+Repository secrets: `COOLIFY_TOKEN`, `BOT_TOKEN`, `BOT_ADMINS`,
+`REPORT_ERRORS_TO`. Repository variable: `COOLIFY_URL`. The Telegram IDs are
+secrets, because this repository is public, and so are its workflow logs. A log
+prints the value of a variable, but it masks a secret.
 
 > [!NOTE]
 > The bot talks to a
