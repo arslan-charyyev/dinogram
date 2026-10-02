@@ -233,10 +233,10 @@ no version, it redeploys `latest`, which is how a rotated token reaches the
 container, because every run re-syncs the whole environment. With a version, it
 redeploys that release, which is the rollback path.
 
-Repository secrets: `COOLIFY_TOKEN`, `BOT_TOKEN`, `BOT_ADMINS`,
-`REPORT_ERRORS_TO`. Repository variable: `COOLIFY_URL`. The Telegram IDs are
-secrets, because this repository is public, and so are its workflow logs. A log
-prints the value of a variable, but it masks a secret.
+Repository secrets: `COOLIFY_URL`, `COOLIFY_TOKEN`, `BOT_TOKEN`, `BOT_ADMINS`,
+`REPORT_ERRORS_TO`. The URL and the Telegram IDs are secrets too, because this
+repository is public, and so are its workflow logs. A log prints the value of a
+variable, but it masks a secret.
 
 > [!NOTE]
 > The bot talks to a
