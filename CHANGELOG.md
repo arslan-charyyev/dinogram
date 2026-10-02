@@ -1,5 +1,24 @@
 # Changelog
 
+## [4.1.0] - 2026-10-02
+
+[4.1.0]: https://github.com/arslan-charyyev/dinogram/compare/v4.0.0...v4.1.0
+
+### Added
+
+- The names in the replies of `/allow`, `/deny` and `/allowed` link to the user
+  or the group, when Telegram gives the bot an address. The invite link of a
+  private group shows only in a private chat with the bot.
+- `/allowed` marks an entry that the bot cannot see as "⚠️ not visible to the
+  bot": a user who has not started the bot, or a group without the bot
+
+### Changed
+
+- `/allowed` asks Telegram for every name again, so it shows the current names,
+  and it shows the names of the admins too
+- The deploy workflow reads `COOLIFY_URL` from a repository secret instead of a
+  repository variable, so the workflow logs mask it
+
 ## [4.0.0] - 2026-10-02
 
 [4.0.0]: https://github.com/arslan-charyyev/dinogram/compare/v3.2.1...v4.0.0
