@@ -183,6 +183,10 @@ const env = {
 
 export const config = Config.parse(env);
 
+export function subscriptionsEnabled(): boolean {
+  return config.YOUTUBE_ENABLED && config.SUBSCRIPTIONS_ENABLED;
+}
+
 /**
  * A local Bot API server accepts uploads up to 2000 MB, and the hosted one up
  * to 50 MB. A small margin keeps the container overhead of a merge in bounds.

@@ -15,6 +15,14 @@ export function isAdmin(userId: number | undefined): boolean {
 }
 
 /**
+ * {@link config.BOT_ADMINS} holds user IDs and chat IDs, so every member of an
+ * admin chat acts as an admin there
+ */
+export function isAdminContext(ctx: Context): boolean {
+  return isAdmin(ctx.from?.id) || isAdmin(ctx.chat?.id);
+}
+
+/**
  * Decides who may use the bot. An admin always passes. Everyone else needs an
  * entry in the whitelist that the admins manage in chat.
  *
@@ -42,9 +50,11 @@ export async function isAllowed(
   return false;
 }
 
+/**
+ * The command registry lets only an admin run this
+ */
 export async function allow(ctx: CommandContext<Context>) {
-  const adminId = await adminIdOf(ctx);
-  if (adminId === undefined) return;
+  const adminId = ctx.from?.id ?? ctx.chat.id;
 
   const targets = await targetsOf(ctx);
   if (targets === undefined) return;
@@ -69,9 +79,11 @@ export async function allow(ctx: CommandContext<Context>) {
   await ctx.reply(lines.join("\n"));
 }
 
+/**
+ * The command registry lets only an admin run this
+ */
 export async function deny(ctx: CommandContext<Context>) {
-  const adminId = await adminIdOf(ctx);
-  if (adminId === undefined) return;
+  const adminId = ctx.from?.id ?? ctx.chat.id;
 
   const targets = await targetsOf(ctx);
   if (targets === undefined) return;
@@ -91,28 +103,16 @@ export async function deny(ctx: CommandContext<Context>) {
   await ctx.reply(lines.join("\n"));
 }
 
+/**
+ * The command registry lets only an admin run this
+ */
 export async function listAllowed(ctx: CommandContext<Context>) {
-  if (await adminIdOf(ctx) === undefined) return;
-
   const entries = await db.whitelist.list();
 
   await ctx.reply(messages.ALLOWED_LIST(
     config.BOT_ADMINS,
     entries.map(describe),
   ));
-}
-
-/**
- * Answers the sender and returns undefined when the sender is no admin
- */
-async function adminIdOf(
-  ctx: CommandContext<Context>,
-): Promise<number | undefined> {
-  const userId = ctx.from?.id;
-  if (isAdmin(userId)) return userId;
-
-  await ctx.reply(messages.NOT_ADMIN);
-  return undefined;
 }
 
 /**

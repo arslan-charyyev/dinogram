@@ -20,13 +20,13 @@ import type { PlatformClient } from "../client/platform-client.ts";
 import { YouTubeChannels } from "../client/youtube-channels.ts";
 import { YouTubeClient } from "../client/youtube-client.ts";
 import { YtDlp } from "../client/yt-dlp.ts";
-import { config } from "../core/config.ts";
+import { config, subscriptionsEnabled } from "../core/config.ts";
 import { Downloads } from "../core/downloads.ts";
 import { log } from "../core/log.ts";
 import { messages } from "../core/messages.ts";
 import { reportError } from "../utils/reports.ts";
-import { isAdmin, isAllowed } from "./access.ts";
-import { commands } from "./commands.ts";
+import { isAdminContext, isAllowed } from "./access.ts";
+import { publishCommandMenus, registerCommands } from "./commands.ts";
 import { dinoConversations } from "./conversations.ts";
 import { findAllItemsLink, parseAllItemsPayload } from "./deep-link.ts";
 import {
@@ -35,9 +35,7 @@ import {
 } from "./inline-handler.ts";
 import { menus } from "./menus.ts";
 import {
-  handleSubscribeCommand,
   handleSubscriptionCallback,
-  handleSubscriptionsCommand,
   startSubscription,
   SUBSCRIPTION_CALLBACK,
 } from "./subscription-menu.ts";
@@ -89,19 +87,12 @@ export class Dinogram {
 
     // Telegram runs a menu button from its callback data alone, so the
     // buttons check the admin again, the same way as the /settings command
-    this.bot.filter(
-      (ctx) => isAdmin(ctx.from?.id) || isAdmin(ctx.chat?.id),
-      menus.settings,
-    );
-    for (const command in commands) {
-      this.bot.command(command, commands[command]);
-    }
+    this.bot.filter(isAdminContext, menus.settings);
+    registerCommands(this.bot);
 
     this.bot.callbackQuery(YOUTUBE_CALLBACK, handleYouTubeCallback);
 
     if (subscriptionsEnabled()) {
-      this.bot.command("subscribe", handleSubscribeCommand);
-      this.bot.command("subscriptions", handleSubscriptionsCommand);
       this.bot.callbackQuery(SUBSCRIPTION_CALLBACK, handleSubscriptionCallback);
     }
 
@@ -112,8 +103,9 @@ export class Dinogram {
       const { first_name, username } = this.bot.botInfo;
       log.info(`🚀 Launching bot "${first_name}" with username: @${username}`);
 
+      await publishCommandMenus(this.bot.api);
+
       if (subscriptionsEnabled()) {
-        await this.showPrivateCommands();
         startSubscriptionWorker(this.bot.api);
       }
     });
@@ -160,21 +152,6 @@ export class Dinogram {
         `yt-dlp is not available at "${config.YT_DLP_PATH}", so YouTube links will fail`,
         e,
       );
-    }
-  }
-
-  /**
-   * The command menu of a private chat offers the subscriptions, which work
-   * only there
-   */
-  private async showPrivateCommands() {
-    try {
-      await this.bot.api.setMyCommands([
-        { command: "subscribe", description: "Follow a YouTube channel" },
-        { command: "subscriptions", description: "Manage your subscriptions" },
-      ], { scope: { type: "all_private_chats" } });
-    } catch (e) {
-      log.error("Failed to set the command menu", e);
     }
   }
 
@@ -441,8 +418,4 @@ export class Dinogram {
       Deno.addSignalListener(signal, this.bot.stop);
     }
   }
-}
-
-function subscriptionsEnabled(): boolean {
-  return config.YOUTUBE_ENABLED && config.SUBSCRIPTIONS_ENABLED;
 }
