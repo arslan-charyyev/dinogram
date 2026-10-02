@@ -1,5 +1,29 @@
 # Changelog
 
+## [4.0.0] - 2026-10-02
+
+[4.0.0]: https://github.com/arslan-charyyev/dinogram/compare/v3.2.1...v4.0.0
+
+### Added
+
+- The command menu of an admin shows the admin commands: `/allow`, `/deny`,
+  `/allowed` and `/settings`. The menu of everybody else does not show them.
+
+### Changed
+
+- The deploy workflow reads `BOT_ADMINS` and `REPORT_ERRORS_TO` from repository
+  secrets instead of repository variables, so the workflow logs mask them. Move
+  the two values to secrets before the next deploy.
+- An admin chat in `BOT_ADMINS` now runs `/allow`, `/deny` and `/allowed`, the
+  same way as `/settings`. Before, only an admin user ran them.
+
+### Removed
+
+- The `WHITELIST` setting. The bot ignores it, and `BOT_ADMINS` is the only
+  access setting in the config. Before you upgrade, add the IDs of `WHITELIST`
+  with `/allow`. A bot that sets `WHITELIST` and leaves `BOT_ADMINS` empty now
+  serves everyone.
+
 ## [3.2.1] - 2026-09-30
 
 [3.2.1]: https://github.com/arslan-charyyev/dinogram/compare/v3.2.0...v3.2.1
