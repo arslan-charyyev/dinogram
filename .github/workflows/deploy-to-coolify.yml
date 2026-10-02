@@ -14,12 +14,14 @@ on:
       image_tag:
         required: true
         type: string
+    # Secrets, not variables: a step log prints the value of a variable
     secrets:
+      COOLIFY_URL:
+        required: true
       COOLIFY_TOKEN:
         required: true
       BOT_TOKEN:
         required: true
-      # Secrets, not variables: a step log prints the value of a variable
       BOT_ADMINS:
         required: false
       REPORT_ERRORS_TO:
@@ -41,7 +43,7 @@ jobs:
       # runner needs no setup step.
       - name: 🎛️ Reconcile and deploy
         env:
-          COOLIFY_URL: ${{ vars.COOLIFY_URL }}
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
           IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
