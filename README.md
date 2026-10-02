@@ -198,6 +198,13 @@ find their target in three ways:
 A refused user gets an answer that names their user ID and the chat ID, which is
 what they send to an admin to ask for access.
 
+`/allowed` asks Telegram for every name again, so the names are current. A name
+links to the user or the group, if Telegram gives the bot an address: a
+username, or the invite link of a group where the bot is an admin. Invite links
+show only in a private chat with the bot, so the members of a group never see
+them. An entry marked "⚠️ not visible to the bot" is a user who has not started
+the bot, or has blocked it, or a group that the bot is no longer a member of.
+
 > [!NOTE]
 > The ⚙️ `WHITELIST` setting is gone, and the bot ignores it. Add its IDs with
 > `/allow 12345 -1009876`.
