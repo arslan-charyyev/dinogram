@@ -16,8 +16,9 @@ Required environment:
   BOT_TOKEN     Telegram bot token
 
 Optional environment: BOT_ADMINS, REPORT_ERRORS_TO. They hold
-Telegram IDs, so they come from repository variables instead of this file: the
-repository is public.
+Telegram IDs, so they come from repository secrets instead of this file: the
+repository is public, and so are its workflow logs, which print the value of a
+variable but mask a secret.
 
 The GHCR package is public, so Coolify pulls it without credentials.
 """
@@ -99,8 +100,8 @@ SPEC = {
 # its env already in place instead of crash-looping on an incomplete config.
 CREATE_ONLY = {"autogenerate_domain": False, "instant_deploy": False}
 
-# Env vars for the running container. The token comes from a GitHub secret, the
-# Telegram IDs from GitHub variables, and the rest is inline. Empty values are
+# Env vars for the running container. The token and the Telegram IDs come from
+# GitHub secrets, and the rest is inline. Empty values are
 # dropped, so an unset optional value keeps the default of the bot.
 _ENV_SPEC = {
     "BOT_TOKEN": _required("BOT_TOKEN"),

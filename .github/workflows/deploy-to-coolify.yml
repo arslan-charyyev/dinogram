@@ -19,6 +19,11 @@ on:
         required: true
       BOT_TOKEN:
         required: true
+      # Secrets, not variables: a step log prints the value of a variable
+      BOT_ADMINS:
+        required: false
+      REPORT_ERRORS_TO:
+        required: false
 
 concurrency:
   group: deploy-to-coolify
@@ -40,6 +45,6 @@ jobs:
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
           IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          BOT_ADMINS: ${{ vars.BOT_ADMINS }}
-          REPORT_ERRORS_TO: ${{ vars.REPORT_ERRORS_TO }}
+          BOT_ADMINS: ${{ secrets.BOT_ADMINS }}
+          REPORT_ERRORS_TO: ${{ secrets.REPORT_ERRORS_TO }}
         run: python3 .github/scripts/coolify_deploy.py
