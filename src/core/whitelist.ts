@@ -3,12 +3,9 @@ import type { WhitelistEntry } from "../model/whitelist.ts";
 const PREFIX = ["dinogram", "whitelist"];
 
 /**
- * The dynamic list of the users and the chats that may use the bot. It lives in
- * Deno KV, so an admin changes it with a chat command, and the change outlives
- * a redeploy.
- *
- * The static {@link config.WHITELIST} stays beside it as a seed that the
- * deployment owns.
+ * The list of the users and the chats that may use the bot. It lives in Deno
+ * KV, so an admin changes it with a chat command, and the change outlives a
+ * redeploy.
  */
 export class Whitelist {
   constructor(private kv: Deno.Kv) {}

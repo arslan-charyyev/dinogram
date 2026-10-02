@@ -16,7 +16,8 @@ const Config = z.object({
   BOT_ADMINS: intCsv
     .default([])
     .describe(
-      "A comma-separated list of user or chat IDs that can change bot settings",
+      "A comma-separated list of user or chat IDs that can change bot settings " +
+        "and manage the whitelist. If empty, then no restrictions apply.",
     ),
 
   BOT_API_ROOT: z
@@ -141,13 +142,6 @@ const Config = z.object({
       "The largest file in MB that the bot uploads. When 0, the limit is " +
         "just under 2000 with BOT_API_ROOT (a local Bot API server), and just " +
         "under 50 without it.",
-    ),
-
-  WHITELIST: intCsv
-    .default([])
-    .describe(
-      "A comma-separated list of user or chat IDs that are allowed to make requests. " +
-        "If empty, then no restrictions apply.",
     ),
 
   WITH_CAPTION: bool

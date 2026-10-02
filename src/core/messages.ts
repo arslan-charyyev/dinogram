@@ -1,15 +1,10 @@
 export const messages = {
   ALLOW_ADDED: (target: string) => `✅ Allowed ${target}`,
   ALLOW_ALREADY: (target: string) => `ℹ️ ${target} was allowed already`,
-  ALLOWED_LIST: (
-    admins: number[],
-    seeded: number[],
-    entries: string[],
-  ) =>
+  ALLOWED_LIST: (admins: number[], entries: string[]) =>
     [
       `👑 Admins: ${admins.join(", ") || "none"}`,
-      `📌 From the config: ${seeded.join(", ") || "none"}`,
-      "📝 Added in chat:",
+      "📝 Whitelist:",
       ...(entries.length > 0 ? entries.map((it) => `• ${it}`) : ["• none"]),
     ].join("\n"),
   DENY_MISSING: (target: string) => `ℹ️ ${target} was not on the whitelist`,

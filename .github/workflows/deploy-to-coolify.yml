@@ -41,6 +41,5 @@ jobs:
           IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           BOT_ADMINS: ${{ vars.BOT_ADMINS }}
-          WHITELIST: ${{ vars.WHITELIST }}
           REPORT_ERRORS_TO: ${{ vars.REPORT_ERRORS_TO }}
         run: python3 .github/scripts/coolify_deploy.py

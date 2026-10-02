@@ -16,8 +16,7 @@ export function isAdmin(userId: number | undefined): boolean {
 
 /**
  * Decides who may use the bot. An admin always passes. Everyone else needs an
- * entry, either in the static {@link config.WHITELIST} of the deployment, or in
- * the dynamic list that the admins manage in chat.
+ * entry in the whitelist that the admins manage in chat.
  *
  * A chat ID passes for every member of that chat, which is how a whole group
  * gets access.
@@ -26,18 +25,15 @@ export async function isAllowed(
   userId: number,
   chatId?: number,
 ): Promise<boolean> {
-  // Nobody owns the bot and no list names anyone, so it serves everyone, the
-  // way it behaved before the dynamic whitelist existed
-  if (config.BOT_ADMINS.length === 0 && config.WHITELIST.length === 0) {
-    return true;
-  }
+  // Nobody can manage the whitelist without an admin, so the bot serves
+  // everyone
+  if (config.BOT_ADMINS.length === 0) return true;
 
   if (isAdmin(userId)) return true;
 
   for (const id of [userId, chatId]) {
     if (id === undefined) continue;
 
-    if (config.WHITELIST.includes(id)) return true;
     if (await db.whitelist.has(id)) return true;
   }
 
@@ -102,7 +98,6 @@ export async function listAllowed(ctx: CommandContext<Context>) {
 
   await ctx.reply(messages.ALLOWED_LIST(
     config.BOT_ADMINS,
-    config.WHITELIST,
     entries.map(describe),
   ));
 }

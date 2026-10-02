@@ -15,7 +15,7 @@ Required environment:
   IMAGE_TAG     image tag to deploy, which is a released version such as 1.2.5
   BOT_TOKEN     Telegram bot token
 
-Optional environment: BOT_ADMINS, WHITELIST, REPORT_ERRORS_TO. They hold
+Optional environment: BOT_ADMINS, REPORT_ERRORS_TO. They hold
 Telegram IDs, so they come from repository variables instead of this file: the
 repository is public.
 
@@ -108,7 +108,6 @@ _ENV_SPEC = {
     # limit from 50 MB to 2 GB.
     "BOT_API_ROOT": "http://telegram-bot-api:8081",
     "BOT_ADMINS": os.environ.get("BOT_ADMINS", ""),
-    "WHITELIST": os.environ.get("WHITELIST", ""),
     "REPORT_ERRORS_TO": os.environ.get("REPORT_ERRORS_TO", ""),
     "LOG_LEVEL": "DEBUG",
     "SEND_AS_REPLY": "false",
@@ -124,6 +123,10 @@ ENVS = {k: v for k, v in _ENV_SPEC.items() if v}
 # prune step deletes only keys in this set, so it never touches envs that
 # Coolify or a user set.
 MANAGED_KEYS = set(_ENV_SPEC)
+# Keys that the spec dropped. They stay managed, so the prune step deletes them
+# from Coolify.
+RETIRED_KEYS = {"WHITELIST"}
+MANAGED_KEYS |= RETIRED_KEYS
 
 
 def api(method, path, body=None, allow_404=False):
