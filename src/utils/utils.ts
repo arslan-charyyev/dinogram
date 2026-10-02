@@ -1,3 +1,9 @@
+import {
+  fmt,
+  type FormattedString,
+  type Stringable,
+} from "@grammyjs/parse-mode";
+
 export function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -69,4 +75,8 @@ export function getUrlSegments(url: URL): string[] {
   return url.pathname
     .split("/")
     .filter((it) => it.length > 0); // Removes empty strings
+}
+
+export function joinLines(lines: Stringable[]): FormattedString {
+  return fmt(lines.flatMap((line, i) => i === 0 ? [line] : ["\n", line]));
 }

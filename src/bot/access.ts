@@ -1,14 +1,17 @@
+import type { FormattedString } from "@grammyjs/parse-mode";
 import type { CommandContext, Context } from "grammy";
-import type { Chat, Message, User } from "@grammyjs/types";
+import type { Message, User } from "@grammyjs/types";
 import { config } from "../core/config.ts";
 import { db } from "../core/db.ts";
 import { log } from "../core/log.ts";
 import { messages } from "../core/messages.ts";
-
-type Target = {
-  id: number;
-  label?: string;
-};
+import { joinLines } from "../utils/utils.ts";
+import {
+  chatTarget,
+  formatTarget,
+  type Target,
+  userTarget,
+} from "./whitelist-target.ts";
 
 export function isAdmin(userId: number | undefined): boolean {
   return userId !== undefined && config.BOT_ADMINS.includes(userId);
@@ -59,7 +62,7 @@ export async function allow(ctx: CommandContext<Context>) {
   const targets = await targetsOf(ctx);
   if (targets === undefined) return;
 
-  const lines: string[] = [];
+  const lines: FormattedString[] = [];
   for (const target of targets) {
     const added = await db.whitelist.add({
       id: target.id,
@@ -71,12 +74,12 @@ export async function allow(ctx: CommandContext<Context>) {
     log.info(`Admin ${adminId} allowed ${target.id}`);
     lines.push(
       added
-        ? messages.ALLOW_ADDED(describe(target))
-        : messages.ALLOW_ALREADY(describe(target)),
+        ? messages.ALLOW_ADDED(formatTarget(target))
+        : messages.ALLOW_ALREADY(formatTarget(target)),
     );
   }
 
-  await ctx.reply(lines.join("\n"));
+  await replyFormatted(ctx, joinLines(lines));
 }
 
 /**
@@ -88,31 +91,41 @@ export async function deny(ctx: CommandContext<Context>) {
   const targets = await targetsOf(ctx);
   if (targets === undefined) return;
 
-  const lines: string[] = [];
+  const lines: FormattedString[] = [];
   for (const target of targets) {
     const removed = await db.whitelist.remove(target.id);
 
     log.info(`Admin ${adminId} denied ${target.id}`);
     lines.push(
       removed
-        ? messages.DENY_REMOVED(describe(target))
-        : messages.DENY_MISSING(describe(target)),
+        ? messages.DENY_REMOVED(formatTarget(target))
+        : messages.DENY_MISSING(formatTarget(target)),
     );
   }
 
-  await ctx.reply(lines.join("\n"));
+  await replyFormatted(ctx, joinLines(lines));
 }
 
 /**
- * The command registry lets only an admin run this
+ * The command registry lets only an admin run this. The bot asks Telegram for
+ * every name again, so the list shows the current names, and marks a chat that
+ * the bot cannot see any more.
  */
 export async function listAllowed(ctx: CommandContext<Context>) {
   const entries = await db.whitelist.list();
 
-  await ctx.reply(messages.ALLOWED_LIST(
-    config.BOT_ADMINS,
-    entries.map(describe),
-  ));
+  const [admins, allowed] = await Promise.all([
+    Promise.all(config.BOT_ADMINS.map((id) => lookUp(ctx, id))),
+    Promise.all(entries.map(async (entry) => {
+      const target = await lookUp(ctx, entry.id);
+      return { ...target, label: target.label ?? entry.label };
+    })),
+  ]);
+
+  await replyFormatted(
+    ctx,
+    messages.ALLOWED_LIST(admins.map(formatTarget), allowed.map(formatTarget)),
+  );
 }
 
 /**
@@ -133,31 +146,43 @@ async function targetsOf(
         await ctx.reply(messages.NOT_AN_ID(arg));
         return undefined;
       }
-      targets.push({ id, label: await lookUpLabel(ctx, id) });
+      targets.push(await lookUp(ctx, id));
     }
     return targets;
   }
 
   const repliedTo = replyTarget(ctx.message);
-  if (repliedTo) return [{ id: repliedTo.id, label: userLabel(repliedTo) }];
+  if (repliedTo) return [userTarget(repliedTo)];
 
-  return [{ id: ctx.chat.id, label: chatLabel(ctx.chat) }];
+  return [chatTarget(ctx.chat)];
 }
 
 /**
  * An ID alone says nothing in a list, so the bot asks Telegram for a name.
  * Telegram knows a chat only after the bot has met it, thus a name is optional.
  */
-async function lookUpLabel(
+async function lookUp(
   ctx: CommandContext<Context>,
   id: number,
-): Promise<string | undefined> {
+): Promise<Target> {
   try {
-    return chatLabel(await ctx.api.getChat(id));
+    const chat = await ctx.api.getChat(id);
+    const inPrivate = ctx.chat.type === "private";
+    return { ...chatTarget(chat, inPrivate), reachable: true };
   } catch (e) {
     log.debug(`Telegram knows no chat ${id}`, e);
-    return undefined;
+    return { id, reachable: false };
   }
+}
+
+/**
+ * A list of links would otherwise unfold one preview per link
+ */
+async function replyFormatted(ctx: Context, text: FormattedString) {
+  await ctx.reply(text.text, {
+    entities: text.entities,
+    link_preview_options: { is_disabled: true },
+  });
 }
 
 /**
@@ -170,32 +195,4 @@ function replyTarget(message: Message | undefined): User | undefined {
   if (!repliedTo || repliedTo.forum_topic_created) return undefined;
 
   return repliedTo.from;
-}
-
-function describe(target: Target): string {
-  return target.label ? `${target.id} — ${target.label}` : `${target.id}`;
-}
-
-function chatLabel(chat: Chat): string | undefined {
-  if ("title" in chat) return chat.title;
-
-  if ("first_name" in chat) {
-    return userLabel({
-      first_name: chat.first_name,
-      last_name: "last_name" in chat ? chat.last_name : undefined,
-      username: "username" in chat ? chat.username : undefined,
-    });
-  }
-
-  return undefined;
-}
-
-function userLabel(
-  user: Pick<User, "first_name" | "last_name" | "username">,
-): string | undefined {
-  const name = [user.first_name, user.last_name].filter(Boolean).join(" ");
-  if (name && user.username) return `${name} (@${user.username})`;
-  if (name) return name;
-
-  return user.username ? `@${user.username}` : undefined;
 }

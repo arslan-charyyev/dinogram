@@ -1,14 +1,20 @@
+import { fmt, type FormattedString } from "@grammyjs/parse-mode";
+import { joinLines } from "../utils/utils.ts";
+
 export const messages = {
-  ALLOW_ADDED: (target: string) => `✅ Allowed ${target}`,
-  ALLOW_ALREADY: (target: string) => `ℹ️ ${target} was allowed already`,
-  ALLOWED_LIST: (admins: number[], entries: string[]) =>
-    [
-      `👑 Admins: ${admins.join(", ") || "none"}`,
+  ALLOW_ADDED: (target: FormattedString) => fmt`✅ Allowed ${target}`,
+  ALLOW_ALREADY: (target: FormattedString) =>
+    fmt`ℹ️ ${target} was allowed already`,
+  ALLOWED_LIST: (admins: FormattedString[], entries: FormattedString[]) =>
+    joinLines([
+      "👑 Admins:",
+      ...bullets(admins),
       "📝 Whitelist:",
-      ...(entries.length > 0 ? entries.map((it) => `• ${it}`) : ["• none"]),
-    ].join("\n"),
-  DENY_MISSING: (target: string) => `ℹ️ ${target} was not on the whitelist`,
-  DENY_REMOVED: (target: string) => `✅ Denied ${target}`,
+      ...bullets(entries),
+    ]),
+  DENY_MISSING: (target: FormattedString) =>
+    fmt`ℹ️ ${target} was not on the whitelist`,
+  DENY_REMOVED: (target: FormattedString) => fmt`✅ Denied ${target}`,
   EXTERNAL_MEDIA: (url: string) =>
     `This post shows a video from another site, which the bot does not download: ${url}`,
   INLINE_ALL_ITEMS: (count: number) => `📥 Get all ${count}`,
@@ -102,3 +108,7 @@ export const messages = {
   YOUTUBE_UPLOADING: "📤 Uploading…",
   YOUTUBE_VIDEO: "🎬 Video",
 };
+
+function bullets(lines: FormattedString[]): FormattedString[] {
+  return lines.length > 0 ? lines.map((it) => fmt`• ${it}`) : [fmt`• none`];
+}
